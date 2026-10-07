@@ -1,0 +1,6 @@
+/vendor/
+/app/librerias/vendor/
+.env
+
+# MVC del profesor - solo referencia local
+docs/referencia_mvc_profesor/

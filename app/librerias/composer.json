@@ -1,0 +1,12 @@
+{
+    "name": "academico/proyectofinaldesarrollo",
+    "description": "Base académica MVC en PHP puro",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "php": ">=8.1",
+        "ext-pdo": "*",
+        "ext-pdo_mysql": "*",
+        "vlucas/phpdotenv": "^5.6"
+    }
+}
