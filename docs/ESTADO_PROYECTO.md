@@ -2,8 +2,11 @@
 
 ## Último commit estable
 
-0050b9a
-feat: implementar autenticacion y gestion inicial de usuarios
+feat: mejorar interfaz visual del sistema
+
+Commit de cierre visual de esta etapa. Para obtener su hash: `git log -1 --format=%h --grep="^feat: mejorar interfaz visual del sistema$"`.
+
+Base funcional anterior: `0050b9a` — `feat: implementar autenticacion y gestion inicial de usuarios`.
 
 ## Terminado
 
@@ -22,6 +25,10 @@ feat: implementar autenticacion y gestion inicial de usuarios
 - Asignación de uno o varios roles
 - Roles ADMINISTRADOR, DUEÑO, RECEPCIONISTA y VENDEDOR
 - Documentación SQL inicial
+- Dashboard visual terminado con accesos rápidos y módulos pendientes sin enlaces a rutas inexistentes
+- Login, gestión de usuarios y creación de usuarios con interfaz Bootstrap coherente
+- Includes reutilizables de vistas: head.php, navbar.php y footer.php en app/views/inc/
+- Identidad visual de vinería con color Malbec #6D1A36 aplicado en los estilos compartidos
 
 ## En desarrollo
 
@@ -44,10 +51,10 @@ Módulo Proveedores completo.
 - Sin Repository
 - Sin ORM
 - Sin DTO
-- Sin frameworks
+- Sin frameworks de aplicación; Bootstrap solamente como capa visual
 - Variables propias preferentemente en español
 - HTML funcional primero
-- CSS/Bootstrap después
+- Bootstrap/CSS aplicado al recorrido actual; mantener la funcionalidad como prioridad
 - Sin autorregistro
 - ADMINISTRADOR tiene todos los privilegios
 - DUEÑO puede realizar funciones de DUEÑO, RECEPCIONISTA y VENDEDOR, pero no las exclusivas de ADMINISTRADOR
@@ -60,7 +67,9 @@ Módulo Proveedores completo.
 - Composer
 - phpdotenv
 - HTML
-- Bootstrap posteriormente
+- Bootstrap 5.3.2 por CDN
+- FontAwesome 6.5.1 por CDN
+- CSS compartido con variables de Bootstrap para la identidad Malbec
 - Git / GitHub
 
 ## Dinámica de trabajo

@@ -28,6 +28,16 @@ El Autoloader carga las clases necesarias durante ese recorrido. Antes de listar
 - **Response:** `Response::render()` recibe el directorio, el nombre de la vista y sus datos; convierte esos datos en variables e incluye el archivo PHP de la vista.
 - **View:** archivo que presenta HTML. Por ejemplo, `app/views/user/index.php` recorre `$usuarios` y muestra una tabla. Usa `htmlspecialchars()` al mostrar textos para que se interpreten como contenido y no como HTML.
 
+## Presentación compartida y Bootstrap
+
+Las vistas incluyen fragmentos con `require APP_PATH . 'views/inc/head.php'` y el mismo mecanismo para `navbar.php` y `footer.php`. Así se comparten imports, estilos, navegación y pie sin crear otra capa ni un sistema de layouts. `$seccionActual` indica qué opción de la navbar resaltar; es un dato de presentación.
+
+Bootstrap 5.3.2 se carga por CDN y aporta la grilla responsive, cards, formularios, tablas, botones y badges. Su bundle permite desplegar el menú en pantallas pequeñas. FontAwesome aporta los iconos. Estos recursos necesitan conexión a Internet para cargarse.
+
+`head.php` sobrescribe variables y estilos de Bootstrap para usar Malbec `#6D1A36` en acciones principales, enlaces, iconos, badges y focus. La misma identidad se aplica al login, dashboard, listado y creación de usuarios.
+
+La separación entre lógica y presentación se mantiene: los controladores y modelos conservan autenticación, permisos, consultas y validaciones. Las vistas presentan los datos y mensajes existentes, sin consultar DataBase. Los módulos pendientes solo se muestran como “Próximamente”.
+
 ## Lectura rápida de PHP orientado a objetos
 
 | Elemento | Significado y ejemplo del proyecto |
