@@ -10,14 +10,14 @@ class UserController extends Controller
 {
     public function actionIndex($parametro = null)
     {
-        SessionController::soloAdministradores();
+        SessionController::onlyUsers(['ADMINISTRADOR']);
         $usuarios = UserModel::listarUsuarios();
         Response::render($this->viewDir(__NAMESPACE__), 'index', ['usuarios' => $usuarios]);
     }
 
     public function actionCrear()
     {
-        SessionController::soloAdministradores();
+        SessionController::onlyUsers(['ADMINISTRADOR']);
         $this->mostrarFormulario();
     }
 
@@ -31,7 +31,7 @@ class UserController extends Controller
 
     public function actionGuardar()
     {
-        SessionController::soloAdministradores();
+        SessionController::onlyUsers(['ADMINISTRADOR']);
         if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
             header('Allow: POST');
             http_response_code(405);

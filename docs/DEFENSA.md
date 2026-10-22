@@ -55,7 +55,13 @@ La separación entre lógica y presentación se mantiene: los controladores y mo
 
 `session_start()` en `public/index.php` recupera o inicia la sesión. Tras validar el login, `SessionController` regenera su identificador y guarda en `$_SESSION['usuario']` el ID, nombre, apellido, email y roles; no guarda la contraseña.
 
-`sesionValida()` comprueba la estructura mínima de esos datos. `esAdministrador()` verifica que la lista incluya `ADMINISTRADOR`. `soloAdministradores()` redirige al login si falta sesión o responde con 403 si no tiene ese rol. Se usa en el panel y en las acciones de usuarios.
+`sesionValida()` comprueba la estructura mínima de esos datos. `esAdministrador()` verifica que la lista incluya `ADMINISTRADOR`. `soloAdministradores()` se conserva como wrapper: delega en `onlyUsers(['ADMINISTRADOR'])` sin duplicar lógica.
+
+Autenticar es comprobar quién ingresa mediante correo y contraseña. Autorizar es decidir qué operaciones puede realizar ese usuario según sus roles.
+
+`SessionController::onlyUsers($rolesPermitidos)` recibe un array de roles funcionales. Primero verifica la sesión: si falta, redirige al login y ejecuta `exit`. Después aplica la jerarquía y permite continuar si cumple al menos uno de los roles solicitados. Si no tiene permiso, responde con HTTP 403, muestra “Acceso denegado” y ejecuta `exit`.
+
+Centralizamos este control para evitar repetir condiciones y mantener la misma regla en todas las acciones. El panel y las acciones de gestión de usuarios llaman a `onlyUsers(['ADMINISTRADOR'])` antes de ejecutar operaciones, por lo que también quedan protegidos al ingresar directamente por URL.
 
 El logout vacía `$_SESSION`, elimina la cookie de sesión cuando corresponde, destruye la sesión y redirige al login.
 
@@ -65,7 +71,14 @@ El logout vacía `$_SESSION`, elimina la cookie de sesión cuando corresponde, d
 
 `UserModel::obtenerRolesUsuario()` une ambas tablas y obtiene roles activos con asignaciones activas y vigentes. La creación de usuarios permite seleccionar varios roles y guarda una asignación por cada uno. No existe autorregistro: la creación está protegida para administradores.
 
-Actualmente se implementó el control de acceso de ADMINISTRADOR. La jerarquía acordada para los próximos módulos establece que ADMINISTRADOR tiene todos los privilegios y DUEÑO también realiza funciones de RECEPCIONISTA y VENDEDOR, sin los privilegios exclusivos de ADMINISTRADOR. Esa jerarquía aún no se implementó en nuevos módulos.
+La jerarquía funcional ya está implementada en `onlyUsers()`:
+
+- ADMINISTRADOR: todas las operaciones.
+- DUEÑO: operaciones de DUEÑO, RECEPCIONISTA y VENDEDOR; sin acceso a las exclusivas de ADMINISTRADOR.
+- RECEPCIONISTA: operaciones de RECEPCIONISTA.
+- VENDEDOR: operaciones de VENDEDOR.
+
+Esta herencia se calcula en memoria; no requiere guardar roles inferiores en `usuarios_roles`. Si el usuario tiene varios roles asignados, se combinan sus permisos. Los futuros módulos reutilizarán este método indicando los roles permitidos para cada operación.
 
 ## Contraseñas
 

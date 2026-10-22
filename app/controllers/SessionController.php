@@ -23,15 +23,31 @@ class SessionController extends Controller
 
     public static function soloAdministradores()
     {
+        self::onlyUsers(['ADMINISTRADOR']);
+    }
+
+    public static function onlyUsers(array $rolesPermitidos)
+    {
         if (!self::sesionValida()) {
             header('Location: /proyectofinaldesarrollo/session/login');
             exit;
         }
-        if (!self::esAdministrador()) {
-            http_response_code(403);
-            echo 'Acceso denegado';
-            exit;
+        if (self::esAdministrador()) {
+            return;
         }
+
+        $rolesUsuario = $_SESSION['usuario']['roles'];
+        // La herencia funcional se calcula en memoria, sin guardar roles adicionales.
+        if (in_array('DUEÑO', $rolesUsuario, true)) {
+            $rolesUsuario = array_merge($rolesUsuario, ['RECEPCIONISTA', 'VENDEDOR']);
+        }
+        if (array_intersect($rolesPermitidos, $rolesUsuario)) {
+            return;
+        }
+
+        http_response_code(403);
+        echo 'Acceso denegado';
+        exit;
     }
 
     public function actionLogin()

@@ -2,9 +2,11 @@
 
 ## Último commit estable
 
-feat: mejorar interfaz visual del sistema
+feat: centralizar autorizacion por roles
 
-Commit de cierre visual de esta etapa. Para obtener su hash: `git log -1 --format=%h --grep="^feat: mejorar interfaz visual del sistema$"`.
+Commit de cierre de autorización, con pruebas automáticas y manuales correctas. Para obtener su hash: `git log -1 --format=%h --grep="^feat: centralizar autorizacion por roles$"`.
+
+Etapa visual anterior: `a0c1048` — `feat: mejorar interfaz visual del sistema`.
 
 Base funcional anterior: `0050b9a` — `feat: implementar autenticacion y gestion inicial de usuarios`.
 
@@ -24,6 +26,9 @@ Base funcional anterior: `0050b9a` — `feat: implementar autenticacion y gestio
 - Creación de usuarios
 - Asignación de uno o varios roles
 - Roles ADMINISTRADOR, DUEÑO, RECEPCIONISTA y VENDEDOR
+- Autorización centralizada mediante `SessionController::onlyUsers()`
+- Jerarquía funcional de roles implementada en memoria, sin guardar roles inferiores adicionales
+- Panel y gestión de usuarios exclusivos de ADMINISTRADOR, incluso por URL directa
 - Documentación SQL inicial
 - Dashboard visual terminado con accesos rápidos y módulos pendientes sin enlaces a rutas inexistentes
 - Login, gestión de usuarios y creación de usuarios con interfaz Bootstrap coherente

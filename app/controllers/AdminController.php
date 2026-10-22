@@ -9,7 +9,7 @@ class AdminController extends Controller
 {
     public function actionIndex($parametro = null)
     {
-        SessionController::soloAdministradores();
+        SessionController::onlyUsers(['ADMINISTRADOR']);
         Response::render($this->viewDir(__NAMESPACE__), 'index', ['usuario' => $_SESSION['usuario']]);
     }
 }
