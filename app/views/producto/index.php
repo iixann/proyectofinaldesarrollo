@@ -44,6 +44,10 @@
                                                 <form method="post" action="/proyectofinaldesarrollo/producto/baja/<?= htmlspecialchars((string) $producto->id_producto, ENT_QUOTES, 'UTF-8') ?>">
                                                     <button class="btn btn-outline-danger btn-sm" type="submit">Dar de baja</button>
                                                 </form>
+                                            <?php else: ?>
+                                                <form method="post" action="/proyectofinaldesarrollo/producto/reactivar/<?= htmlspecialchars((string) $producto->id_producto, ENT_QUOTES, 'UTF-8') ?>">
+                                                    <button class="btn btn-outline-success btn-sm" type="submit">Dar de alta</button>
+                                                </form>
                                             <?php endif; ?>
                                         </div></td>
                                     </tr>

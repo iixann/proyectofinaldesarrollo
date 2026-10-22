@@ -14,6 +14,7 @@ class ProveedorController extends Controller
         $mensajes = [
             'creado' => 'Proveedor creado correctamente.',
             'actualizado' => 'Proveedor actualizado correctamente.',
+            'reactivada' => 'Proveedor reactivado correctamente.',
             'baja' => 'Proveedor dado de baja.'
         ];
         $resultado = is_string($_GET['resultado'] ?? null) ? $_GET['resultado'] : '';
@@ -58,6 +59,15 @@ class ProveedorController extends Controller
         $proveedor = $this->buscarProveedor($id);
         ProveedorModel::bajaProveedor($proveedor->id_proveedor);
         $this->volverAlListado('baja');
+    }
+
+    public function actionReactivar($id = null)
+    {
+        SessionController::onlyUsers(['DUEÑO']);
+        $this->exigirPost();
+        $proveedor = $this->buscarProveedor($id);
+        ProveedorModel::reactivar($proveedor->id_proveedor);
+        $this->volverAlListado('reactivada');
     }
 
     private function exigirPost()

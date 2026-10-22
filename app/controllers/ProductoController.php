@@ -14,6 +14,7 @@ class ProductoController extends Controller
         $mensajes = [
             'creado' => 'Producto creado correctamente.',
             'actualizado' => 'Producto actualizado correctamente.',
+            'reactivada' => 'Producto reactivado correctamente.',
             'baja' => 'Producto dado de baja.'
         ];
         $resultado = is_string($_GET['resultado'] ?? null) ? $_GET['resultado'] : '';
@@ -61,6 +62,15 @@ class ProductoController extends Controller
         $producto = $this->buscarProducto($id);
         ProductoModel::bajaProducto($producto->id_producto);
         $this->volverAlListado('baja');
+    }
+
+    public function actionReactivar($id = null)
+    {
+        SessionController::onlyUsers(['DUEÑO']);
+        $this->exigirPost();
+        $producto = $this->buscarProducto($id);
+        ProductoModel::reactivar($producto->id_producto);
+        $this->volverAlListado('reactivada');
     }
 
     private function exigirPost()

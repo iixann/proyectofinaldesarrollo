@@ -38,6 +38,10 @@
                                                 <form method="post" action="/proyectofinaldesarrollo/categoria/baja/<?= htmlspecialchars((string) $categoria->id_categoria, ENT_QUOTES, 'UTF-8') ?>">
                                                     <button class="btn btn-outline-danger btn-sm" type="submit">Dar de baja</button>
                                                 </form>
+                                            <?php else: ?>
+                                                <form method="post" action="/proyectofinaldesarrollo/categoria/reactivar/<?= htmlspecialchars((string) $categoria->id_categoria, ENT_QUOTES, 'UTF-8') ?>">
+                                                    <button class="btn btn-outline-success btn-sm" type="submit">Dar de alta</button>
+                                                </form>
                                             <?php endif; ?>
                                         </div></td>
                                     </tr>

@@ -2,9 +2,9 @@
 
 ## Último commit estable
 
-feat: implementar movimientos de stock
+feat: agregar reactivacion de maestros
 
-Commit de cierre de Stock / Movimientos, con verificaciones automáticas y pruebas manuales correctas. Para obtener su hash: `git log -1 --format=%h --grep="^feat: implementar movimientos de stock$"`.
+Commit de reactivación de maestros, con verificaciones automáticas y pruebas manuales correctas. Para obtener su hash: `git log -1 --format=%h --grep="^feat: agregar reactivacion de maestros$"`.
 
 Etapa visual anterior: `a0c1048` — `feat: mejorar interfaz visual del sistema`.
 
@@ -39,18 +39,18 @@ Base funcional anterior: `0050b9a` — `feat: implementar autenticacion y gestio
 
 Pruebas manuales en navegador confirmadas como correctas.
 
-- Listado, creación, edición y baja lógica por POST, sin reactivación
+- Listado, creación, edición, baja lógica y reactivación por POST
 - Acceso mediante `onlyUsers(['DUEÑO'])`: ADMINISTRADOR y DUEÑO permitidos
 - Validación de nombre, duplicados e ID; esquema SQL actualizado solo como documentación
 - Vistas Bootstrap/Malbec y acceso desde la navbar para los roles autorizados
 
 ## Proveedores — TERMINADO
 
-Listado, creación, edición y baja lógica por POST; autorización DUEÑO/ADMINISTRADOR, CUIT opcional único y vistas Bootstrap/Malbec. Maestro de proveedores asociado a Productos mediante productos_proveedores. Pruebas manuales en navegador confirmadas como correctas.
+Listado, creación, edición, baja lógica y reactivación por POST; autorización DUEÑO/ADMINISTRADOR, CUIT opcional único y vistas Bootstrap/Malbec. Maestro de proveedores asociado a Productos mediante productos_proveedores. Pruebas manuales en navegador confirmadas como correctas.
 
 ## Productos — TERMINADO
 
-Pruebas manuales en navegador confirmadas como correctas. Funcionalidad: listado con categoría y aviso de stock bajo; creación, edición y baja lógica; selección de proveedores activos y transacciones. Acceso DUEÑO/ADMINISTRADOR. Esquema SQL documentado con los tipos y longitudes confirmados de las tablas reales.
+Pruebas manuales en navegador confirmadas como correctas. Funcionalidad: listado con categoría y aviso de stock bajo; creación, edición, baja lógica y reactivación; selección de proveedores activos y transacciones. Acceso DUEÑO/ADMINISTRADOR. Esquema SQL documentado con los tipos y longitudes confirmados de las tablas reales.
 
 ## Stock / Movimientos — TERMINADO
 

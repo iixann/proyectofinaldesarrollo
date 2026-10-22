@@ -14,6 +14,7 @@ class CategoriaController extends Controller
         $mensajes = [
             'creada' => 'Categoría creada correctamente.',
             'actualizada' => 'Categoría actualizada correctamente.',
+            'reactivada' => 'Categoría reactivada correctamente.',
             'baja' => 'Categoría dada de baja.'
         ];
         $resultado = is_string($_GET['resultado'] ?? null) ? $_GET['resultado'] : '';
@@ -58,6 +59,15 @@ class CategoriaController extends Controller
         $categoria = $this->buscarCategoria($id);
         CategoriaModel::bajaCategoria($categoria->id_categoria);
         $this->volverAlListado('baja');
+    }
+
+    public function actionReactivar($id = null)
+    {
+        SessionController::onlyUsers(['DUEÑO']);
+        $this->exigirPost();
+        $categoria = $this->buscarCategoria($id);
+        CategoriaModel::reactivar($categoria->id_categoria);
+        $this->volverAlListado('reactivada');
     }
 
     private function exigirPost()

@@ -64,4 +64,12 @@ class ProveedorModel extends Model
     {
         return DataBase::execute('UPDATE proveedores SET estado = 0, fecha_baja = CURRENT_TIMESTAMP WHERE id_proveedor = :id AND estado = 1', ['id' => $id]);
     }
+    public static function reactivar($id)
+    {
+        if (!self::findId($id)) {
+            throw new \DomainException('El registro no existe.');
+        }
+        return DataBase::execute('UPDATE proveedores SET estado = 1, fecha_baja = NULL WHERE id_proveedor = :id', ['id' => $id]);
+    }
+
 }

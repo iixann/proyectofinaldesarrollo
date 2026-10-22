@@ -41,6 +41,10 @@
                                                 <form method="post" action="/proyectofinaldesarrollo/proveedor/baja/<?= htmlspecialchars((string) $proveedor->id_proveedor, ENT_QUOTES, 'UTF-8') ?>">
                                                     <button class="btn btn-outline-danger btn-sm" type="submit">Dar de baja</button>
                                                 </form>
+                                            <?php else: ?>
+                                                <form method="post" action="/proyectofinaldesarrollo/proveedor/reactivar/<?= htmlspecialchars((string) $proveedor->id_proveedor, ENT_QUOTES, 'UTF-8') ?>">
+                                                    <button class="btn btn-outline-success btn-sm" type="submit">Dar de alta</button>
+                                                </form>
                                             <?php endif; ?>
                                         </div></td>
                                     </tr>
