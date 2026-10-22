@@ -78,3 +78,39 @@ CREATE TABLE proveedores (
 ) ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=utf8mb4_unicode_ci;
+
+-- Productos y su relación muchos-a-muchos con proveedores, creados manualmente.
+-- Solo documentación: no ejecutar desde la aplicación.
+CREATE TABLE productos (
+    id_producto INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    id_categoria INT UNSIGNED NOT NULL,
+    nombre_producto VARCHAR(150) NOT NULL,
+    descripcion VARCHAR(255) NULL,
+    precio_venta DECIMAL(12,2) NOT NULL DEFAULT 0,
+    stock_actual INT NOT NULL DEFAULT 0,
+    stock_minimo INT NOT NULL DEFAULT 0,
+    stock_deseable INT NOT NULL DEFAULT 0,
+    estado TINYINT(1) NOT NULL DEFAULT 1,
+    fecha_alta DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    fecha_baja DATETIME NULL,
+
+    FOREIGN KEY (id_categoria) REFERENCES categorias(id_categoria),
+    UNIQUE (nombre_producto, id_categoria)
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE productos_proveedores (
+    id_producto_proveedor INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    id_producto INT UNSIGNED NOT NULL,
+    id_proveedor INT UNSIGNED NOT NULL,
+    estado TINYINT(1) NOT NULL DEFAULT 1,
+    fecha_alta DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    fecha_baja DATETIME NULL,
+
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto),
+    FOREIGN KEY (id_proveedor) REFERENCES proveedores(id_proveedor),
+    UNIQUE (id_producto, id_proveedor)
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_unicode_ci;

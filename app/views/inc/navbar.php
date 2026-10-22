@@ -24,7 +24,9 @@ $inicioNavegacion = $esAdministrador ? '/proyectofinaldesarrollo/admin/index' : 
                         <?php if ($puedeAdministrarMaestros): ?>
                         <li class="nav-item"><a class="nav-link <?= $seccionActual === 'categorias' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'categorias' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/categoria/index">Categorías</a></li>
                         <?php endif; ?>
-                        <li class="nav-item"><span class="nav-link disabled" aria-disabled="true" title="Próximamente">Productos<span class="visually-hidden">: próximamente</span></span></li>
+                        <?php if ($puedeAdministrarMaestros): ?>
+                        <li class="nav-item"><a class="nav-link <?= $seccionActual === 'productos' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'productos' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/producto/index">Productos</a></li>
+                        <?php endif; ?>
                         <?php if ($puedeAdministrarMaestros): ?>
                         <li class="nav-item"><a class="nav-link <?= $seccionActual === 'proveedores' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'proveedores' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/proveedor/index">Proveedores</a></li>
                         <?php endif; ?>

@@ -2,9 +2,9 @@
 
 ## Último commit estable
 
-feat: implementar gestion de proveedores
+feat: implementar gestion de productos
 
-Commit de cierre de Proveedores, con verificaciones automáticas y pruebas manuales correctas. Para obtener su hash: `git log -1 --format=%h --grep="^feat: implementar gestion de proveedores$"`.
+Commit de cierre de Productos, con verificaciones automáticas y pruebas manuales correctas. Para obtener su hash: `git log -1 --format=%h --grep="^feat: implementar gestion de productos$"`.
 
 Etapa visual anterior: `a0c1048` — `feat: mejorar interfaz visual del sistema`.
 
@@ -46,7 +46,11 @@ Pruebas manuales en navegador confirmadas como correctas.
 
 ## Proveedores — TERMINADO
 
-Listado, creación, edición y baja lógica por POST; autorización DUEÑO/ADMINISTRADOR, CUIT opcional único y vistas Bootstrap/Malbec. Maestro independiente, sin relación con Productos. Pruebas manuales en navegador confirmadas como correctas.
+Listado, creación, edición y baja lógica por POST; autorización DUEÑO/ADMINISTRADOR, CUIT opcional único y vistas Bootstrap/Malbec. Maestro de proveedores asociado a Productos mediante productos_proveedores. Pruebas manuales en navegador confirmadas como correctas.
+
+## Productos — TERMINADO
+
+Pruebas manuales en navegador confirmadas como correctas. Funcionalidad: listado con categoría y aviso de stock bajo; creación, edición y baja lógica; selección de proveedores activos y transacciones. Acceso DUEÑO/ADMINISTRADOR. Esquema SQL documentado con los tipos y longitudes confirmados de las tablas reales.
 
 ## En desarrollo
 
@@ -54,7 +58,7 @@ Ninguno.
 
 ## Próximo objetivo
 
-Módulo Productos completo.
+Stock / Movimientos de stock.
 
 ## Reglas del proyecto
 

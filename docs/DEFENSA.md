@@ -92,6 +92,12 @@ La baja lógica conserva el registro: cambia `estado` a 0 y establece `fecha_baj
 
 Proveedores sigue el mismo recorrido y protección que Categorías. `ProveedorModel` extiende Model, reutiliza `findId()` y delega consultas parametrizadas en DataBase. Razón social es obligatoria; email y CUIT son opcionales. El CUIT se conserva como string y se comprueba su duplicidad excluyendo el propio ID al editar, incluso entre proveedores inactivos. Los opcionales vacíos se guardan como NULL, permitiendo varios proveedores sin CUIT bajo el índice UNIQUE. La baja es lógica, sin DELETE ni reactivación. Es un maestro independiente, sin relación con Productos todavía.
 
+## Productos
+
+`ProductoController` usa `onlyUsers(['DUEÑO'])` y exige POST para guardar, actualizar y dar de baja. `ProductoModel` lista con JOIN de categoría y comprueba el nombre dentro de la misma categoría excluyendo el propio ID al editar. Categoría y proveedores seleccionados deben estar activos; el precio es no negativo y los stocks son enteros no negativos, con mínimo menor o igual al deseable. Stock actual puede estar por debajo del mínimo; el listado lo señala como STOCK BAJO.
+
+Crear o actualizar el producto y sus proveedores es una transacción. Al actualizar asociaciones, se desactivan las anteriores y se insertan o recuperan las seleccionadas mediante el par único producto/proveedor, sin DELETE. La recuperación se limita a asociaciones; no se reactiva el producto. El formulario avisa si una categoría o proveedor anterior dejó de estar activo. El stock se edita directamente en esta etapa; no hay movimientos ni precio de compra en el producto.
+
 ## Contraseñas
 
 - `password_hash($contrasena, PASSWORD_DEFAULT)` se usa en `UserModel::crearUsuario()` para generar el hash que se guarda en `usuarios.password`. No se guarda la contraseña en texto plano; el hash no se descifra.
