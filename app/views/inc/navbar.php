@@ -2,7 +2,7 @@
 $esAdministrador = \app\controllers\SessionController::esAdministrador();
 $puedeAdministrarMaestros = \app\controllers\SessionController::sesionValida()
     && ($esAdministrador || in_array('DUEÑO', $_SESSION['usuario']['roles'], true));
-$puedeGestionarStock = \app\controllers\SessionController::sesionValida()
+$puedeGestionarOperaciones = \app\controllers\SessionController::sesionValida()
     && ($puedeAdministrarMaestros || in_array('RECEPCIONISTA', $_SESSION['usuario']['roles'], true));
 $inicioNavegacion = $esAdministrador ? '/proyectofinaldesarrollo/admin/index' : ($puedeAdministrarMaestros ? '/proyectofinaldesarrollo/categoria/index' : '/proyectofinaldesarrollo/stock/index');
 ?>
@@ -32,8 +32,10 @@ $inicioNavegacion = $esAdministrador ? '/proyectofinaldesarrollo/admin/index' : 
                         <?php if ($puedeAdministrarMaestros): ?>
                         <li class="nav-item"><a class="nav-link <?= $seccionActual === 'proveedores' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'proveedores' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/proveedor/index">Proveedores</a></li>
                         <?php endif; ?>
-                        <li class="nav-item"><span class="nav-link disabled" aria-disabled="true" title="Próximamente">Compras<span class="visually-hidden">: próximamente</span></span></li>
-                        <?php if ($puedeGestionarStock): ?>
+                        <?php if ($puedeGestionarOperaciones): ?>
+                        <li class="nav-item"><a class="nav-link <?= $seccionActual === 'compras' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'compras' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/compra/index">Compras</a></li>
+                        <?php endif; ?>
+                        <?php if ($puedeGestionarOperaciones): ?>
                         <li class="nav-item"><a class="nav-link <?= $seccionActual === 'stock' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'stock' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/stock/index">Stock</a></li>
                         <?php endif; ?>
                         <li class="nav-item"><span class="nav-link disabled" aria-disabled="true" title="Próximamente">Ventas<span class="visually-hidden">: próximamente</span></span></li>

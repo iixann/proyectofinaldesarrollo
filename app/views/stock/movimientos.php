@@ -21,7 +21,7 @@
                             <tr>
                                 <td><?= htmlspecialchars($movimiento->fecha_movimiento, ENT_QUOTES, 'UTF-8') ?></td>
                                 <td><?= htmlspecialchars($movimiento->nombre_producto, ENT_QUOTES, 'UTF-8') ?></td>
-                                <td><span class="badge <?= $movimiento->tipo_movimiento === 'AJUSTE_ENTRADA' ? 'bg-success-subtle text-success-emphasis' : 'bg-danger-subtle text-danger-emphasis' ?>"><?= htmlspecialchars($movimiento->tipo_movimiento, ENT_QUOTES, 'UTF-8') ?></span></td>
+                                <td><span class="badge <?= in_array($movimiento->tipo_movimiento, ['AJUSTE_ENTRADA', 'COMPRA'], true) ? 'bg-success-subtle text-success-emphasis' : 'bg-danger-subtle text-danger-emphasis' ?>"><?= htmlspecialchars($movimiento->tipo_movimiento, ENT_QUOTES, 'UTF-8') ?></span></td>
                                 <td><?= htmlspecialchars((string) $movimiento->cantidad, ENT_QUOTES, 'UTF-8') ?></td>
                                 <td><?= htmlspecialchars((string) $movimiento->stock_anterior, ENT_QUOTES, 'UTF-8') ?></td>
                                 <td><?= htmlspecialchars((string) $movimiento->stock_nuevo, ENT_QUOTES, 'UTF-8') ?></td>

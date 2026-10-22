@@ -104,6 +104,14 @@ Crear o actualizar el producto y sus proveedores es una transacción. Al actuali
 
 `StockModel` inicia una transacción y lee el producto con `SELECT ... FOR UPDATE`: bloquea esa fila hasta finalizar para que dos ajustes no calculen sobre el mismo saldo anterior. Una entrada suma y una salida resta; se rechazan saldos negativos y desbordamientos del INT. Luego actualiza el stock e inserta el movimiento con cantidad, saldo anterior y nuevo. Confirma ambas operaciones o hace rollback si algo falla. Las tablas deben usar InnoDB para estas garantías. Productos ya no actualiza stock actual: cada cambio manual pasa por este recorrido y conserva trazabilidad.
 
+## Compras
+
+`CompraController` usa `onlyUsers(['RECEPCIONISTA'])` y guardar exige POST. `CompraModel` valida proveedor, productos activos y asociación activa con el proveedor; rechaza productos repetidos y comprobantes duplicados por proveedor. Los comprobantes vacíos se guardan como NULL. El modelo entrega asociaciones activas al formulario para filtrar productos con JavaScript al cambiar proveedor; el backend vuelve a validar la asociación dentro de la transacción.
+
+Una sola transacción guarda cabecera, detalles, total, stock y movimientos COMPRA. Se bloquean proveedor, productos y asociaciones con FOR UPDATE; los productos se procesan por ID para reducir interbloqueos. Ante un fallo se revierte todo. No se llama a los métodos de ajuste que abren su propia transacción. Cada movimiento identifica al usuario de sesión y lleva “Compra #ID”.
+
+Precio, subtotal y total se calculan en centavos enteros y se envían como cadenas decimales con dos posiciones, sin confiar en importes calculados por el navegador ni usar float. Se controla el límite de DECIMAL(12,2). El precio de compra queda en el detalle histórico; el precio de venta no cambia. Las compras registradas solo se consultan, sin edición ni cancelación.
+
 ## Contraseñas
 
 - `password_hash($contrasena, PASSWORD_DEFAULT)` se usa en `UserModel::crearUsuario()` para generar el hash que se guarda en `usuarios.password`. No se guarda la contraseña en texto plano; el hash no se descifra.

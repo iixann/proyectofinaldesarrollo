@@ -2,9 +2,9 @@
 
 ## Último commit estable
 
-feat: agregar reactivacion de maestros
+feat: implementar gestion de compras
 
-Commit de reactivación de maestros, con verificaciones automáticas y pruebas manuales correctas. Para obtener su hash: `git log -1 --format=%h --grep="^feat: agregar reactivacion de maestros$"`.
+Commit de cierre de Compras, con verificaciones automáticas y pruebas manuales correctas. Para obtener su hash: `git log -1 --format=%h --grep="^feat: implementar gestion de compras$"`.
 
 Etapa visual anterior: `a0c1048` — `feat: mejorar interfaz visual del sistema`.
 
@@ -56,13 +56,17 @@ Pruebas manuales en navegador confirmadas como correctas. Funcionalidad: listado
 
 Pruebas manuales en navegador confirmadas como correctas. Funcionalidad: listado de productos activos, estado de stock y movimientos generales o por producto; ajustes de entrada/salida por POST con usuario de sesión, transacción y bloqueo de fila. Acceso RECEPCIONISTA/DUEÑO/ADMINISTRADOR. Productos nuevos comienzan con stock 0 y su edición ya no modifica stock actual.
 
+## Compras — TERMINADO
+
+Pruebas manuales correctas: filtro de productos por proveedor y limpieza de selecciones inválidas; cabecera, detalle histórico y total calculado en servidor; incremento automático de stock y movimientos COMPRA dentro de una única transacción. Proveedores, productos y asociaciones activos. Acceso RECEPCIONISTA/DUEÑO/ADMINISTRADOR. Sin edición ni cancelación.
+
 ## En desarrollo
 
 Ninguno.
 
 ## Próximo objetivo
 
-Módulo Compras completo.
+Módulo Ventas completo.
 
 ## Reglas del proyecto
 

@@ -132,3 +132,35 @@ CREATE TABLE movimientos_stock (
 ) ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=utf8mb4_unicode_ci;
+
+-- Compras y detalle histórico: creados manualmente, solo documentación.
+CREATE TABLE compras (
+    id_compra INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    id_proveedor INT UNSIGNED NOT NULL,
+    id_usuario INT UNSIGNED NOT NULL,
+    numero_comprobante VARCHAR(50) NULL,
+    fecha_compra DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    total DECIMAL(12,2) NOT NULL DEFAULT 0,
+    observacion VARCHAR(255) NULL,
+    estado TINYINT(1) NOT NULL DEFAULT 1,
+
+    FOREIGN KEY (id_proveedor) REFERENCES proveedores(id_proveedor),
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario),
+    UNIQUE (id_proveedor, numero_comprobante)
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE detalle_compras (
+    id_detalle_compra INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    id_compra INT UNSIGNED NOT NULL,
+    id_producto INT UNSIGNED NOT NULL,
+    cantidad INT UNSIGNED NOT NULL,
+    precio_unitario DECIMAL(12,2) NOT NULL,
+    subtotal DECIMAL(12,2) NOT NULL,
+
+    FOREIGN KEY (id_compra) REFERENCES compras(id_compra),
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_unicode_ci;

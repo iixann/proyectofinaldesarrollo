@@ -29,15 +29,17 @@ Cerrar y probar cada módulo antes de iniciar el siguiente.
 - Productos nuevos con stock 0; cambios manuales mediante movimientos
 - Pruebas manuales correctas
 
-El aviso de stock bajo es visual; la reposición mediante compras corresponde a la siguiente etapa.
+El aviso de stock bajo es visual; Compras permite registrar la reposición.
 
-## ETAPA 4 - PENDIENTE — PRÓXIMA ETAPA
+## ETAPA 4 - COMPLETA
 
-- Compras
-- Recepción de mercadería
-- Actualización de stock
+- Compras con cabecera y múltiples productos asociados al proveedor
+- Detalle histórico de cantidades y precios de compra
+- Actualización automática de stock y movimientos COMPRA
+- Una sola transacción y rollback completo ante fallos
+- Pruebas manuales correctas
 
-## ETAPA 5 - PENDIENTE
+## ETAPA 5 - PENDIENTE — PRÓXIMA ETAPA
 
 - Ventas
 - Descuento automático de stock
