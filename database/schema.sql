@@ -114,3 +114,21 @@ CREATE TABLE productos_proveedores (
 ) ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=utf8mb4_unicode_ci;
+
+-- Solo documentación de la tabla creada manualmente en phpMyAdmin.
+CREATE TABLE movimientos_stock (
+    id_movimiento INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    id_producto INT UNSIGNED NOT NULL,
+    id_usuario INT UNSIGNED NOT NULL,
+    tipo_movimiento VARCHAR(30) NOT NULL,
+    cantidad INT UNSIGNED NOT NULL,
+    stock_anterior INT NOT NULL,
+    stock_nuevo INT NOT NULL,
+    observacion VARCHAR(255) NULL,
+    fecha_movimiento DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto),
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_unicode_ci;

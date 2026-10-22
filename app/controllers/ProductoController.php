@@ -91,6 +91,10 @@ class ProductoController extends Controller
 
     private function mostrarFormulario($vista, $datosProducto = [], $errores = [], $id = null)
     {
+        if ($id !== null) {
+            $producto = ProductoModel::findId($id);
+            $datosProducto['stock_actual'] = $producto ? $producto->stock_actual : 0;
+        }
         Response::render($this->viewDir(__NAMESPACE__), $vista, [
             'datosProducto' => $datosProducto, 'errores' => $errores, 'id' => $id,
             'categorias' => ProductoModel::obtenerCategoriasActivas(),
@@ -102,7 +106,7 @@ class ProductoController extends Controller
     {
         $datosProducto = [];
         $errores = [];
-        foreach (['nombre_producto', 'id_categoria', 'descripcion', 'precio_venta', 'stock_actual', 'stock_minimo', 'stock_deseable'] as $campo) {
+        foreach (['nombre_producto', 'id_categoria', 'descripcion', 'precio_venta', 'stock_minimo', 'stock_deseable'] as $campo) {
             $datosProducto[$campo] = is_string($_POST[$campo] ?? null) ? trim($_POST[$campo]) : '';
         }
         if ($datosProducto['nombre_producto'] === '') {
@@ -117,7 +121,7 @@ class ProductoController extends Controller
         if ($precio === '' || !is_numeric($precio) || !is_finite((float) $precio) || (float) $precio < 0) {
             $errores[] = 'Ingresá un precio de venta numérico mayor o igual a cero.';
         }
-        foreach (['stock_actual' => 'Stock actual', 'stock_minimo' => 'Stock mínimo', 'stock_deseable' => 'Stock deseable'] as $campo => $etiqueta) {
+        foreach (['stock_minimo' => 'Stock mínimo', 'stock_deseable' => 'Stock deseable'] as $campo => $etiqueta) {
             if ($datosProducto[$campo] === '') {
                 $datosProducto[$campo] = '0';
             }

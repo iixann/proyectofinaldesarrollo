@@ -53,10 +53,11 @@ class ProductoModel extends Model
 
     public static function crearProducto($datosProducto, $proveedores)
     {
+        unset($datosProducto['stock_actual']);
         DataBase::iniciarTransaccion();
         try {
             $id = DataBase::insert('INSERT INTO productos (nombre_producto, id_categoria, descripcion, precio_venta, stock_actual, stock_minimo, stock_deseable)
-                VALUES (:nombre_producto, :id_categoria, :descripcion, :precio_venta, :stock_actual, :stock_minimo, :stock_deseable)', $datosProducto);
+                VALUES (:nombre_producto, :id_categoria, :descripcion, :precio_venta, 0, :stock_minimo, :stock_deseable)', $datosProducto);
             self::asignarProveedores($id, $proveedores);
             DataBase::confirmarTransaccion();
             return $id;
@@ -68,11 +69,12 @@ class ProductoModel extends Model
 
     public static function actualizarProducto($id, $datosProducto, $proveedores)
     {
+        unset($datosProducto['stock_actual']);
         DataBase::iniciarTransaccion();
         try {
             $datosProducto['id'] = $id;
             DataBase::execute('UPDATE productos SET nombre_producto = :nombre_producto, id_categoria = :id_categoria,
-                descripcion = :descripcion, precio_venta = :precio_venta, stock_actual = :stock_actual,
+                descripcion = :descripcion, precio_venta = :precio_venta,
                 stock_minimo = :stock_minimo, stock_deseable = :stock_deseable WHERE id_producto = :id', $datosProducto);
             self::actualizarProveedores($id, $proveedores);
             DataBase::confirmarTransaccion();

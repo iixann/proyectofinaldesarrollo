@@ -20,15 +20,18 @@ Completar en este orden:
 
 Cerrar y probar cada módulo antes de iniciar el siguiente.
 
-## ETAPA 3 - PENDIENTE — PRÓXIMA ETAPA
+## ETAPA 3 - COMPLETA
 
-- Stock
-- Movimientos de stock
-- Stock mínimo
-- Stock deseable
-- Alertas/reposición
+- Listado de stock con mínimo, deseable y aviso visual STOCK BAJO
+- Ajustes de entrada/salida con trazabilidad y usuario de sesión
+- Transacciones, bloqueo de fila y rollback; sin saldos negativos
+- Historial general y por producto
+- Productos nuevos con stock 0; cambios manuales mediante movimientos
+- Pruebas manuales correctas
 
-## ETAPA 4 - PENDIENTE
+El aviso de stock bajo es visual; la reposición mediante compras corresponde a la siguiente etapa.
+
+## ETAPA 4 - PENDIENTE — PRÓXIMA ETAPA
 
 - Compras
 - Recepción de mercadería

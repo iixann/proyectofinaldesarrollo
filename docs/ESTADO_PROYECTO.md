@@ -2,9 +2,9 @@
 
 ## Último commit estable
 
-feat: implementar gestion de productos
+feat: implementar movimientos de stock
 
-Commit de cierre de Productos, con verificaciones automáticas y pruebas manuales correctas. Para obtener su hash: `git log -1 --format=%h --grep="^feat: implementar gestion de productos$"`.
+Commit de cierre de Stock / Movimientos, con verificaciones automáticas y pruebas manuales correctas. Para obtener su hash: `git log -1 --format=%h --grep="^feat: implementar movimientos de stock$"`.
 
 Etapa visual anterior: `a0c1048` — `feat: mejorar interfaz visual del sistema`.
 
@@ -52,13 +52,17 @@ Listado, creación, edición y baja lógica por POST; autorización DUEÑO/ADMIN
 
 Pruebas manuales en navegador confirmadas como correctas. Funcionalidad: listado con categoría y aviso de stock bajo; creación, edición y baja lógica; selección de proveedores activos y transacciones. Acceso DUEÑO/ADMINISTRADOR. Esquema SQL documentado con los tipos y longitudes confirmados de las tablas reales.
 
+## Stock / Movimientos — TERMINADO
+
+Pruebas manuales en navegador confirmadas como correctas. Funcionalidad: listado de productos activos, estado de stock y movimientos generales o por producto; ajustes de entrada/salida por POST con usuario de sesión, transacción y bloqueo de fila. Acceso RECEPCIONISTA/DUEÑO/ADMINISTRADOR. Productos nuevos comienzan con stock 0 y su edición ya no modifica stock actual.
+
 ## En desarrollo
 
 Ninguno.
 
 ## Próximo objetivo
 
-Stock / Movimientos de stock.
+Módulo Compras completo.
 
 ## Reglas del proyecto
 

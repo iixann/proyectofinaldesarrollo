@@ -96,7 +96,13 @@ Proveedores sigue el mismo recorrido y protección que Categorías. `ProveedorMo
 
 `ProductoController` usa `onlyUsers(['DUEÑO'])` y exige POST para guardar, actualizar y dar de baja. `ProductoModel` lista con JOIN de categoría y comprueba el nombre dentro de la misma categoría excluyendo el propio ID al editar. Categoría y proveedores seleccionados deben estar activos; el precio es no negativo y los stocks son enteros no negativos, con mínimo menor o igual al deseable. Stock actual puede estar por debajo del mínimo; el listado lo señala como STOCK BAJO.
 
-Crear o actualizar el producto y sus proveedores es una transacción. Al actualizar asociaciones, se desactivan las anteriores y se insertan o recuperan las seleccionadas mediante el par único producto/proveedor, sin DELETE. La recuperación se limita a asociaciones; no se reactiva el producto. El formulario avisa si una categoría o proveedor anterior dejó de estar activo. El stock se edita directamente en esta etapa; no hay movimientos ni precio de compra en el producto.
+Crear o actualizar el producto y sus proveedores es una transacción. Al actualizar asociaciones, se desactivan las anteriores y se insertan o recuperan las seleccionadas mediante el par único producto/proveedor, sin DELETE. La recuperación se limita a asociaciones; no se reactiva el producto. El formulario avisa si una categoría o proveedor anterior dejó de estar activo. Los nuevos productos comienzan con stock 0 y su edición solo configura stock mínimo y deseable; los cambios de stock actual se registran desde Stock. No hay precio de compra en el producto.
+
+## Stock y movimientos
+
+`StockController` protege sus acciones con `onlyUsers(['RECEPCIONISTA'])`. Ajustar requiere un producto activo y guardar exige POST, tipo válido y cantidad entera positiva. El usuario del movimiento se toma de la sesión. El historial incluye productos inactivos y se ordena por fecha e ID descendentes.
+
+`StockModel` inicia una transacción y lee el producto con `SELECT ... FOR UPDATE`: bloquea esa fila hasta finalizar para que dos ajustes no calculen sobre el mismo saldo anterior. Una entrada suma y una salida resta; se rechazan saldos negativos y desbordamientos del INT. Luego actualiza el stock e inserta el movimiento con cantidad, saldo anterior y nuevo. Confirma ambas operaciones o hace rollback si algo falla. Las tablas deben usar InnoDB para estas garantías. Productos ya no actualiza stock actual: cada cambio manual pasa por este recorrido y conserva trazabilidad.
 
 ## Contraseñas
 

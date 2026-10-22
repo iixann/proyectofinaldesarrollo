@@ -2,7 +2,9 @@
 $esAdministrador = \app\controllers\SessionController::esAdministrador();
 $puedeAdministrarMaestros = \app\controllers\SessionController::sesionValida()
     && ($esAdministrador || in_array('DUEÑO', $_SESSION['usuario']['roles'], true));
-$inicioNavegacion = $esAdministrador ? '/proyectofinaldesarrollo/admin/index' : '/proyectofinaldesarrollo/categoria/index';
+$puedeGestionarStock = \app\controllers\SessionController::sesionValida()
+    && ($puedeAdministrarMaestros || in_array('RECEPCIONISTA', $_SESSION['usuario']['roles'], true));
+$inicioNavegacion = $esAdministrador ? '/proyectofinaldesarrollo/admin/index' : ($puedeAdministrarMaestros ? '/proyectofinaldesarrollo/categoria/index' : '/proyectofinaldesarrollo/stock/index');
 ?>
     <a class="visually-hidden-focusable position-absolute bg-white p-3" href="#contenido">Ir al contenido</a>
     <header>
@@ -31,7 +33,9 @@ $inicioNavegacion = $esAdministrador ? '/proyectofinaldesarrollo/admin/index' : 
                         <li class="nav-item"><a class="nav-link <?= $seccionActual === 'proveedores' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'proveedores' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/proveedor/index">Proveedores</a></li>
                         <?php endif; ?>
                         <li class="nav-item"><span class="nav-link disabled" aria-disabled="true" title="Próximamente">Compras<span class="visually-hidden">: próximamente</span></span></li>
-                        <li class="nav-item"><span class="nav-link disabled" aria-disabled="true" title="Próximamente">Stock<span class="visually-hidden">: próximamente</span></span></li>
+                        <?php if ($puedeGestionarStock): ?>
+                        <li class="nav-item"><a class="nav-link <?= $seccionActual === 'stock' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'stock' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/stock/index">Stock</a></li>
+                        <?php endif; ?>
                         <li class="nav-item"><span class="nav-link disabled" aria-disabled="true" title="Próximamente">Ventas<span class="visually-hidden">: próximamente</span></span></li>
                         <li class="nav-item ms-xl-2 mt-2 mt-xl-0">
                             <a class="btn btn-outline-primary btn-sm" href="/proyectofinaldesarrollo/session/logout"><i class="fa-solid fa-right-from-bracket me-2" aria-hidden="true"></i>Cerrar sesión</a>

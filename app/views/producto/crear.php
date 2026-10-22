@@ -45,8 +45,8 @@
                             <input class="form-control" type="number" min="0" step="any" id="precio_venta" name="precio_venta" value="<?= htmlspecialchars((string) ($datosProducto['precio_venta'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" required>
                         </div>
                         <div class="col-12 col-sm-6">
-                            <label class="form-label" for="stock_actual">Stock actual</label>
-                            <input class="form-control" type="number" min="0" step="1" id="stock_actual" name="stock_actual" value="<?= htmlspecialchars((string) ($datosProducto['stock_actual'] ?? '0'), ENT_QUOTES, 'UTF-8') ?>">
+                            <p class="form-label mb-2">Stock inicial: 0</p>
+                            <p class="text-secondary small">Cargá el stock inicial desde Stock para registrar el movimiento.</p>
                         </div>
                         <div class="col-12 col-sm-6">
                             <label class="form-label" for="stock_minimo">Stock mínimo</label>
