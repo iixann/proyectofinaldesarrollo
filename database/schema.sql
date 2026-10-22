@@ -62,3 +62,19 @@ CREATE TABLE categorias (
 ) ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=utf8mb4_unicode_ci;
+
+-- Proveedores: maestro independiente creado manualmente en phpMyAdmin.
+CREATE TABLE proveedores (
+    id_proveedor INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    razon_social VARCHAR(150) NOT NULL,
+    cuit VARCHAR(13) NULL UNIQUE,
+    nombre_contacto VARCHAR(100) NULL,
+    telefono VARCHAR(50) NULL,
+    email VARCHAR(150) NULL,
+    direccion VARCHAR(200) NULL,
+    estado TINYINT(1) NOT NULL DEFAULT 1,
+    fecha_alta DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    fecha_baja DATETIME NULL
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_unicode_ci;

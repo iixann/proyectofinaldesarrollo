@@ -15,8 +15,8 @@ Commit estable: `0050b9a` — `feat: implementar autenticacion y gestion inicial
 Completar en este orden:
 
 1. Categorías — COMPLETA: listado, creación, edición y baja lógica; pruebas manuales correctas.
-2. Proveedores — próximo módulo.
-3. Productos — pendiente.
+2. Proveedores — COMPLETO: listado, creación, edición y baja lógica; pruebas manuales correctas.
+3. Productos — pendiente y próximo módulo.
 
 Cerrar y probar cada módulo antes de iniciar el siguiente.
 

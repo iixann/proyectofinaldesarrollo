@@ -2,9 +2,9 @@
 
 ## Último commit estable
 
-feat: implementar gestion de categorias
+feat: implementar gestion de proveedores
 
-Commit de cierre de Categorías, con verificaciones automáticas y pruebas manuales correctas. Para obtener su hash: `git log -1 --format=%h --grep="^feat: implementar gestion de categorias$"`.
+Commit de cierre de Proveedores, con verificaciones automáticas y pruebas manuales correctas. Para obtener su hash: `git log -1 --format=%h --grep="^feat: implementar gestion de proveedores$"`.
 
 Etapa visual anterior: `a0c1048` — `feat: mejorar interfaz visual del sistema`.
 
@@ -44,15 +44,15 @@ Pruebas manuales en navegador confirmadas como correctas.
 - Validación de nombre, duplicados e ID; esquema SQL actualizado solo como documentación
 - Vistas Bootstrap/Malbec y acceso desde la navbar para los roles autorizados
 
+## Proveedores — TERMINADO
+
+Listado, creación, edición y baja lógica por POST; autorización DUEÑO/ADMINISTRADOR, CUIT opcional único y vistas Bootstrap/Malbec. Maestro independiente, sin relación con Productos. Pruebas manuales en navegador confirmadas como correctas.
+
 ## En desarrollo
 
 Ninguno.
 
 ## Próximo objetivo
-
-Módulo Proveedores completo.
-
-## Siguiente objetivo
 
 Módulo Productos completo.
 

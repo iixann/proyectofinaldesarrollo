@@ -88,6 +88,10 @@ Crear, actualizar y dar de baja requieren POST; otro método recibe HTTP 405 y `
 
 La baja lógica conserva el registro: cambia `estado` a 0 y establece `fecha_baja`, sin DELETE ni reactivación. El listado mantiene visibles las categorías inactivas. Tras guardar se redirige con HTTP 303 al listado y se muestra un mensaje predefinido según la query string; no se imprime texto arbitrario recibido por URL. El SQL de documentación no se ejecuta automáticamente.
 
+## Proveedores
+
+Proveedores sigue el mismo recorrido y protección que Categorías. `ProveedorModel` extiende Model, reutiliza `findId()` y delega consultas parametrizadas en DataBase. Razón social es obligatoria; email y CUIT son opcionales. El CUIT se conserva como string y se comprueba su duplicidad excluyendo el propio ID al editar, incluso entre proveedores inactivos. Los opcionales vacíos se guardan como NULL, permitiendo varios proveedores sin CUIT bajo el índice UNIQUE. La baja es lógica, sin DELETE ni reactivación. Es un maestro independiente, sin relación con Productos todavía.
+
 ## Contraseñas
 
 - `password_hash($contrasena, PASSWORD_DEFAULT)` se usa en `UserModel::crearUsuario()` para generar el hash que se guarda en `usuarios.password`. No se guarda la contraseña en texto plano; el hash no se descifra.

@@ -1,6 +1,6 @@
 <?php
 $esAdministrador = \app\controllers\SessionController::esAdministrador();
-$puedeAdministrarCategorias = \app\controllers\SessionController::sesionValida()
+$puedeAdministrarMaestros = \app\controllers\SessionController::sesionValida()
     && ($esAdministrador || in_array('DUEÑO', $_SESSION['usuario']['roles'], true));
 $inicioNavegacion = $esAdministrador ? '/proyectofinaldesarrollo/admin/index' : '/proyectofinaldesarrollo/categoria/index';
 ?>
@@ -21,11 +21,13 @@ $inicioNavegacion = $esAdministrador ? '/proyectofinaldesarrollo/admin/index' : 
                         <li class="nav-item"><a class="nav-link <?= $seccionActual === 'inicio' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'inicio' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/admin/index">Inicio</a></li>
                         <li class="nav-item"><a class="nav-link <?= $seccionActual === 'usuarios' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'usuarios' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/user/index">Usuarios</a></li>
                         <?php endif; ?>
-                        <?php if ($puedeAdministrarCategorias): ?>
+                        <?php if ($puedeAdministrarMaestros): ?>
                         <li class="nav-item"><a class="nav-link <?= $seccionActual === 'categorias' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'categorias' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/categoria/index">Categorías</a></li>
                         <?php endif; ?>
                         <li class="nav-item"><span class="nav-link disabled" aria-disabled="true" title="Próximamente">Productos<span class="visually-hidden">: próximamente</span></span></li>
-                        <li class="nav-item"><span class="nav-link disabled" aria-disabled="true" title="Próximamente">Proveedores<span class="visually-hidden">: próximamente</span></span></li>
+                        <?php if ($puedeAdministrarMaestros): ?>
+                        <li class="nav-item"><a class="nav-link <?= $seccionActual === 'proveedores' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'proveedores' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/proveedor/index">Proveedores</a></li>
+                        <?php endif; ?>
                         <li class="nav-item"><span class="nav-link disabled" aria-disabled="true" title="Próximamente">Compras<span class="visually-hidden">: próximamente</span></span></li>
                         <li class="nav-item"><span class="nav-link disabled" aria-disabled="true" title="Próximamente">Stock<span class="visually-hidden">: próximamente</span></span></li>
                         <li class="nav-item"><span class="nav-link disabled" aria-disabled="true" title="Próximamente">Ventas<span class="visually-hidden">: próximamente</span></span></li>
