@@ -51,3 +51,14 @@ CREATE TABLE usuarios_roles (
 ) ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=utf8mb4_unicode_ci;
+
+-- Categorías: tabla creada manualmente en phpMyAdmin. No ejecutar desde la aplicación.
+CREATE TABLE categorias (
+    id_categoria INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    nombre_categoria VARCHAR(100) NOT NULL UNIQUE,
+    estado TINYINT(1) NOT NULL DEFAULT 1,
+    fecha_alta DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    fecha_baja DATETIME NULL
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_unicode_ci;

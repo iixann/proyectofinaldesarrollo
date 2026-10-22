@@ -80,6 +80,14 @@ La jerarquía funcional ya está implementada en `onlyUsers()`:
 
 Esta herencia se calcula en memoria; no requiere guardar roles inferiores en `usuarios_roles`. Si el usuario tiene varios roles asignados, se combinan sus permisos. Los futuros módulos reutilizarán este método indicando los roles permitidos para cada operación.
 
+## Categorías
+
+`CategoriaController` protege sus seis acciones con `onlyUsers(['DUEÑO'])`. El listado consulta `CategoriaModel::listarCategorias()`; el modelo extiende Model y usa DataBase para acceder a la tabla `categorias`. La búsqueda por ID reutiliza `findId()` de Model. Response entrega los resultados a las vistas de `app/views/categoria/`.
+
+Crear, actualizar y dar de baja requieren POST; otro método recibe HTTP 405 y `Allow: POST`. Se valida un ID positivo dentro del rango de la columna y la existencia del registro. Un ID inválido recibe 400; uno inexistente, 404. El nombre se recorta, debe contener entre 1 y 100 caracteres y no puede repetirse, incluso si la categoría anterior está inactiva. Al editar se excluye el propio ID de la comprobación de duplicados.
+
+La baja lógica conserva el registro: cambia `estado` a 0 y establece `fecha_baja`, sin DELETE ni reactivación. El listado mantiene visibles las categorías inactivas. Tras guardar se redirige con HTTP 303 al listado y se muestra un mensaje predefinido según la query string; no se imprime texto arbitrario recibido por URL. El SQL de documentación no se ejecuta automáticamente.
+
 ## Contraseñas
 
 - `password_hash($contrasena, PASSWORD_DEFAULT)` se usa en `UserModel::crearUsuario()` para generar el hash que se guarda en `usuarios.password`. No se guarda la contraseña en texto plano; el hash no se descifra.

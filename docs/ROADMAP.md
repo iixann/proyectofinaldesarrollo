@@ -10,13 +10,13 @@ Autenticación y usuarios: login, sesión, logout, panel ADMINISTRADOR, listado 
 
 Commit estable: `0050b9a` — `feat: implementar autenticacion y gestion inicial de usuarios`.
 
-## ETAPA 2 - PENDIENTE
+## ETAPA 2 - EN CURSO
 
 Completar en este orden:
 
-1. Categorías — próximo objetivo.
-2. Proveedores — siguiente objetivo.
-3. Productos.
+1. Categorías — COMPLETA: listado, creación, edición y baja lógica; pruebas manuales correctas.
+2. Proveedores — próximo módulo.
+3. Productos — pendiente.
 
 Cerrar y probar cada módulo antes de iniciar el siguiente.
 

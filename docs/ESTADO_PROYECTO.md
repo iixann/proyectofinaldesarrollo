@@ -2,9 +2,9 @@
 
 ## Último commit estable
 
-feat: centralizar autorizacion por roles
+feat: implementar gestion de categorias
 
-Commit de cierre de autorización, con pruebas automáticas y manuales correctas. Para obtener su hash: `git log -1 --format=%h --grep="^feat: centralizar autorizacion por roles$"`.
+Commit de cierre de Categorías, con verificaciones automáticas y pruebas manuales correctas. Para obtener su hash: `git log -1 --format=%h --grep="^feat: implementar gestion de categorias$"`.
 
 Etapa visual anterior: `a0c1048` — `feat: mejorar interfaz visual del sistema`.
 
@@ -35,17 +35,26 @@ Base funcional anterior: `0050b9a` — `feat: implementar autenticacion y gestio
 - Includes reutilizables de vistas: head.php, navbar.php y footer.php en app/views/inc/
 - Identidad visual de vinería con color Malbec #6D1A36 aplicado en los estilos compartidos
 
+## Categorías — TERMINADO
+
+Pruebas manuales en navegador confirmadas como correctas.
+
+- Listado, creación, edición y baja lógica por POST, sin reactivación
+- Acceso mediante `onlyUsers(['DUEÑO'])`: ADMINISTRADOR y DUEÑO permitidos
+- Validación de nombre, duplicados e ID; esquema SQL actualizado solo como documentación
+- Vistas Bootstrap/Malbec y acceso desde la navbar para los roles autorizados
+
 ## En desarrollo
 
 Ninguno.
 
 ## Próximo objetivo
 
-Módulo Categorías completo.
+Módulo Proveedores completo.
 
 ## Siguiente objetivo
 
-Módulo Proveedores completo.
+Módulo Productos completo.
 
 ## Reglas del proyecto
 
