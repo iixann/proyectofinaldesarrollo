@@ -39,16 +39,29 @@ El aviso de stock bajo es visual; Compras permite registrar la reposición.
 - Una sola transacción y rollback completo ante fallos
 - Pruebas manuales correctas
 
-## ETAPA 5 - PENDIENTE — PRÓXIMA ETAPA
+## ETAPA 5 - CAJA + POS + VENTAS — PENDIENTE, PRÓXIMO BLOQUE
 
-- Ventas
-- Descuento automático de stock
+Primera tarea: definir las tablas definitivas del POS. Alcance completo en [POS_CAJA_VENTAS.md](POS_CAJA_VENTAS.md). No se trata de un CRUD simple: incluye operación de caja, carrito, pagos, confirmación transaccional, histórico y ticket.
 
-Las etapas 2 a 5 forman la prioridad funcional de octubre. Verificar su integración mientras se termina cada módulo.
+Orden obligatorio, con todas las etapas pendientes:
+
+1. POS 1: diseño definitivo de tablas y SQL manual.
+2. POS 2: cajas y apertura/cierre.
+3. POS 3: código de barras y búsqueda de productos.
+4. POS 4: carrito dinámico.
+5. POS 5: medios de pago y pagos combinados.
+6. POS 6: confirmación transaccional de venta, detalle, pagos, stock y movimiento.
+7. POS 7: histórico y detalle de ventas.
+8. POS 8: ticket imprimible.
+9. POS 9: pruebas completas.
+
+Cada etapa: implementar → probar → commit → siguiente etapa. No implementar todo en un único cambio. Por ahora solo se documenta; aún no se escribe SQL ni código del POS.
+
+Las etapas 2 a 5 forman la prioridad funcional. Verificar la integración al terminar cada etapa.
 
 ## ETAPA 6 - CONDICIONAL
 
-Caja, pagos y devoluciones solamente si siguen dentro del alcance final. Confirmar su inclusión antes de implementarlos, sin retrasar el cierre del núcleo funcional.
+Devoluciones solamente si siguen dentro del alcance final. Confirmar su inclusión antes de implementarlas. Caja y pagos de ventas ya forman parte del bloque POS; las cuentas corrientes e integraciones externas siguen fuera de alcance por ahora.
 
 ## ETAPA 7 - PENDIENTE
 

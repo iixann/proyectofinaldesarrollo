@@ -64,9 +64,13 @@ Pruebas manuales correctas: filtro de productos por proveedor y limpieza de sele
 
 Ninguno.
 
-## Próximo objetivo
+## Próximo gran bloque
 
-Módulo Ventas completo.
+Caja + POS + Ventas — pendiente de implementación.
+
+Primera tarea: definir las tablas definitivas del POS.
+
+Alcance y orden por etapas en [POS_CAJA_VENTAS.md](POS_CAJA_VENTAS.md). Ninguna parte de este bloque está terminada todavía.
 
 ## Reglas del proyecto
 
