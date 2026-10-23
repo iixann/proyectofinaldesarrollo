@@ -1,6 +1,6 @@
 # Caja + POS + Ventas
 
-Estado: planificación pendiente de implementación. Primera tarea: definir las tablas definitivas del POS. Este documento no crea tablas ni contiene SQL para ejecutar. Se mantiene PHP puro, MVC del profesor, PDO centralizado en DataBase, autorización con onlyUsers() y Bootstrap/Malbec, sin capas nuevas.
+Estado: POS etapa 1 terminada. Modelo de datos definido y tablas creadas manualmente en phpMyAdmin, según confirmación del usuario. Siguiente: POS etapa 2, Cajas + apertura/cierre. La implementación PHP sigue pendiente. Este documento no crea tablas ni contiene SQL para ejecutar. Se mantiene PHP puro, MVC del profesor, PDO centralizado en DataBase, autorización con onlyUsers() y Bootstrap/Malbec, sin capas nuevas.
 
 ## 1. Objetivo general
 
@@ -59,7 +59,7 @@ Al confirmar disminuye `productos.stock_actual` y se registra por cada producto 
 
 ## 8. Venta
 
-Una venta tendrá cabecera y varios detalles. Campos conceptuales, todavía sin SQL:
+Una venta tendrá cabecera y varios detalles. Campos definidos en el modelo aprobado:
 
 | Tabla | Campos previstos |
 |---|---|
@@ -84,7 +84,7 @@ Los medios deberán poder activarse o desactivarse en el futuro.
 
 Una venta puede tener varios pagos: relación ventas 1 → N pagos_ventas. No se guarda un único medio de pago en ventas.
 
-Campos conceptuales de pagos_ventas: id_pago_venta, id_venta, id_medio_pago, monto y referencia opcional.
+Campos de pagos_ventas: id_pago_venta, id_venta, id_medio_pago, monto, monto_entregado, vuelto y referencia opcional. Se mantiene UNIQUE (id_venta, id_medio_pago), consolidando cada medio en un único importe por venta.
 
 Ejemplo de una venta de $100.000:
 
@@ -103,7 +103,7 @@ Se distingue el monto aplicado a la venta del dinero entregado por el cliente.
 
 Si el total pendiente es $50.000 y el cliente entrega $60.000, el pago registrado como efectivo es $50.000 y el vuelto es $10.000. Solamente los $50.000 aplicados cuentan para cubrir el total.
 
-El POS debe calcular visualmente el vuelto. No es necesario guardarlo como medio de pago.
+El POS debe calcular visualmente el vuelto y conservar monto_entregado y vuelto como DECIMAL(12,2) nullable en pagos_ventas para reconstruir y reimprimir el ticket. Para EFECTIVO, vuelto = monto_entregado - monto; para otros medios ambos campos quedan NULL. El vuelto no es un medio de pago. La suma que coincide con ventas.total sigue siendo SUM(monto).
 
 ## 12. Finalización de venta
 
@@ -162,9 +162,9 @@ Se solicitará efectivo contado y se calculará:
 
 El cierre se guardará y bloqueará nuevas ventas en esa sesión. Las reglas restantes de apertura y cierre se definirán junto con las tablas.
 
-## 18. Tablas previstas
+## 18. Modelo de datos definido y creado
 
-Nombres orientativos, pendientes de diseño definitivo:
+Tablas aprobadas y creadas manualmente; estructura documentada en database/schema.sql:
 
 | Tabla | Finalidad prevista |
 |---|---|
@@ -175,16 +175,16 @@ Nombres orientativos, pendientes de diseño definitivo:
 | medios_pago | Medios de pago disponibles |
 | pagos_ventas | Importes por medio de pago, incluidos pagos combinados |
 
-Se prevé incorporar `codigo_barras` a productos. Aún no se definen tipos, restricciones ni SQL; eso corresponde al diseño definitivo de POS 1. Las restricciones conceptuales ya indicadas, como la unicidad del código de barras, se concretarán en esa etapa.
+Productos incorpora codigo_barras VARCHAR(50) NULL UNIQUE. Los códigos vacíos se representarán como NULL. Las PK/FK son INT UNSIGNED y los importes DECIMAL(12,2); se mantiene InnoDB y utf8mb4_unicode_ci. Caja_sesiones usa estados ABIERTA/CERRADA y datos de cierre nullable. Detalle_ventas conserva precios históricos y UNIQUE (id_venta, id_producto). Las FK preservan referencias mediante ON DELETE RESTRICT. La apertura concurrente se controlará transaccionalmente bloqueando la caja; confirmar ventas y cerrar sesión bloquearán la misma fila de caja_sesiones.
 
 ## 19. Orden de implementación
 
-Todas las etapas están pendientes. No implementar el bloque entero en un único cambio.
+POS 1 terminado; POS 2 es el siguiente y POS 3–9 permanecen pendientes. No implementar el bloque entero en un único cambio.
 
 | Etapa | Alcance |
 |---|---|
-| POS 1 | Diseño definitivo de tablas y SQL manual |
-| POS 2 | Cajas y apertura/cierre |
+| POS 1 — TERMINADO | Diseño definitivo y estructura de base creada manualmente |
+| POS 2 — SIGUIENTE | Cajas y apertura/cierre |
 | POS 3 | Código de barras y búsqueda de productos |
 | POS 4 | Carrito dinámico |
 | POS 5 | Medios de pago y pagos combinados |

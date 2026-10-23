@@ -2,9 +2,9 @@
 
 ## Último commit estable
 
-feat: implementar gestion de compras
+docs: definir esquema de caja pos y ventas
 
-Commit de cierre de Compras, con verificaciones automáticas y pruebas manuales correctas. Para obtener su hash: `git log -1 --format=%h --grep="^feat: implementar gestion de compras$"`.
+Commit de cierre documental de POS etapa 1. Modelo aprobado y creación manual de tablas confirmada por el usuario. Para obtener su hash: `git log -1 --format=%h --grep="^docs: definir esquema de caja pos y ventas$"`.
 
 Etapa visual anterior: `a0c1048` — `feat: mejorar interfaz visual del sistema`.
 
@@ -60,17 +60,21 @@ Pruebas manuales en navegador confirmadas como correctas. Funcionalidad: listado
 
 Pruebas manuales correctas: filtro de productos por proveedor y limpieza de selecciones inválidas; cabecera, detalle histórico y total calculado en servidor; incremento automático de stock y movimientos COMPRA dentro de una única transacción. Proveedores, productos y asociaciones activos. Acceso RECEPCIONISTA/DUEÑO/ADMINISTRADOR. Sin edición ni cancelación.
 
+## POS ETAPA 1 — TERMINADA
+
+Modelo de datos y tablas de Caja + POS + Ventas creados manualmente en phpMyAdmin. Incluye código de barras opcional y único, cajas, sesiones, medios de pago, ventas, detalles y pagos combinados con monto entregado y vuelto para efectivo.
+
 ## En desarrollo
 
 Ninguno.
 
 ## Próximo gran bloque
 
-Caja + POS + Ventas — pendiente de implementación.
+Caja + POS + Ventas — POS etapa 1 terminada; funcionalidad PHP pendiente.
 
-Primera tarea: definir las tablas definitivas del POS.
+Próximo objetivo: POS ETAPA 2 — Cajas + apertura/cierre de caja.
 
-Alcance y orden por etapas en [POS_CAJA_VENTAS.md](POS_CAJA_VENTAS.md). Ninguna parte de este bloque está terminada todavía.
+Alcance y orden por etapas en [POS_CAJA_VENTAS.md](POS_CAJA_VENTAS.md). Etapas POS 3–9 pendientes.
 
 ## Reglas del proyecto
 

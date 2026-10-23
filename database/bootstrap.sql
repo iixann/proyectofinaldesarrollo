@@ -7,3 +7,12 @@ VALUES
 ('DUEÑO'),
 ('RECEPCIONISTA'),
 ('VENDEDOR');
+
+-- POS etapa 1: medios de pago iniciales, solo documentación/referencia.
+INSERT INTO medios_pago (nombre)
+VALUES
+('EFECTIVO'),
+('TRANSFERENCIA'),
+('MERCADO PAGO'),
+('DÉBITO'),
+('CRÉDITO');

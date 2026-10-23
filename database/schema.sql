@@ -85,6 +85,7 @@ CREATE TABLE productos (
     id_producto INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     id_categoria INT UNSIGNED NOT NULL,
     nombre_producto VARCHAR(150) NOT NULL,
+    codigo_barras VARCHAR(50) NULL,
     descripcion VARCHAR(255) NULL,
     precio_venta DECIMAL(12,2) NOT NULL DEFAULT 0,
     stock_actual INT NOT NULL DEFAULT 0,
@@ -95,7 +96,8 @@ CREATE TABLE productos (
     fecha_baja DATETIME NULL,
 
     FOREIGN KEY (id_categoria) REFERENCES categorias(id_categoria),
-    UNIQUE (nombre_producto, id_categoria)
+    UNIQUE (nombre_producto, id_categoria),
+    UNIQUE KEY uq_productos_codigo_barras (codigo_barras)
 ) ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=utf8mb4_unicode_ci;
@@ -161,6 +163,151 @@ CREATE TABLE detalle_compras (
 
     FOREIGN KEY (id_compra) REFERENCES compras(id_compra),
     FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_unicode_ci;
+
+-- POS etapa 1: estructura aprobada y creada manualmente en phpMyAdmin.
+-- Solo documentación; la aplicación no ejecuta este SQL.
+CREATE TABLE cajas (
+    id_caja INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion VARCHAR(255) NULL,
+    estado TINYINT(1) NOT NULL DEFAULT 1,
+    fecha_alta DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    fecha_baja DATETIME NULL,
+    UNIQUE KEY uq_cajas_nombre (nombre)
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE caja_sesiones (
+    id_caja_sesion INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    id_caja INT UNSIGNED NOT NULL,
+    id_usuario_apertura INT UNSIGNED NOT NULL,
+    fecha_apertura DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    monto_inicial DECIMAL(12,2) NOT NULL DEFAULT 0,
+    id_usuario_cierre INT UNSIGNED NULL,
+    fecha_cierre DATETIME NULL,
+    total_ventas DECIMAL(12,2) NULL,
+    total_efectivo DECIMAL(12,2) NULL,
+    efectivo_esperado DECIMAL(12,2) NULL,
+    efectivo_contado DECIMAL(12,2) NULL,
+    diferencia DECIMAL(12,2) NULL,
+    estado ENUM('ABIERTA', 'CERRADA') NOT NULL DEFAULT 'ABIERTA',
+    observacion_cierre VARCHAR(255) NULL,
+
+    CONSTRAINT fk_caja_sesiones_caja
+        FOREIGN KEY (id_caja) REFERENCES cajas(id_caja)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
+
+    CONSTRAINT fk_caja_sesiones_usuario_apertura
+        FOREIGN KEY (id_usuario_apertura) REFERENCES usuarios(id_usuario)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
+
+    CONSTRAINT fk_caja_sesiones_usuario_cierre
+        FOREIGN KEY (id_usuario_cierre) REFERENCES usuarios(id_usuario)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
+
+    INDEX idx_caja_sesiones_caja_estado (id_caja, estado),
+
+    INDEX idx_caja_sesiones_usuario_apertura (id_usuario_apertura),
+
+    INDEX idx_caja_sesiones_usuario_cierre (id_usuario_cierre),
+
+    INDEX idx_caja_sesiones_fecha_apertura (fecha_apertura)
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE medios_pago (
+    id_medio_pago INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL,
+    estado TINYINT(1) NOT NULL DEFAULT 1,
+    fecha_alta DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    fecha_baja DATETIME NULL,
+    UNIQUE KEY uq_medios_pago_nombre (nombre)
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE ventas (
+    id_venta INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    id_caja_sesion INT UNSIGNED NOT NULL,
+    id_usuario INT UNSIGNED NOT NULL,
+    fecha_venta DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    total DECIMAL(12,2) NOT NULL DEFAULT 0,
+    estado TINYINT(1) NOT NULL DEFAULT 1,
+
+    CONSTRAINT fk_ventas_caja_sesion
+        FOREIGN KEY (id_caja_sesion) REFERENCES caja_sesiones(id_caja_sesion)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
+
+    CONSTRAINT fk_ventas_usuario
+        FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
+
+    INDEX idx_ventas_sesion_estado (id_caja_sesion, estado),
+
+    INDEX idx_ventas_usuario (id_usuario),
+
+    INDEX idx_ventas_fecha (fecha_venta, id_venta)
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE detalle_ventas (
+    id_detalle_venta INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    id_venta INT UNSIGNED NOT NULL,
+    id_producto INT UNSIGNED NOT NULL,
+    cantidad INT UNSIGNED NOT NULL,
+    precio_unitario DECIMAL(12,2) NOT NULL,
+    subtotal DECIMAL(12,2) NOT NULL,
+
+    CONSTRAINT fk_detalle_ventas_venta
+        FOREIGN KEY (id_venta) REFERENCES ventas(id_venta)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
+
+    CONSTRAINT fk_detalle_ventas_producto
+        FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
+
+    UNIQUE KEY uq_detalle_ventas_producto (id_venta, id_producto),
+
+    INDEX idx_detalle_ventas_producto (id_producto)
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE pagos_ventas (
+    id_pago_venta INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    id_venta INT UNSIGNED NOT NULL,
+    id_medio_pago INT UNSIGNED NOT NULL,
+    monto DECIMAL(12,2) NOT NULL,
+    monto_entregado DECIMAL(12,2) NULL,
+    vuelto DECIMAL(12,2) NULL,
+    referencia VARCHAR(150) NULL,
+
+    CONSTRAINT fk_pagos_ventas_venta
+        FOREIGN KEY (id_venta) REFERENCES ventas(id_venta)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
+
+    CONSTRAINT fk_pagos_ventas_medio_pago
+        FOREIGN KEY (id_medio_pago) REFERENCES medios_pago(id_medio_pago)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
+
+    UNIQUE KEY uq_pagos_ventas_medio (id_venta, id_medio_pago),
+
+    INDEX idx_pagos_ventas_medio (id_medio_pago)
 ) ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=utf8mb4_unicode_ci;

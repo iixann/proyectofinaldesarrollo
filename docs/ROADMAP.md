@@ -39,14 +39,14 @@ El aviso de stock bajo es visual; Compras permite registrar la reposición.
 - Una sola transacción y rollback completo ante fallos
 - Pruebas manuales correctas
 
-## ETAPA 5 - CAJA + POS + VENTAS — PENDIENTE, PRÓXIMO BLOQUE
+## ETAPA 5 - CAJA + POS + VENTAS — EN CURSO
 
-Primera tarea: definir las tablas definitivas del POS. Alcance completo en [POS_CAJA_VENTAS.md](POS_CAJA_VENTAS.md). No se trata de un CRUD simple: incluye operación de caja, carrito, pagos, confirmación transaccional, histórico y ticket.
+POS 1 terminado: diseño definitivo y estructura de base creados manualmente. Siguiente: POS 2, Cajas + apertura/cierre. Alcance completo en [POS_CAJA_VENTAS.md](POS_CAJA_VENTAS.md). No se trata de un CRUD simple: incluye operación de caja, carrito, pagos, confirmación transaccional, histórico y ticket.
 
-Orden obligatorio, con todas las etapas pendientes:
+Orden obligatorio; etapas 3–9 pendientes:
 
-1. POS 1: diseño definitivo de tablas y SQL manual.
-2. POS 2: cajas y apertura/cierre.
+1. POS 1 — TERMINADO: diseño definitivo y estructura de base.
+2. POS 2 — SIGUIENTE: cajas y apertura/cierre.
 3. POS 3: código de barras y búsqueda de productos.
 4. POS 4: carrito dinámico.
 5. POS 5: medios de pago y pagos combinados.
@@ -55,7 +55,7 @@ Orden obligatorio, con todas las etapas pendientes:
 8. POS 8: ticket imprimible.
 9. POS 9: pruebas completas.
 
-Cada etapa: implementar → probar → commit → siguiente etapa. No implementar todo en un único cambio. Por ahora solo se documenta; aún no se escribe SQL ni código del POS.
+Cada etapa: implementar → probar → commit → siguiente etapa. No implementar todo en un único cambio. La estructura de base de POS 1 ya fue creada manualmente. La implementación PHP comienza en POS 2.
 
 Las etapas 2 a 5 forman la prioridad funcional. Verificar la integración al terminar cada etapa.
 
