@@ -2,9 +2,9 @@
 
 ## Último commit estable
 
-docs: definir esquema de caja pos y ventas
+feat: implementar gestion y sesiones de caja
 
-Commit de cierre documental de POS etapa 1. Modelo aprobado y creación manual de tablas confirmada por el usuario. Para obtener su hash: `git log -1 --format=%h --grep="^docs: definir esquema de caja pos y ventas$"`.
+Commit de cierre de POS etapa 2, con verificaciones automáticas y pruebas manuales en navegador correctas. Para obtener su hash: `git log -1 --format=%h --grep="^feat: implementar gestion y sesiones de caja$"`.
 
 Etapa visual anterior: `a0c1048` — `feat: mejorar interfaz visual del sistema`.
 
@@ -64,15 +64,27 @@ Pruebas manuales correctas: filtro de productos por proveedor y limpieza de sele
 
 Modelo de datos y tablas de Caja + POS + Ventas creados manualmente en phpMyAdmin. Incluye código de barras opcional y único, cajas, sesiones, medios de pago, ventas, detalles y pagos combinados con monto entregado y vuelto para efectivo.
 
+## POS ETAPA 2 — TERMINADA
+
+Pruebas manuales en navegador confirmadas como correctas.
+
+- Administración de cajas: alta, edición, baja lógica, reactivación y nombre único
+- Apertura con monto inicial y listado de sesiones abiertas
+- Una sesión abierta por caja física; se permite abrir otras cajas y reabrir tras un cierre
+- Cierre con total de ventas, total efectivo, efectivo esperado, efectivo contado y diferencia
+- Histórico de sesiones de solo lectura; segundo cierre rechazado
+- Transacciones con SELECT ... FOR UPDATE y rollback; importes calculados en servidor
+- Gestión de cajas para DUEÑO/ADMINISTRADOR; sesiones para VENDEDOR/DUEÑO/ADMINISTRADOR
+
 ## En desarrollo
 
 Ninguno.
 
 ## Próximo gran bloque
 
-Caja + POS + Ventas — POS etapa 1 terminada; funcionalidad PHP pendiente.
+Caja + POS + Ventas — POS etapas 1 y 2 terminadas.
 
-Próximo objetivo: POS ETAPA 2 — Cajas + apertura/cierre de caja.
+Próximo objetivo: POS ETAPA 3 — Código de barras + búsqueda de productos.
 
 Alcance y orden por etapas en [POS_CAJA_VENTAS.md](POS_CAJA_VENTAS.md). Etapas POS 3–9 pendientes.
 

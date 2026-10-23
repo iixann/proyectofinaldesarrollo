@@ -112,6 +112,12 @@ Una sola transacción guarda cabecera, detalles, total, stock y movimientos COMP
 
 Precio, subtotal y total se calculan en centavos enteros y se envían como cadenas decimales con dos posiciones, sin confiar en importes calculados por el navegador ni usar float. Se controla el límite de DECIMAL(12,2). El precio de compra queda en el detalle histórico; el precio de venta no cambia. Las compras registradas solo se consultan, sin edición ni cancelación.
 
+## Cajas y sesiones
+
+Caja es la terminal física; caja_sesiones registra cada apertura y cierre. CajaController protege la administración con DUEÑO; SesioncajaController protege apertura, cierre e histórico con VENDEDOR. Las cajas usan baja lógica y reactivación, sin borrar su historial. No hay límite de sesiones por usuario, solamente una abierta por caja física.
+
+CajaSesionModel abre una transacción y bloquea la caja con SELECT ... FOR UPDATE antes de comprobar sesiones abiertas e insertar: evita que dos aperturas simultáneas creen turnos para la misma caja. Para cerrar bloquea la sesión para impedir cierres simultáneos, verifica ABIERTA y recalcula ventas activas y pagos EFECTIVO (monto aplicado). PHP toma estos totales de la base, sin confiar en el navegador. Efectivo esperado = fondo inicial + efectivo vendido; diferencia = contado - esperado. Calcula en centavos, guarda el cierre completo o hace rollback. Sin ventas las sumas devuelven cero. El cierre histórico es de solo lectura. Las ventas futuras deberán bloquear esa misma sesión antes de confirmarse.
+
 ## Contraseñas
 
 - `password_hash($contrasena, PASSWORD_DEFAULT)` se usa en `UserModel::crearUsuario()` para generar el hash que se guarda en `usuarios.password`. No se guarda la contraseña en texto plano; el hash no se descifra.

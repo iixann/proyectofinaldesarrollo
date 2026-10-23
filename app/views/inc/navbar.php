@@ -4,7 +4,9 @@ $puedeAdministrarMaestros = \app\controllers\SessionController::sesionValida()
     && ($esAdministrador || in_array('DUEÑO', $_SESSION['usuario']['roles'], true));
 $puedeGestionarOperaciones = \app\controllers\SessionController::sesionValida()
     && ($puedeAdministrarMaestros || in_array('RECEPCIONISTA', $_SESSION['usuario']['roles'], true));
-$inicioNavegacion = $esAdministrador ? '/proyectofinaldesarrollo/admin/index' : ($puedeAdministrarMaestros ? '/proyectofinaldesarrollo/categoria/index' : '/proyectofinaldesarrollo/stock/index');
+$puedeOperarCaja = \app\controllers\SessionController::sesionValida()
+    && ($puedeAdministrarMaestros || in_array('VENDEDOR', $_SESSION['usuario']['roles'], true));
+$inicioNavegacion = $esAdministrador ? '/proyectofinaldesarrollo/admin/index' : ($puedeAdministrarMaestros ? '/proyectofinaldesarrollo/categoria/index' : ($puedeOperarCaja ? '/proyectofinaldesarrollo/sesioncaja/index' : '/proyectofinaldesarrollo/stock/index'));
 ?>
     <a class="visually-hidden-focusable position-absolute bg-white p-3" href="#contenido">Ir al contenido</a>
     <header>
@@ -31,6 +33,12 @@ $inicioNavegacion = $esAdministrador ? '/proyectofinaldesarrollo/admin/index' : 
                         <?php endif; ?>
                         <?php if ($puedeAdministrarMaestros): ?>
                         <li class="nav-item"><a class="nav-link <?= $seccionActual === 'proveedores' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'proveedores' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/proveedor/index">Proveedores</a></li>
+                        <?php endif; ?>
+                        <?php if ($puedeAdministrarMaestros): ?>
+                        <li class="nav-item"><a class="nav-link <?= $seccionActual === 'cajas' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'cajas' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/caja/index">Cajas (administración)</a></li>
+                        <?php endif; ?>
+                        <?php if ($puedeOperarCaja): ?>
+                        <li class="nav-item"><a class="nav-link <?= $seccionActual === 'sesiones' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'sesiones' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/sesioncaja/index">Sesiones de caja</a></li>
                         <?php endif; ?>
                         <?php if ($puedeGestionarOperaciones): ?>
                         <li class="nav-item"><a class="nav-link <?= $seccionActual === 'compras' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'compras' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/compra/index">Compras</a></li>

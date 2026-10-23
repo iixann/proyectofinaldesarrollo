@@ -1,6 +1,6 @@
 # Caja + POS + Ventas
 
-Estado: POS etapa 1 terminada. Modelo de datos definido y tablas creadas manualmente en phpMyAdmin, según confirmación del usuario. Siguiente: POS etapa 2, Cajas + apertura/cierre. La implementación PHP sigue pendiente. Este documento no crea tablas ni contiene SQL para ejecutar. Se mantiene PHP puro, MVC del profesor, PDO centralizado en DataBase, autorización con onlyUsers() y Bootstrap/Malbec, sin capas nuevas.
+Estado: POS etapas 1 y 2 terminadas. Modelo de datos definido y tablas creadas manualmente en phpMyAdmin, según confirmación del usuario. POS 2 (Cajas + apertura/cierre) implementada y probada manualmente en navegador. Siguiente: POS etapa 3, Código de barras + búsqueda de productos. Este documento no crea tablas ni contiene SQL para ejecutar. Se mantiene PHP puro, MVC del profesor, PDO centralizado en DataBase, autorización con onlyUsers() y Bootstrap/Malbec, sin capas nuevas.
 
 ## 1. Objetivo general
 
@@ -179,13 +179,13 @@ Productos incorpora codigo_barras VARCHAR(50) NULL UNIQUE. Los códigos vacíos 
 
 ## 19. Orden de implementación
 
-POS 1 terminado; POS 2 es el siguiente y POS 3–9 permanecen pendientes. No implementar el bloque entero en un único cambio.
+POS 1 y POS 2 terminados; POS 2 probado manualmente. POS 3 es el siguiente y POS 4–9 permanecen pendientes. No implementar el bloque entero en un único cambio.
 
 | Etapa | Alcance |
 |---|---|
 | POS 1 — TERMINADO | Diseño definitivo y estructura de base creada manualmente |
-| POS 2 — SIGUIENTE | Cajas y apertura/cierre |
-| POS 3 | Código de barras y búsqueda de productos |
+| POS 2 — TERMINADO | Cajas y apertura/cierre; probado manualmente |
+| POS 3 — SIGUIENTE | Código de barras y búsqueda de productos |
 | POS 4 | Carrito dinámico |
 | POS 5 | Medios de pago y pagos combinados |
 | POS 6 | Confirmación transaccional: venta, detalle, pagos, stock y movimiento |
