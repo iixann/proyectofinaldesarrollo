@@ -116,11 +116,20 @@ class ProductoController extends Controller
     {
         $datosProducto = [];
         $errores = [];
-        foreach (['nombre_producto', 'id_categoria', 'descripcion', 'precio_venta', 'stock_minimo', 'stock_deseable'] as $campo) {
+        foreach (['nombre_producto', 'codigo_barras', 'id_categoria', 'descripcion', 'precio_venta', 'stock_minimo', 'stock_deseable'] as $campo) {
             $datosProducto[$campo] = is_string($_POST[$campo] ?? null) ? trim($_POST[$campo]) : '';
         }
         if ($datosProducto['nombre_producto'] === '') {
             $errores[] = 'Ingresá el nombre del producto.';
+        }
+        if (isset($_POST['codigo_barras']) && !is_string($_POST['codigo_barras'])) {
+            $errores[] = 'Ingresá un Código EAN válido como texto.';
+        } elseif ($datosProducto['codigo_barras'] === '') {
+            $errores[] = 'Ingresá el Código EAN. Es obligatorio.';
+        } elseif (!mb_check_encoding($datosProducto['codigo_barras'], 'UTF-8') || mb_strlen($datosProducto['codigo_barras'], 'UTF-8') > 50) {
+            $errores[] = 'El Código EAN debe tener hasta 50 caracteres válidos.';
+        } elseif (ProductoModel::codigoDuplicado($datosProducto['codigo_barras'], $id)) {
+            $errores[] = 'Ya existe un producto con ese Código EAN, incluso si está inactivo.';
         }
         $categorias = array_map('strval', array_column(ProductoModel::obtenerCategoriasActivas(), 'id_categoria'));
         $categoriaValida = ctype_digit($datosProducto['id_categoria']) && in_array($datosProducto['id_categoria'], $categorias, true);
@@ -177,12 +186,14 @@ class ProductoController extends Controller
         } catch (\Throwable $excepcion) {
             error_log($excepcion->getMessage());
             // El índice UNIQUE también protege ante dos envíos simultáneos.
+            $codigoDuplicado = (string) $excepcion->getCode() === '23000'
+                && ProductoModel::codigoDuplicado($datosProducto['codigo_barras'], $id);
             $duplicado = (string) $excepcion->getCode() === '23000'
                 && ProductoModel::nombreDuplicado($datosProducto['nombre_producto'], $datosProducto['id_categoria'], $id);
-            http_response_code($duplicado ? 422 : 500);
+            http_response_code($codigoDuplicado || $duplicado ? 422 : 500);
             $datosProducto['proveedores'] = $proveedores;
             $this->mostrarFormulario($vista, $datosProducto, [
-                $duplicado ? 'Ya existe ese producto en la categoría seleccionada.' : 'No se pudo guardar el producto. Intentá nuevamente.'
+                $codigoDuplicado ? 'Ya existe un producto con ese Código EAN.' : ($duplicado ? 'Ya existe ese producto en la categoría seleccionada.' : 'No se pudo guardar el producto. Intentá nuevamente.')
             ], $id);
             return;
         }

@@ -98,6 +98,12 @@ Proveedores sigue el mismo recorrido y protección que Categorías. `ProveedorMo
 
 Crear o actualizar el producto y sus proveedores es una transacción. Al actualizar asociaciones, se desactivan las anteriores y se insertan o recuperan las seleccionadas mediante el par único producto/proveedor, sin DELETE. Categorías, Proveedores y Productos admiten reactivación por POST: validan la existencia y actualizan estado a 1 y fecha_baja a NULL sobre el mismo registro, conservando sus claves únicas. El formulario avisa si una categoría o proveedor anterior dejó de estar activo. Los nuevos productos comienzan con stock 0 y su edición solo configura stock mínimo y deseable; los cambios de stock actual se registran desde Stock. No hay precio de compra en el producto.
 
+## Código EAN y consulta POS
+
+Código EAN se guarda en codigo_barras como VARCHAR(50) para conservar ceros iniciales. NOT NULL y UNIQUE protegen la base; PHP exige texto no vacío, aplica trim, limita longitud y valida duplicados excluyendo el propio producto al editar. NOT NULL por sí solo no impide cadenas vacías.
+
+El escaneo busca el EAN con igualdad exacta; el nombre usa LIKE preparado, con hasta 30 resultados. Solo se consultan productos activos y se indica SIN STOCK cuando corresponde, sin cambiar existencias. PosController ofrece una acción JSON interna para JavaScript/jQuery con permiso VENDEDOR; no es una API REST ni implementa todavía carrito o ventas.
+
 ## Stock y movimientos
 
 `StockController` protege sus acciones con `onlyUsers(['RECEPCIONISTA'])`. Ajustar requiere un producto activo y guardar exige POST, tipo válido y cantidad entera positiva. El usuario del movimiento se toma de la sesión. El historial incluye productos inactivos y se ordena por fecha e ID descendentes.

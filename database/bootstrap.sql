@@ -16,3 +16,7 @@ VALUES
 ('MERCADO PAGO'),
 ('DÉBITO'),
 ('CRÉDITO');
+
+-- POS etapa 3: productos.codigo_barras es VARCHAR(50) NOT NULL UNIQUE.
+-- Todo producto requiere Código EAN como texto, conservando ceros iniciales.
+-- Este archivo no carga productos ni cambia la estructura de la base.

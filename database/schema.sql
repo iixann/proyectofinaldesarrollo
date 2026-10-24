@@ -85,7 +85,7 @@ CREATE TABLE productos (
     id_producto INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     id_categoria INT UNSIGNED NOT NULL,
     nombre_producto VARCHAR(150) NOT NULL,
-    codigo_barras VARCHAR(50) NULL,
+    codigo_barras VARCHAR(50) NOT NULL,
     descripcion VARCHAR(255) NULL,
     precio_venta DECIMAL(12,2) NOT NULL DEFAULT 0,
     stock_actual INT NOT NULL DEFAULT 0,

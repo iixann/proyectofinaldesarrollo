@@ -41,21 +41,21 @@ El aviso de stock bajo es visual; Compras permite registrar la reposición.
 
 ## ETAPA 5 - CAJA + POS + VENTAS — EN CURSO
 
-POS 1 terminado: diseño definitivo y estructura de base creados manualmente. POS 2 terminado y probado manualmente: Cajas + apertura/cierre. Siguiente: POS 3, Código de barras + búsqueda de productos. Alcance completo en [POS_CAJA_VENTAS.md](POS_CAJA_VENTAS.md). No se trata de un CRUD simple: incluye operación de caja, carrito, pagos, confirmación transaccional, histórico y ticket.
+POS 1 terminado: diseño definitivo y estructura de base creados manualmente. POS 2 terminado y probado manualmente: Cajas + apertura/cierre. POS 3 terminado y probado manualmente: EAN obligatorio y búsqueda de productos. Siguiente: POS 4, Punto de Venta + carrito dinámico. Alcance completo en [POS_CAJA_VENTAS.md](POS_CAJA_VENTAS.md). No se trata de un CRUD simple: incluye operación de caja, carrito, pagos, confirmación transaccional, histórico y ticket.
 
-Orden obligatorio; etapas 3–9 pendientes:
+Orden obligatorio; POS 4 siguiente y etapas 5–9 pendientes:
 
 1. POS 1 — TERMINADO: diseño definitivo y estructura de base.
 2. POS 2 — TERMINADO: cajas y apertura/cierre; pruebas manuales correctas.
-3. POS 3 — SIGUIENTE: código de barras y búsqueda de productos.
-4. POS 4: carrito dinámico.
+3. POS 3 — TERMINADO: Código EAN obligatorio y búsqueda de productos; pruebas manuales correctas.
+4. POS 4 — SIGUIENTE: Punto de Venta + carrito dinámico.
 5. POS 5: medios de pago y pagos combinados.
 6. POS 6: confirmación transaccional de venta, detalle, pagos, stock y movimiento.
 7. POS 7: histórico y detalle de ventas.
 8. POS 8: ticket imprimible.
 9. POS 9: pruebas completas.
 
-Cada etapa: implementar → probar → commit → siguiente etapa. No implementar todo en un único cambio. La estructura de base de POS 1 ya fue creada manualmente. La implementación de POS 2 está terminada y probada manualmente; POS 4–9 siguen pendientes.
+Cada etapa: implementar → probar → commit → siguiente etapa. No implementar todo en un único cambio. La estructura de base de POS 1 ya fue creada manualmente. POS 2 y POS 3 están terminados y probados manualmente; POS 4 es el siguiente y POS 5–9 siguen pendientes.
 
 Las etapas 2 a 5 forman la prioridad funcional. Verificar la integración al terminar cada etapa.
 

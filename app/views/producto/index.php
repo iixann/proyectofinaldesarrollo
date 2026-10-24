@@ -24,12 +24,13 @@
                 <?php else: ?>
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light"><tr><th scope="col">ID</th><th scope="col">Producto</th><th scope="col">Categoría</th><th scope="col">Precio</th><th scope="col">Stock actual</th><th scope="col">Stock mínimo</th><th scope="col">Estado</th><th scope="col">Acciones</th></tr></thead>
+                            <thead class="table-light"><tr><th scope="col">ID</th><th scope="col">Producto</th><th scope="col">Código EAN</th><th scope="col">Categoría</th><th scope="col">Precio</th><th scope="col">Stock actual</th><th scope="col">Stock mínimo</th><th scope="col">Estado</th><th scope="col">Acciones</th></tr></thead>
                             <tbody>
                                 <?php foreach ($productos as $producto): ?>
                                     <tr>
                                         <td><?= htmlspecialchars((string) $producto->id_producto, ENT_QUOTES, 'UTF-8') ?></td>
                                         <td><?= htmlspecialchars($producto->nombre_producto, ENT_QUOTES, 'UTF-8') ?></td>
+                                        <td><?= htmlspecialchars($producto->codigo_barras ?? '', ENT_QUOTES, 'UTF-8') ?></td>
                                         <td><?= htmlspecialchars($producto->nombre_categoria, ENT_QUOTES, 'UTF-8') ?></td>
                                         <td>$ <?= htmlspecialchars(number_format((float) $producto->precio_venta, 2, ',', '.'), ENT_QUOTES, 'UTF-8') ?></td>
                                         <td>

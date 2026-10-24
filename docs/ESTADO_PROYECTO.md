@@ -2,9 +2,9 @@
 
 ## Último commit estable
 
-feat: implementar gestion y sesiones de caja
+feat: integrar codigo ean y busqueda pos
 
-Commit de cierre de POS etapa 2, con verificaciones automáticas y pruebas manuales en navegador correctas. Para obtener su hash: `git log -1 --format=%h --grep="^feat: implementar gestion y sesiones de caja$"`.
+Commit de cierre de POS etapa 3, con verificaciones automáticas y pruebas manuales en navegador correctas. Para obtener su hash: `git log -1 --format=%h --grep="^feat: integrar codigo ean y busqueda pos$"`.
 
 Etapa visual anterior: `a0c1048` — `feat: mejorar interfaz visual del sistema`.
 
@@ -62,7 +62,7 @@ Pruebas manuales correctas: filtro de productos por proveedor y limpieza de sele
 
 ## POS ETAPA 1 — TERMINADA
 
-Modelo de datos y tablas de Caja + POS + Ventas creados manualmente en phpMyAdmin. Incluye código de barras opcional y único, cajas, sesiones, medios de pago, ventas, detalles y pagos combinados con monto entregado y vuelto para efectivo.
+Modelo de datos y tablas de Caja + POS + Ventas creados manualmente en phpMyAdmin. Incluye Código EAN obligatorio y único, cajas, sesiones, medios de pago, ventas, detalles y pagos combinados con monto entregado y vuelto para efectivo.
 
 ## POS ETAPA 2 — TERMINADA
 
@@ -76,17 +76,28 @@ Pruebas manuales en navegador confirmadas como correctas.
 - Transacciones con SELECT ... FOR UPDATE y rollback; importes calculados en servidor
 - Gestión de cajas para DUEÑO/ADMINISTRADOR; sesiones para VENDEDOR/DUEÑO/ADMINISTRADOR
 
+## POS ETAPA 3 — TERMINADA Y PROBADA
+
+Pruebas manuales en navegador correctas. Base modificada manualmente: codigo_barras VARCHAR(50) NOT NULL, conservando UNIQUE.
+
+- Código EAN obligatorio y único en alta, edición y listado de Productos
+- Almacenado como texto, con conservación de ceros iniciales
+- Búsqueda exacta por EAN y búsqueda parcial por nombre
+- Acción JSON interna para el futuro POS, con permiso VENDEDOR
+- Solo productos activos; stock cero identificado como SIN STOCK
+- Consultas y edición de EAN sin modificar stock actual
+
 ## En desarrollo
 
 Ninguno.
 
 ## Próximo gran bloque
 
-Caja + POS + Ventas — POS etapas 1 y 2 terminadas.
+Caja + POS + Ventas — POS etapas 1, 2 y 3 terminadas.
 
-Próximo objetivo: POS ETAPA 3 — Código de barras + búsqueda de productos.
+Próximo objetivo: POS ETAPA 4 — Punto de Venta + carrito dinámico.
 
-Alcance y orden por etapas en [POS_CAJA_VENTAS.md](POS_CAJA_VENTAS.md). Etapas POS 3–9 pendientes.
+Alcance y orden por etapas en [POS_CAJA_VENTAS.md](POS_CAJA_VENTAS.md). POS 4 siguiente; etapas POS 5–9 pendientes.
 
 ## Reglas del proyecto
 

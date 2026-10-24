@@ -1,6 +1,6 @@
 # Caja + POS + Ventas
 
-Estado: POS etapas 1 y 2 terminadas. Modelo de datos definido y tablas creadas manualmente en phpMyAdmin, según confirmación del usuario. POS 2 (Cajas + apertura/cierre) implementada y probada manualmente en navegador. Siguiente: POS etapa 3, Código de barras + búsqueda de productos. Este documento no crea tablas ni contiene SQL para ejecutar. Se mantiene PHP puro, MVC del profesor, PDO centralizado en DataBase, autorización con onlyUsers() y Bootstrap/Malbec, sin capas nuevas.
+Estado: POS etapas 1, 2 y 3 terminadas. Modelo de datos definido y tablas creadas manualmente en phpMyAdmin, según confirmación del usuario. POS 2 (Cajas + apertura/cierre) implementada y probada manualmente en navegador. POS 3 (Código EAN obligatorio y búsqueda de productos) terminado y probado manualmente. Siguiente: POS etapa 4, Punto de Venta + carrito dinámico. Este documento no crea tablas ni contiene SQL para ejecutar. Se mantiene PHP puro, MVC del profesor, PDO centralizado en DataBase, autorización con onlyUsers() y Bootstrap/Malbec, sin capas nuevas.
 
 ## 1. Objetivo general
 
@@ -47,7 +47,7 @@ La interfaz utilizará Bootstrap actual y JavaScript; puede usar jQuery si resul
 
 ## 6. Código de barras
 
-Productos incorporará `codigo_barras`: opcional y único cuando exista.
+Productos incorpora `codigo_barras VARCHAR(50) NOT NULL UNIQUE`: Código EAN obligatorio, único y almacenado como texto para conservar ceros iniciales. PHP aplica trim y rechaza vacío; crear y editar exigen el código. La búsqueda para escaneo usa coincidencia exacta, no LIKE. La búsqueda por nombre es parcial y solo ofrece productos activos.
 
 El lector se tratará inicialmente como entrada de teclado: escanear código → buscar producto → agregar al carrito. Si ya está en el carrito, se aumenta su cantidad. No se integra hardware especial en esta primera versión.
 
@@ -175,18 +175,18 @@ Tablas aprobadas y creadas manualmente; estructura documentada en database/schem
 | medios_pago | Medios de pago disponibles |
 | pagos_ventas | Importes por medio de pago, incluidos pagos combinados |
 
-Productos incorpora codigo_barras VARCHAR(50) NULL UNIQUE. Los códigos vacíos se representarán como NULL. Las PK/FK son INT UNSIGNED y los importes DECIMAL(12,2); se mantiene InnoDB y utf8mb4_unicode_ci. Caja_sesiones usa estados ABIERTA/CERRADA y datos de cierre nullable. Detalle_ventas conserva precios históricos y UNIQUE (id_venta, id_producto). Las FK preservan referencias mediante ON DELETE RESTRICT. La apertura concurrente se controlará transaccionalmente bloqueando la caja; confirmar ventas y cerrar sesión bloquearán la misma fila de caja_sesiones.
+Productos incorpora codigo_barras VARCHAR(50) NOT NULL UNIQUE, según modificación manual confirmada. No se permiten códigos vacíos en la aplicación. Las PK/FK son INT UNSIGNED y los importes DECIMAL(12,2); se mantiene InnoDB y utf8mb4_unicode_ci. Caja_sesiones usa estados ABIERTA/CERRADA y datos de cierre nullable. Detalle_ventas conserva precios históricos y UNIQUE (id_venta, id_producto). Las FK preservan referencias mediante ON DELETE RESTRICT. La apertura concurrente se controlará transaccionalmente bloqueando la caja; confirmar ventas y cerrar sesión bloquearán la misma fila de caja_sesiones.
 
 ## 19. Orden de implementación
 
-POS 1 y POS 2 terminados; POS 2 probado manualmente. POS 3 es el siguiente y POS 4–9 permanecen pendientes. No implementar el bloque entero en un único cambio.
+POS 1, POS 2 y POS 3 terminados; POS 2 y POS 3 probados manualmente. POS 4 es el siguiente y POS 5–9 permanecen pendientes. No implementar el bloque entero en un único cambio.
 
 | Etapa | Alcance |
 |---|---|
 | POS 1 — TERMINADO | Diseño definitivo y estructura de base creada manualmente |
 | POS 2 — TERMINADO | Cajas y apertura/cierre; probado manualmente |
-| POS 3 — SIGUIENTE | Código de barras y búsqueda de productos |
-| POS 4 | Carrito dinámico |
+| POS 3 — TERMINADO | Código EAN obligatorio y búsqueda de productos; probado manualmente |
+| POS 4 — SIGUIENTE | Punto de Venta + carrito dinámico |
 | POS 5 | Medios de pago y pagos combinados |
 | POS 6 | Confirmación transaccional: venta, detalle, pagos, stock y movimiento |
 | POS 7 | Histórico y detalle de ventas |
