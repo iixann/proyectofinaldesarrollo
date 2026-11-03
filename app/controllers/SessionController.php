@@ -21,6 +21,22 @@ class SessionController extends Controller
             && in_array('ADMINISTRADOR', $_SESSION['usuario']['roles'], true);
     }
 
+    public static function destinoInicio()
+    {
+        if (!self::sesionValida()) return null;
+        $roles = $_SESSION['usuario']['roles'];
+        $rutas = [
+            'ADMINISTRADOR' => 'admin/index',
+            'DUEÑO' => 'categoria/index',
+            'VENDEDOR' => 'sesioncaja/index',
+            'RECEPCIONISTA' => 'stock/index'
+        ];
+        foreach ($rutas as $rol => $ruta) {
+            if (in_array($rol, $roles, true)) return '/proyectofinaldesarrollo/' . $ruta;
+        }
+        return null;
+    }
+
     public static function soloAdministradores()
     {
         self::onlyUsers(['ADMINISTRADOR']);
@@ -52,8 +68,9 @@ class SessionController extends Controller
 
     public function actionLogin()
     {
-        if (self::esAdministrador()) {
-            header('Location: /proyectofinaldesarrollo/admin/index');
+        $destino = self::destinoInicio();
+        if ($destino !== null) {
+            header('Location: ' . $destino);
             exit;
         }
         Response::render($this->viewDir(__NAMESPACE__), 'login', ['mensaje' => '', 'correo' => '']);
@@ -82,11 +99,13 @@ class SessionController extends Controller
                     'email' => $usuario->email,
                     'roles' => array_column($roles, 'nombre_rol')
                 ];
-                if (self::esAdministrador()) {
-                    header('Location: /proyectofinaldesarrollo/admin/index');
+                unset($_SESSION['csrf_venta']);
+                $destino = self::destinoInicio();
+                if ($destino !== null) {
+                    header('Location: ' . $destino);
                     exit;
                 }
-                $mensaje = 'Sesión iniciada. Tu usuario no tiene acceso al panel de administración.';
+                $mensaje = 'Sesión iniciada. Tu usuario no tiene roles habilitados para operar.';
             } else {
                 $mensaje = 'Correo o contraseña incorrectos, o usuario inactivo.';
             }

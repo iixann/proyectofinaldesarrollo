@@ -25,6 +25,13 @@
                     <dt class="col-sm-4">Observación cierre</dt><dd class="col-sm-8"><?= htmlspecialchars($sesion->observacion_cierre ?? '', ENT_QUOTES, 'UTF-8') ?></dd>
                 <?php endif; ?>
             </dl>
+            <div class="border-top pt-3 mt-3">
+                <h2 class="h6">Ventas por medio de pago</h2>
+                <?php if (!$totalesMedios): ?><p class="text-secondary small">No hay pagos registrados en esta sesión.</p><?php endif; ?>
+                <?php foreach ($totalesMedios as $medio): ?>
+                    <p><?= htmlspecialchars($medio->nombre, ENT_QUOTES, 'UTF-8') ?>: $ <?= htmlspecialchars((string) $medio->total, ENT_QUOTES, 'UTF-8') ?></p>
+                <?php endforeach; ?>
+            </div>
         </div></section>
     </main>
     <?php require APP_PATH . 'views/inc/footer.php'; ?>

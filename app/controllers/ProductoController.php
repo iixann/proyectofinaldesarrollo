@@ -121,6 +121,11 @@ class ProductoController extends Controller
         }
         if ($datosProducto['nombre_producto'] === '') {
             $errores[] = 'Ingresá el nombre del producto.';
+        } elseif (mb_strlen($datosProducto['nombre_producto'], 'UTF-8') > 150) {
+            $errores[] = 'El nombre debe tener hasta 150 caracteres.';
+        }
+        if (mb_strlen($datosProducto['descripcion'], 'UTF-8') > 255) {
+            $errores[] = 'La descripción debe tener hasta 255 caracteres.';
         }
         if (isset($_POST['codigo_barras']) && !is_string($_POST['codigo_barras'])) {
             $errores[] = 'Ingresá un Código EAN válido como texto.';
@@ -137,14 +142,14 @@ class ProductoController extends Controller
             $errores[] = 'Seleccioná una categoría activa válida.';
         }
         $precio = $datosProducto['precio_venta'];
-        if ($precio === '' || !is_numeric($precio) || !is_finite((float) $precio) || (float) $precio < 0) {
-            $errores[] = 'Ingresá un precio de venta numérico mayor o igual a cero.';
+        if (!preg_match('/^\d{1,10}(?:\.\d{1,2})?$/D', $precio)) {
+            $errores[] = 'Ingresá un precio de venta mayor o igual a cero, con hasta dos decimales y diez dígitos enteros.';
         }
         foreach (['stock_minimo' => 'Stock mínimo', 'stock_deseable' => 'Stock deseable'] as $campo => $etiqueta) {
             if ($datosProducto[$campo] === '') {
                 $datosProducto[$campo] = '0';
             }
-            if (!ctype_digit($datosProducto[$campo]) || filter_var($datosProducto[$campo], FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]) === false) {
+            if (!ctype_digit($datosProducto[$campo]) || filter_var($datosProducto[$campo], FILTER_VALIDATE_INT, ['options' => ['min_range' => 0, 'max_range' => 2147483647]]) === false) {
                 $errores[] = $etiqueta . ': ingresá un entero mayor o igual a cero.';
             }
         }

@@ -41,7 +41,7 @@ El aviso de stock bajo es visual; Compras permite registrar la reposición.
 
 ## ETAPA 5 - CAJA + POS + VENTAS — EN CURSO
 
-POS 1 terminado: diseño definitivo y estructura de base creados manualmente. POS 2 terminado y probado manualmente: Cajas + apertura/cierre. POS 3 terminado y probado manualmente: EAN obligatorio y búsqueda de productos. POS 4 terminado y probado: Punto de Venta + carrito dinámico. Cobro + Confirmación (POS 5 + POS 6) implementado y verificado con simulaciones. Histórico/detalle y ticket implementados con pruebas simuladas. Siguiente: integración final. Alcance completo en [POS_CAJA_VENTAS.md](POS_CAJA_VENTAS.md). No se trata de un CRUD simple: incluye operación de caja, carrito, pagos, confirmación transaccional, histórico y ticket.
+POS 1 terminado: diseño definitivo y estructura de base creados manualmente. POS 2 terminado y probado manualmente: Cajas + apertura/cierre. POS 3 terminado y probado manualmente: EAN obligatorio y búsqueda de productos. POS 4 terminado y probado: Punto de Venta + carrito dinámico. Cobro + Confirmación (POS 5 + POS 6) implementado y verificado con simulaciones. Histórico/detalle y ticket implementados con pruebas simuladas. Integración automática verificada; siguiente: validación local y demostración. Alcance completo en [POS_CAJA_VENTAS.md](POS_CAJA_VENTAS.md). No se trata de un CRUD simple: incluye operación de caja, carrito, pagos, confirmación transaccional, histórico y ticket.
 
 Orden de avance; POS 1–4 terminados y siguientes bloques pendientes:
 
@@ -52,9 +52,9 @@ Orden de avance; POS 1–4 terminados y siguientes bloques pendientes:
 5. POS 5 + POS 6 — TERMINADO: COBRO + CONFIRMACIÓN DE VENTA. Medios y pagos combinados, efectivo entregado/vuelto; venta, detalle, pagos, stock y movimiento en una transacción completa.
 6. POS 7 — TERMINADO: histórico y detalle de ventas.
 7. POS 8 — TERMINADO: ticket imprimible.
-8. POS 9 — SIGUIENTE: integración y pruebas finales.
+8. POS 9 — IMPLEMENTADO/VERIFICADO CON SIMULACIONES: integración; pendiente de recorrido local e impresión.
 
-Cada etapa: implementar → probar → commit → siguiente etapa. No implementar todo en un único cambio. La estructura de base de POS 1 ya fue creada manualmente. POS 4 está terminado y probado manualmente. POS 5 y POS 6 se cerraron como un bloque funcional con pruebas simuladas; POS 7 y POS 8 terminados con fixtures; POS 9 pendiente.
+Cada etapa: implementar → probar → commit → siguiente etapa. No implementar todo en un único cambio. La estructura de base de POS 1 ya fue creada manualmente. POS 4 está terminado y probado manualmente. POS 5 y POS 6 se cerraron como un bloque funcional con pruebas simuladas; POS 7 y POS 8 terminados con fixtures; POS 9 verificado con simulaciones; recorrido local pendiente.
 
 Las etapas 2 a 5 forman la prioridad funcional. Verificar la integración al terminar cada etapa.
 
@@ -62,17 +62,17 @@ Las etapas 2 a 5 forman la prioridad funcional. Verificar la integración al ter
 
 Devoluciones solamente si siguen dentro del alcance final. Confirmar su inclusión antes de implementarlas. Caja y pagos de ventas ya forman parte del bloque POS; las cuentas corrientes e integraciones externas siguen fuera de alcance por ahora.
 
-## ETAPA 7 - PENDIENTE
+## ETAPA 7 - INTEGRACIÓN AUTOMÁTICA VERIFICADA; VALIDACIÓN LOCAL PENDIENTE
 
-Integración general y pruebas: recorrer los circuitos completos de usuarios, productos, compras, stock y ventas; comprobar permisos y corregir errores. Comenzar durante octubre y reforzar en noviembre.
+Circuito de modelos apertura/compra/venta/cierre, dinero, stock, permisos, rollback, rutas y vistas verificados con fixtures. Completar recorrido en navegador/MariaDB e impresión física siguiendo DEMOSTRACION.md; no se probaron escrituras sobre la base real desde Codex.
 
-## ETAPA 8 - PENDIENTE
+## ETAPA 8 - PRESENTACIÓN APLICADA AL CIRCUITO ACTUAL
 
-Interfaz visual con Bootstrap/CSS y usabilidad: aplicar una presentación consistente sobre los flujos funcionales ya probados. Prioridad de noviembre.
+Bootstrap/Malbec en los módulos actuales, dashboard con accesos reales, inicio por rol y ticket imprimible. Comprobar visualmente la presentación final en el equipo de demostración.
 
-## ETAPA 9 - PENDIENTE
+## ETAPA 9 - DOCUMENTACIÓN PREPARADA; DEFENSA/DEMO PENDIENTES
 
-Documentación, pruebas finales y preparación de defensa: mantener los documentos al día, practicar la explicación del código y preparar una demostración del sistema. Prioridad de noviembre.
+README actualizado, GUIA_ESTUDIO.md y DEMOSTRACION.md disponibles. Practicar explicación y preguntas; demostrar el circuito al profesor y ajustar según sus correcciones.
 
 ## Criterio de avance
 

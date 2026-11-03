@@ -1,84 +1,79 @@
-# Proyecto Final Desarrollo
+# Identidad Singular — Sistema de Gestión de Vinería
 
-Base académica PHP puro + PDO + MariaDB + Composer/phpdotenv, siguiendo el MVC
-del profesor. La referencia de `docs/referencia_mvc_profesor/MVC/` no es parte de
-la aplicación y permanece intacta.
+Proyecto académico en PHP puro, MVC del profesor, PDO/MariaDB, Bootstrap 5 y JavaScript. No utiliza framework de aplicación, ORM, Service ni Repository. La referencia `docs/referencia_mvc_profesor/MVC/` permanece intacta.
 
-## Entorno LAMPP
+## Funcionalidad disponible
 
-Usar PHP de LAMPP, no el PHP del sistema:
+- Login, logout, sesiones, usuarios con múltiples roles y autorización centralizada.
+- Categorías, proveedores y productos: alta, edición, baja lógica y reactivación.
+- Código EAN obligatorio, único y textual; categorías y proveedores N:M del producto.
+- Stock actual, mínimos/deseables, ajustes y trazabilidad mediante movimientos.
+- Compras con detalles históricos, incremento de stock y movimientos COMPRA.
+- Cajas físicas y sesiones de apertura/cierre con arqueo e histórico.
+- POS: sesión abierta, escaneo EAN, búsqueda manual, carrito y cobro combinado.
+- Venta transaccional: precios reales, detalle, pagos, descuento de stock y movimientos VENTA.
+- Histórico de ventas con filtro de fechas, detalle y ticket imprimible/reimpresión mediante `window.print()`.
+
+El circuito está integrado y verificado con DataBase/DOM simulados. Los módulos previos hasta el carrito fueron probados manualmente por el usuario. Cobro, histórico, ticket e integración final requieren todavía comprobarse en el navegador y la MariaDB local del comercio; no se ejecutaron ventas de prueba en la base real desde Codex.
+
+## Entorno local
+
+PHP 8.2 de LAMPP con PDO MySQL y mbstring, Apache con mod_rewrite y MariaDB. Bootstrap 5.3.2 y FontAwesome 6.5.1 se cargan por CDN, por lo que la presentación completa requiere Internet.
+
+Dependencias:
 
 ```sh
 /opt/lampp/bin/php /usr/bin/composer install --working-dir=app/librerias
 ```
 
-Composer y sus dependencias están en `app/librerias/`. Copiar `.env.example` a
-`.env` y completar las credenciales locales (`DB_HOST`, `DB_NAME`, `DB_USER`,
-`DB_PASS`). El archivo `.env` no se versiona. Si se utilizaba la configuración
-anterior, reemplazar `DB_PASSWORD` por `DB_PASS`.
+Copiar `.env.example` a `.env` y completar `DB_HOST`, `DB_NAME`, `DB_USER` y `DB_PASS`. No versionar credenciales.
 
-La base se administra manualmente desde phpMyAdmin. `database/schema.sql` y
-`database/bootstrap.sql` son solo documentación/referencia: la aplicación no
-los ejecuta, no crea la base y no importa tablas. El listado espera una tabla
-`usuarios` con las columnas `id`, `nombre` y `email`.
+La base se administra **manualmente desde phpMyAdmin**. `database/schema.sql` documenta el esquema y `database/bootstrap.sql` los roles y medios iniciales; la aplicación no crea tablas ni importa SQL automáticamente. No hay credenciales iniciales públicas ni autorregistro. El administrador inicial se prepara manualmente con contraseña hasheada compatible con `password_verify()`.
 
-Las únicas tablas previstas son `usuarios`, `roles` y `usuarios_roles`. Los roles
-son ADMINISTRADOR, DUEÑO, RECEPCIONISTA y VENDEDOR. El administrador inicial del
-SQL es opcional y no tiene credenciales de login.
+Con el repositorio en `/opt/lampp/htdocs/proyectofinaldesarrollo` o un enlace equivalente, `AllowOverride All` y mod_rewrite habilitados, entrar a:
 
-## Acceso con Apache de LAMPP
+`http://localhost/proyectofinaldesarrollo/`
 
-Con el proyecto en `/opt/lampp/htdocs/proyectofinaldesarrollo` (o un enlace a este
-repositorio), `mod_rewrite` habilitado y `AllowOverride All`:
+La raíz redirige al login. Tras autenticar, el inicio depende del rol: administrador → panel; dueño → categorías; vendedor → sesiones de caja; recepcionista → stock. La navbar muestra los módulos permitidos y cada acción valida autorización en servidor.
 
-- `http://localhost/proyectofinaldesarrollo/`: HomeController, vista de inicio.
-- `http://localhost/proyectofinaldesarrollo/home/index`: el mismo inicio.
-- `http://localhost/proyectofinaldesarrollo/user/index`: usuarios existentes.
+## Rutas principales
 
-El `.htaccess` raíz dirige las solicitudes a `public/`. El de `public/` utiliza
-`RewriteBase /proyectofinaldesarrollo/public/` para resolver `index.php` dentro
-del directorio público y pasa la ruta lógica mediante `?url=...`. La URL visible
-no necesita incluir `public`. No se usa REQUEST_URI como router.
+Todas bajo `/proyectofinaldesarrollo`:
 
-## Recorrido MVC
+| Ruta | Función |
+|---|---|
+| `/session/login` | Ingreso |
+| `/admin/index` | Panel exclusivo de administrador |
+| `/user/index` | Usuarios, exclusivo de administrador |
+| `/categoria/index`, `/proveedor/index`, `/producto/index`, `/caja/index` | Administración, rol funcional DUEÑO |
+| `/compra/index`, `/stock/index`, `/stock/movimientos` | Recepción/stock, rol RECEPCIONISTA |
+| `/sesioncaja/index`, `/sesioncaja/abrir` | Apertura, cierre e histórico, rol VENDEDOR |
+| `/pos/index` | POS con sesión ABIERTA en caja activa |
+| `/venta/confirmar` | POST JSON interno protegido con sesión, rol y token |
+| `/venta/index`, `/venta/ver/{id}`, `/venta/ticket/{id}` | Histórico, detalle e impresión, rol VENDEDOR |
 
-`public/index.php` establece el directorio de trabajo y las constantes del
-profesor, carga Composer/phpdotenv y Autoloader, e instancia `App`.
-`App` resuelve controlador, acción y parámetros en su constructor a partir de
-`$_GET['url']`, con HomeController y actionIndex como predeterminados.
-Conserva la búsqueda en subdirectorios y la invocación con call_user_func_array.
-Las rutas físicas usan `/` y los namespaces usan `\`.
+ADMINISTRADOR hereda todos los permisos. DUEÑO hereda RECEPCIONISTA y VENDEDOR, sin los permisos exclusivos de ADMINISTRADOR. No existe rol CAJERO.
 
-El listado sigue este recorrido:
+## Recorrido técnico
 
-```text
-App → UserController::actionIndex()
-    → UserModel::getAllUsers() → Model::getAll()
-    → DataBase::getRecords() → query() → connection() → PDO → MariaDB
-    → UserController → Response::render() → app/views/user/index.php
-```
+`.htaccess → public/index.php → App → Controller → Model → DataBase → PDO → MariaDB`
 
-Model define la tabla y delega las consultas en DataBase. DataBase ofrece
-connection(), query(), getRecord() y getRecords(). Las filas son objetos;
-getRecords() devuelve status y resultado, como en la referencia. Un fallo de
-consulta muestra un error 500, no un falso listado vacío; el detalle se registra
-en PHP. Response recibe directorio, nombre de vista y variables.
+`Controller → Response → View`
 
-La vista lista ID, nombre y correo, escapados con htmlspecialchars. No consulta
-ni asigna roles. Sin filas muestra un mensaje de listado vacío. Home no consulta
-la base. Las rutas inexistentes pasan por action404(), sin redirección circular.
+El router conserva `$_GET['url']`, namespaces y acciones `actionNombre()`. Las consultas pasan parámetros separados del SQL. Los importes transaccionales se calculan en centavos enteros y se guardan como DECIMAL(12,2). El carrito es temporal; PHP reconstruye la venta desde precios y stock reales.
 
-## Alcance
-
-No hay login, autorregistro, altas, edición, eliminación ni asignación de roles
-por interfaz. Los usuarios serán creados posteriormente por un ADMINISTRADOR.
-No se incluyen otros módulos. No se inicia sesión porque esta etapa no la usa.
-
-Para comprobar sintaxis de la aplicación (excluyendo dependencias y referencia):
+## Verificación y defensa
 
 ```sh
 find app/core app/controllers app/models app/views public -name '*.php' -print0 | xargs -0 -n1 /opt/lampp/bin/php -l
+git diff --check
 ```
 
-La prueba del listado real requiere que la base y la tabla hayan sido preparadas
-manualmente en phpMyAdmin y que `.env` tenga las credenciales correctas.
+- [Estado](docs/ESTADO_PROYECTO.md)
+- [Roadmap](docs/ROADMAP.md)
+- [Alcance POS](docs/POS_CAJA_VENTAS.md)
+- [Demostración y pruebas locales](docs/DEMOSTRACION.md)
+- [Guía de estudio](docs/GUIA_ESTUDIO.md)
+- [Repaso breve de defensa](docs/DEFENSA.md)
+
+La impresión académica no integra un controlador fiscal. No se implementaron cancelaciones, devoluciones, cuentas corrientes ni integraciones bancarias/fiscales. Los nombres de producto/caja/medio se consultan desde maestros y pueden reflejar renombrados; los precios, cantidades, importes, entregado y vuelto históricos permanecen guardados.

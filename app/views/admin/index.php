@@ -21,41 +21,29 @@
         </section>
 
         <section aria-labelledby="accesosRapidos">
-            <div class="mb-4">
-                <h2 class="h5 fw-semibold mb-2" id="accesosRapidos">Accesos rápidos</h2>
-                <p class="text-secondary small mb-0">Accedé a la gestión del sistema. Los módulos pendientes se indican como próximamente.</p>
-            </div>
+            <h2 class="h5 fw-semibold mb-4" id="accesosRapidos">Accesos rápidos</h2>
+            <?php $modulos = [
+                ['nombre' => 'Usuarios', 'texto' => 'Usuarios y roles', 'icono' => 'fa-users', 'ruta' => 'user/index'],
+                ['nombre' => 'Categorías', 'texto' => 'Clasificación del catálogo', 'icono' => 'fa-tags', 'ruta' => 'categoria/index'],
+                ['nombre' => 'Proveedores', 'texto' => 'Datos comerciales y contacto', 'icono' => 'fa-truck', 'ruta' => 'proveedor/index'],
+                ['nombre' => 'Productos', 'texto' => 'EAN, precios y proveedores', 'icono' => 'fa-wine-bottle', 'ruta' => 'producto/index'],
+                ['nombre' => 'Stock', 'texto' => 'Existencias, ajustes y movimientos', 'icono' => 'fa-boxes-stacked', 'ruta' => 'stock/index'],
+                ['nombre' => 'Compras', 'texto' => 'Recepción y reposición', 'icono' => 'fa-cart-shopping', 'ruta' => 'compra/index'],
+                ['nombre' => 'Cajas', 'texto' => 'Administración de terminales', 'icono' => 'fa-cash-register', 'ruta' => 'caja/index'],
+                ['nombre' => 'Sesiones de caja', 'texto' => 'Apertura, cierre e histórico', 'icono' => 'fa-door-open', 'ruta' => 'sesioncaja/index'],
+                ['nombre' => 'Punto de Venta', 'texto' => 'Carrito, cobro y confirmación', 'icono' => 'fa-basket-shopping', 'ruta' => 'pos/index'],
+                ['nombre' => 'Ventas', 'texto' => 'Histórico, detalle y tickets', 'icono' => 'fa-receipt', 'ruta' => 'venta/index']
+            ]; ?>
             <div class="row g-4">
-                <div class="col-12 col-md-6 col-lg-4">
-                    <article class="card tarjeta-modulo h-100 border-0 shadow-sm rounded-4">
+                <?php foreach ($modulos as $modulo): ?>
+                    <div class="col-12 col-md-6 col-lg-4"><article class="card tarjeta-modulo h-100 border-0 shadow-sm rounded-4">
                         <div class="card-body p-4 d-flex flex-column align-items-start">
-                            <span class="icono-modulo rounded-3 bg-primary-subtle text-primary mb-4"><i class="fa-solid fa-users" aria-hidden="true"></i></span>
-                            <h3 class="h5 fw-semibold">Usuarios</h3>
-                            <p class="text-secondary mb-4">Gestionar usuarios y roles</p>
-                            <a class="btn btn-primary mt-auto" href="/proyectofinaldesarrollo/user/index">Gestionar usuarios<i class="fa-solid fa-arrow-right ms-2" aria-hidden="true"></i></a>
+                            <span class="icono-modulo rounded-3 bg-primary-subtle text-primary mb-3"><i class="fa-solid <?= htmlspecialchars($modulo['icono'], ENT_QUOTES, 'UTF-8') ?>" aria-hidden="true"></i></span>
+                            <h3 class="h5"><?= htmlspecialchars($modulo['nombre'], ENT_QUOTES, 'UTF-8') ?></h3>
+                            <p class="text-secondary"><?= htmlspecialchars($modulo['texto'], ENT_QUOTES, 'UTF-8') ?></p>
+                            <a class="btn btn-primary mt-auto" href="/proyectofinaldesarrollo/<?= htmlspecialchars($modulo['ruta'], ENT_QUOTES, 'UTF-8') ?>">Abrir <?= htmlspecialchars($modulo['nombre'], ENT_QUOTES, 'UTF-8') ?></a>
                         </div>
-                    </article>
-                </div>
-                <?php
-                $modulosPendientes = [
-                    ['nombre' => 'Productos', 'texto' => 'Catálogo e inventario', 'icono' => 'fa-wine-bottle'],
-                    ['nombre' => 'Proveedores', 'texto' => 'Gestión de proveedores', 'icono' => 'fa-truck'],
-                    ['nombre' => 'Compras', 'texto' => 'Ingreso de mercadería', 'icono' => 'fa-cart-shopping'],
-                    ['nombre' => 'Stock', 'texto' => 'Control de existencias', 'icono' => 'fa-boxes-stacked'],
-                    ['nombre' => 'Ventas', 'texto' => 'Punto de venta', 'icono' => 'fa-cash-register']
-                ];
-                ?>
-                <?php foreach ($modulosPendientes as $modulo): ?>
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <article class="card tarjeta-modulo h-100 border-0 shadow-sm rounded-4">
-                            <div class="card-body p-4 d-flex flex-column align-items-start">
-                                <span class="icono-modulo rounded-3 bg-light text-secondary mb-4"><i class="fa-solid <?= htmlspecialchars($modulo['icono'], ENT_QUOTES, 'UTF-8') ?>" aria-hidden="true"></i></span>
-                                <h3 class="h5 fw-semibold"><?= htmlspecialchars($modulo['nombre'], ENT_QUOTES, 'UTF-8') ?></h3>
-                                <p class="text-secondary mb-4"><?= htmlspecialchars($modulo['texto'], ENT_QUOTES, 'UTF-8') ?></p>
-                                <span class="badge rounded-pill bg-light text-secondary border px-3 py-2 mt-auto">Próximamente</span>
-                            </div>
-                        </article>
-                    </div>
+                    </article></div>
                 <?php endforeach; ?>
             </div>
         </section>

@@ -89,7 +89,8 @@ class SesioncajaController extends Controller
     public function actionVer($id = null)
     {
         SessionController::onlyUsers(['VENDEDOR']);
-        Response::render('caja_sesion/', 'ver', ['sesion' => $this->buscarSesion($id)]);
+        $sesion = $this->buscarSesion($id);
+        Response::render('caja_sesion/', 'ver', ['sesion' => $sesion, 'totalesMedios' => CajaSesionModel::totalesPorMedio($id)]);
     }
 
     private function idValido($id)
@@ -146,7 +147,8 @@ class SesioncajaController extends Controller
             echo htmlspecialchars($excepcion->getMessage(), ENT_QUOTES, 'UTF-8');
             return;
         }
-        Response::render('caja_sesion/', 'cerrar', ['sesion' => $sesion, 'resumen' => $resumen, 'datos' => $datos, 'errores' => $errores]);
+        Response::render('caja_sesion/', 'cerrar', ['sesion' => $sesion, 'resumen' => $resumen, 'datos' => $datos, 'errores' => $errores,
+            'totalesMedios' => CajaSesionModel::totalesPorMedio($sesion->id_caja_sesion)]);
     }
 
     private function volver($resultado)

@@ -82,7 +82,7 @@ Esta herencia se calcula en memoria; no requiere guardar roles inferiores en `us
 
 ## Categorías
 
-`CategoriaController` protege sus seis acciones con `onlyUsers(['DUEÑO'])`. El listado consulta `CategoriaModel::listarCategorias()`; el modelo extiende Model y usa DataBase para acceder a la tabla `categorias`. La búsqueda por ID reutiliza `findId()` de Model. Response entrega los resultados a las vistas de `app/views/categoria/`.
+`CategoriaController` protege sus acciones con `onlyUsers(['DUEÑO'])`. El listado consulta `CategoriaModel::listarCategorias()`; el modelo extiende Model y usa DataBase para acceder a la tabla `categorias`. La búsqueda por ID reutiliza `findId()` de Model. Response entrega los resultados a las vistas de `app/views/categoria/`.
 
 Crear, actualizar y dar de baja requieren POST; otro método recibe HTTP 405 y `Allow: POST`. Se valida un ID positivo dentro del rango de la columna y la existencia del registro. Un ID inválido recibe 400; uno inexistente, 404. El nombre se recorta, debe contener entre 1 y 100 caracteres y no puede repetirse, incluso si la categoría anterior está inactiva. Al editar se excluye el propio ID de la comprobación de duplicados.
 
@@ -90,7 +90,7 @@ La baja lógica conserva el registro: cambia `estado` a 0 y establece `fecha_baj
 
 ## Proveedores
 
-Proveedores sigue el mismo recorrido y protección que Categorías. `ProveedorModel` extiende Model, reutiliza `findId()` y delega consultas parametrizadas en DataBase. Razón social es obligatoria; email y CUIT son opcionales. El CUIT se conserva como string y se comprueba su duplicidad excluyendo el propio ID al editar, incluso entre proveedores inactivos. Los opcionales vacíos se guardan como NULL, permitiendo varios proveedores sin CUIT bajo el índice UNIQUE. La baja es lógica, sin DELETE. Es un maestro independiente, sin relación con Productos todavía.
+Proveedores sigue el mismo recorrido y protección que Categorías. `ProveedorModel` extiende Model, reutiliza `findId()` y delega consultas parametrizadas en DataBase. Razón social es obligatoria; email y CUIT son opcionales. El CUIT se conserva como string y se comprueba su duplicidad excluyendo el propio ID al editar, incluso entre proveedores inactivos. Los opcionales vacíos se guardan como NULL, permitiendo varios proveedores sin CUIT bajo el índice UNIQUE. La baja es lógica, sin DELETE. Se vincula con Productos mediante productos_proveedores y con Compras mediante su cabecera.
 
 ## Productos
 
@@ -106,7 +106,7 @@ El escaneo busca el EAN con igualdad exacta; el nombre usa LIKE preparado, con h
 
 ## Carrito POS
 
-El carrito vive temporalmente en JavaScript y se pierde al recargar. La interfaz facilita escaneo, cantidades y eliminación, con importes visuales calculados en centavos enteros. No registra ventas ni cambia stock. JavaScript no será fuente confiable al vender: el servidor valida productos, precios, stock y total al confirmar.
+El carrito vive temporalmente en JavaScript y se pierde al recargar. La interfaz facilita escaneo, cantidades y eliminación, con importes visuales calculados en centavos enteros. El carrito por sí solo no registra ventas ni cambia stock. JavaScript no es fuente confiable al vender: el servidor valida productos, precios, stock y total al confirmar.
 
 ## Stock y movimientos
 
@@ -126,7 +126,7 @@ Precio, subtotal y total se calculan en centavos enteros y se envían como caden
 
 Caja es la terminal física; caja_sesiones registra cada apertura y cierre. CajaController protege la administración con DUEÑO; SesioncajaController protege apertura, cierre e histórico con VENDEDOR. Las cajas usan baja lógica y reactivación, sin borrar su historial. No hay límite de sesiones por usuario, solamente una abierta por caja física.
 
-CajaSesionModel abre una transacción y bloquea la caja con SELECT ... FOR UPDATE antes de comprobar sesiones abiertas e insertar: evita que dos aperturas simultáneas creen turnos para la misma caja. Para cerrar bloquea la sesión para impedir cierres simultáneos, verifica ABIERTA y recalcula ventas activas y pagos EFECTIVO (monto aplicado). PHP toma estos totales de la base, sin confiar en el navegador. Efectivo esperado = fondo inicial + efectivo vendido; diferencia = contado - esperado. Calcula en centavos, guarda el cierre completo o hace rollback. Sin ventas las sumas devuelven cero. El cierre histórico es de solo lectura. Las ventas futuras deberán bloquear esa misma sesión antes de confirmarse.
+CajaSesionModel abre una transacción y bloquea la caja con SELECT ... FOR UPDATE antes de comprobar sesiones abiertas e insertar: evita que dos aperturas simultáneas creen turnos para la misma caja. Para cerrar bloquea la sesión para impedir cierres simultáneos, verifica ABIERTA y recalcula ventas activas y pagos EFECTIVO (monto aplicado). PHP toma estos totales de la base, sin confiar en el navegador. Efectivo esperado = fondo inicial + efectivo vendido; diferencia = contado - esperado. Calcula en centavos, guarda el cierre completo o hace rollback. Sin ventas las sumas devuelven cero. El cierre histórico es de solo lectura. La confirmación de ventas bloquea esa misma sesión antes de registrar los cambios.
 
 ## Cobro y confirmación de venta
 
@@ -156,3 +156,7 @@ DataBase crea PDO en una variable local, configura la conexión y recién despu�
 ## Ejemplo para explicar en la defensa
 
 “Cuando el administrador envía el formulario, `UserController::actionGuardar()` comprueba permisos y valida los datos y roles. `UserModel::crearUsuario()` genera el hash y coordina la creación dentro de una transacción. DataBase ejecuta las consultas parametrizadas sobre la misma conexión. Si todo termina correctamente, el controlador redirige al listado; si falla, muestra el formulario con un mensaje de error.”
+
+## Material de estudio
+
+[GUIA_ESTUDIO.md](GUIA_ESTUDIO.md) recorre cada módulo, validaciones, tablas y preguntas de defensa. [DEMOSTRACION.md](DEMOSTRACION.md) describe el circuito y la validación local pendiente. El inicio por rol es navegación; onlyUsers sigue siendo la protección real en cada acción.

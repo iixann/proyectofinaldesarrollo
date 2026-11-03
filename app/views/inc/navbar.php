@@ -6,7 +6,7 @@ $puedeGestionarOperaciones = \app\controllers\SessionController::sesionValida()
     && ($puedeAdministrarMaestros || in_array('RECEPCIONISTA', $_SESSION['usuario']['roles'], true));
 $puedeOperarCaja = \app\controllers\SessionController::sesionValida()
     && ($puedeAdministrarMaestros || in_array('VENDEDOR', $_SESSION['usuario']['roles'], true));
-$inicioNavegacion = $esAdministrador ? '/proyectofinaldesarrollo/admin/index' : ($puedeAdministrarMaestros ? '/proyectofinaldesarrollo/categoria/index' : ($puedeOperarCaja ? '/proyectofinaldesarrollo/sesioncaja/index' : '/proyectofinaldesarrollo/stock/index'));
+$inicioNavegacion = \app\controllers\SessionController::destinoInicio() ?? '/proyectofinaldesarrollo/session/login';
 ?>
     <a class="visually-hidden-focusable position-absolute bg-white p-3" href="#contenido">Ir al contenido</a>
     <header>
@@ -14,13 +14,13 @@ $inicioNavegacion = $esAdministrador ? '/proyectofinaldesarrollo/admin/index' : 
             <div class="container">
                 <a class="navbar-brand marca-sistema fw-semibold text-primary d-flex align-items-center gap-2" href="<?= $inicioNavegacion ?>">
                     <i class="fa-solid fa-wine-glass" aria-hidden="true"></i>
-                    <span>Sistema de Gestión de Vinería</span>
+                    <span>Identidad Singular</span>
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navegacionPrincipal" aria-controls="navegacionPrincipal" aria-expanded="false" aria-label="Abrir o cerrar menú">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse mt-3 mt-xl-0" id="navegacionPrincipal">
-                    <ul class="navbar-nav ms-auto align-items-xl-center gap-xl-1">
+                    <ul class="navbar-nav ms-auto flex-wrap align-items-xl-center gap-xl-1">
                         <?php if ($esAdministrador): ?>
                         <li class="nav-item"><a class="nav-link <?= $seccionActual === 'inicio' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'inicio' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/admin/index">Inicio</a></li>
                         <li class="nav-item"><a class="nav-link <?= $seccionActual === 'usuarios' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'usuarios' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/user/index">Usuarios</a></li>

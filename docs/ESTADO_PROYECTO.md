@@ -2,9 +2,9 @@
 
 ## Último commit estable
 
-feat: implementar historico y ticket de ventas
+fix: integrar version demostrable de la vineria
 
-Cierre de histórico/detalle y ticket con pruebas automatizadas de rutas, permisos, datos históricos y vistas sobre DataBase simulada. La comprobación contra MariaDB real y en navegador queda para la demostración local. Para obtener su hash: `git log -1 --format=%h --grep="^feat: implementar historico y ticket de ventas$"`.
+Versión demostrable implementada e integrada. Sintaxis completa, navegación, vistas y circuito de negocio verificados con simulaciones. Cobro/histórico/ticket y la impresión deben validarse todavía con navegador y MariaDB locales; no se ejecutaron pruebas contra la base real. Para obtener su hash: `git log -1 --format=%h --grep="^fix: integrar version demostrable de la vineria$"`.
 
 Etapa visual anterior: `a0c1048` — `feat: mejorar interfaz visual del sistema`.
 
@@ -89,7 +89,7 @@ Pruebas manuales en navegador correctas. Base modificada manualmente: codigo_bar
 
 ## POS ETAPA 4 — TERMINADA Y PROBADA
 
-Pruebas manuales en navegador correctas: terminal POS con sesión de caja seleccionada, escaneo EAN, búsqueda manual y carrito dinámico temporal en JavaScript. Permite sumar/restar cantidades y eliminar productos, limita visualmente por stock y calcula subtotales y total en centavos. Bloquea el cambio de sesión con carrito cargado. No modifica stock real; Finalizar venta permanece deshabilitado.
+Pruebas manuales en navegador correctas: terminal POS con sesión de caja seleccionada, escaneo EAN, búsqueda manual y carrito dinámico temporal en JavaScript. Permite sumar/restar cantidades y eliminar productos, limita visualmente por stock y calcula subtotales y total en centavos. Bloquea el cambio de sesión con carrito cargado. Al cerrar POS 4 no modificaba stock real y Finalizar venta permanecía deshabilitado; el bloque de cobro posterior agregó la confirmación real.
 
 ## Cobro + Confirmación — TERMINADO
 
@@ -99,13 +99,22 @@ Medios activos y pagos combinados; efectivo entregado y vuelto. PHP toma usuario
 
 Ventas con filtro por fechas (hasta 100 resultados), detalle de solo lectura y ticket térmico de 72 mm mediante window.print(), reimprimible desde histórico y accesible tras confirmar. Precios, cantidades, importes, entregado y vuelto provienen de los registros guardados. Nombres de maestros se consultan por JOIN; no se guardan copias de nombres. Probado con fixtures, pendiente de validación local de impresión/base real.
 
+## Versión demostrable — IMPLEMENTADA E INTEGRADA
+
+- Login lleva a cada rol a una pantalla permitida; navbar y dashboard enlazan módulos existentes
+- Circuito simulado apertura → compra → venta combinada → stock/movimientos → cierre → reapertura correcto
+- Cierre y consulta de sesión muestran distribución de ventas por medio de pago
+- 63 PHP sin errores de sintaxis; 28 pantallas renderizadas con fixtures, rutas/permisos y lógica esencial comprobados
+- Validaciones de Producto ajustadas a longitudes, DECIMAL(12,2) y rango INT del esquema
+- README actualizado y guías de demostración/estudio disponibles
+
 ## En desarrollo
 
-Ninguno.
+Validación local del circuito nuevo en navegador/MariaDB e impresión física. Los módulos hasta POS 4 ya tienen prueba manual confirmada; los bloques posteriores se verificaron con DataBase/DOM simulados.
 
 ## Próximo objetivo
 
-Integración y estabilización de la versión demostrable; documentación de estudio y defensa.
+Ejecutar [DEMOSTRACION.md](DEMOSTRACION.md) en el entorno local y practicar [GUIA_ESTUDIO.md](GUIA_ESTUDIO.md). Recoger correcciones del profesor. No hay cambios de esquema pendientes ni funcionalidades opcionales autorizadas para agregar ahora.
 
 ## Reglas del proyecto
 

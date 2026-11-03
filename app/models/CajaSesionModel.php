@@ -102,6 +102,14 @@ class CajaSesionModel extends Model
         return ['total_ventas' => self::decimal($totalVentas), 'total_efectivo' => self::decimal($totalEfectivo), 'efectivo_esperado' => self::decimal($esperado)];
     }
 
+    public static function totalesPorMedio($id)
+    {
+        return DataBase::query('SELECT m.nombre, SUM(p.monto) AS total FROM pagos_ventas p
+            INNER JOIN ventas v ON v.id_venta = p.id_venta
+            INNER JOIN medios_pago m ON m.id_medio_pago = p.id_medio_pago
+            WHERE v.id_caja_sesion = :id AND v.estado = 1 GROUP BY m.id_medio_pago, m.nombre ORDER BY m.nombre', ['id' => $id]);
+    }
+
     public static function cerrar($id, $idUsuario, $contado, $observacion)
     {
         DataBase::iniciarTransaccion();

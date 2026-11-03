@@ -21,7 +21,7 @@
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
                             <label class="form-label" for="nombre_producto">Nombre del producto *</label>
-                            <input class="form-control" id="nombre_producto" name="nombre_producto" value="<?= htmlspecialchars($datosProducto['nombre_producto'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required>
+                            <input class="form-control" id="nombre_producto" name="nombre_producto" maxlength="150" value="<?= htmlspecialchars($datosProducto['nombre_producto'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="id_categoria">Categoría *</label>
@@ -42,11 +42,11 @@
                         </div>
                         <div class="col-12">
                             <label class="form-label" for="descripcion">Descripción</label>
-                            <textarea class="form-control" id="descripcion" name="descripcion" rows="3"><?= htmlspecialchars($datosProducto['descripcion'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
+                            <textarea class="form-control" id="descripcion" name="descripcion" maxlength="255" rows="3"><?= htmlspecialchars($datosProducto['descripcion'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
                         </div>
                         <div class="col-12 col-sm-6">
                             <label class="form-label" for="precio_venta">Precio de venta *</label>
-                            <input class="form-control" type="number" min="0" step="any" id="precio_venta" name="precio_venta" value="<?= htmlspecialchars((string) ($datosProducto['precio_venta'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" required>
+                            <input class="form-control" type="number" min="0" step="0.01" max="9999999999.99" id="precio_venta" name="precio_venta" value="<?= htmlspecialchars((string) ($datosProducto['precio_venta'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" required>
                         </div>
                         <div class="col-12 col-sm-6">
                             <p class="form-label mb-2">Stock inicial: 0</p>
@@ -54,11 +54,11 @@
                         </div>
                         <div class="col-12 col-sm-6">
                             <label class="form-label" for="stock_minimo">Stock mínimo</label>
-                            <input class="form-control" type="number" min="0" step="1" id="stock_minimo" name="stock_minimo" value="<?= htmlspecialchars((string) ($datosProducto['stock_minimo'] ?? '0'), ENT_QUOTES, 'UTF-8') ?>">
+                            <input class="form-control" type="number" min="0" step="1" max="2147483647" id="stock_minimo" name="stock_minimo" value="<?= htmlspecialchars((string) ($datosProducto['stock_minimo'] ?? '0'), ENT_QUOTES, 'UTF-8') ?>">
                         </div>
                         <div class="col-12 col-sm-6">
                             <label class="form-label" for="stock_deseable">Stock deseable</label>
-                            <input class="form-control" type="number" min="0" step="1" id="stock_deseable" name="stock_deseable" value="<?= htmlspecialchars((string) ($datosProducto['stock_deseable'] ?? '0'), ENT_QUOTES, 'UTF-8') ?>">
+                            <input class="form-control" type="number" min="0" step="1" max="2147483647" id="stock_deseable" name="stock_deseable" value="<?= htmlspecialchars((string) ($datosProducto['stock_deseable'] ?? '0'), ENT_QUOTES, 'UTF-8') ?>">
                         </div>
                     </div>
                     <fieldset class="mb-4">

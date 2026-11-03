@@ -18,6 +18,13 @@
                 <dt class="col-sm-5">Total efectivo</dt><dd class="col-sm-7">$ <?= htmlspecialchars($resumen['total_efectivo'], ENT_QUOTES, 'UTF-8') ?></dd>
                 <dt class="col-sm-5">Efectivo esperado</dt><dd class="col-sm-7 fw-bold">$ <?= htmlspecialchars($resumen['efectivo_esperado'], ENT_QUOTES, 'UTF-8') ?></dd>
             </dl>
+            <div class="border-top pt-3 mt-3">
+                <h2 class="h6">Ventas por medio de pago</h2>
+                <?php if (!$totalesMedios): ?><p class="text-secondary small">No hay pagos registrados en esta sesión.</p><?php endif; ?>
+                <?php foreach ($totalesMedios as $medio): ?>
+                    <p><?= htmlspecialchars($medio->nombre, ENT_QUOTES, 'UTF-8') ?>: $ <?= htmlspecialchars((string) $medio->total, ENT_QUOTES, 'UTF-8') ?></p>
+                <?php endforeach; ?>
+            </div>
             <p class="text-secondary small">Los totales se vuelven a calcular al confirmar el cierre. El cierre guardado no se puede editar.</p>
             <?php if ($errores): ?><div class="alert alert-danger" role="alert"><ul class="mb-0">
                 <?php foreach ($errores as $error): ?><li><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></li><?php endforeach; ?>
