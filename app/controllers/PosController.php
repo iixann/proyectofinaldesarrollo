@@ -5,13 +5,35 @@ namespace app\controllers;
 use \Controller;
 use \Response;
 use app\models\ProductoModel;
+use app\models\CajaSesionModel;
 
 class PosController extends Controller
 {
     public function actionIndex($parametro = null)
     {
         SessionController::onlyUsers(['VENDEDOR']);
-        Response::render($this->viewDir(__NAMESPACE__), 'index');
+        $sesiones = CajaSesionModel::sesionesDisponiblesPos();
+        $seleccionada = null;
+        $mensaje = '';
+        if (array_key_exists('sesion', $_GET)) {
+            $id = $_GET['sesion'];
+            if ($this->idSesionValido($id)) {
+                foreach ($sesiones as $sesion) {
+                    if ((string) $sesion->id_caja_sesion === (string) (int) $id) {
+                        $seleccionada = $sesion;
+                        break;
+                    }
+                }
+            }
+            if (!$seleccionada) {
+                $mensaje = 'La sesión seleccionada no está disponible. Elegí una sesión abierta.';
+            }
+        } elseif (count($sesiones) === 1) {
+            $seleccionada = $sesiones[0];
+        }
+        Response::render($this->viewDir(__NAMESPACE__), 'index', [
+            'sesiones' => $sesiones, 'seleccionada' => $seleccionada, 'mensaje' => $mensaje
+        ]);
     }
 
     public function actionBuscar()
@@ -20,6 +42,11 @@ class PosController extends Controller
         if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'GET') {
             header('Allow: GET');
             $this->json(['ok' => false, 'mensaje' => 'Método no permitido.'], 405);
+            return;
+        }
+        $idSesion = $_GET['sesion'] ?? null;
+        if (!$this->idSesionValido($idSesion)) {
+            $this->json(['ok' => false, 'mensaje' => 'Seleccioná una sesión de caja abierta.', 'sesion_no_disponible' => true], 409);
             return;
         }
         $porCodigo = array_key_exists('codigo', $_GET);
@@ -40,6 +67,10 @@ class PosController extends Controller
             return;
         }
         try {
+            if (!CajaSesionModel::sesionDisponiblePos($idSesion)) {
+                $this->json(['ok' => false, 'mensaje' => 'La sesión ya no está abierta o la caja está inactiva. Volvé a sesiones de caja.', 'sesion_no_disponible' => true], 409);
+                return;
+            }
             if ($porCodigo) {
                 $producto = ProductoModel::buscarActivoPorCodigo($entrada);
                 $this->json($producto
@@ -53,6 +84,11 @@ class PosController extends Controller
             error_log($excepcion->getMessage());
             $this->json(['ok' => false, 'mensaje' => 'No se pudo consultar los productos. Intentá nuevamente.'], 500);
         }
+    }
+
+    private function idSesionValido($id)
+    {
+        return is_string($id) && ctype_digit($id) && (float) $id >= 1 && (float) $id <= 4294967295;
     }
 
     private function datosProducto($producto)

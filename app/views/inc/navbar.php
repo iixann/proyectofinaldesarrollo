@@ -47,7 +47,7 @@ $inicioNavegacion = $esAdministrador ? '/proyectofinaldesarrollo/admin/index' : 
                         <li class="nav-item"><a class="nav-link <?= $seccionActual === 'stock' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'stock' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/stock/index">Stock</a></li>
                         <?php endif; ?>
                         <?php if ($puedeOperarCaja): ?>
-                        <li class="nav-item"><a class="nav-link <?= $seccionActual === 'consulta_pos' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'consulta_pos' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/pos/index">Consultar productos</a></li>
+                        <li class="nav-item"><a class="nav-link <?= $seccionActual === 'consulta_pos' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'consulta_pos' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/pos/index">Punto de Venta</a></li>
                         <?php endif; ?>
                         <li class="nav-item"><span class="nav-link disabled" aria-disabled="true" title="Próximamente">Ventas<span class="visually-hidden">: próximamente</span></span></li>
                         <li class="nav-item ms-xl-2 mt-2 mt-xl-0">

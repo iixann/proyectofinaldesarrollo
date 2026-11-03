@@ -2,9 +2,9 @@
 
 ## Último commit estable
 
-feat: integrar codigo ean y busqueda pos
+feat: implementar carrito dinamico pos
 
-Commit de cierre de POS etapa 3, con verificaciones automáticas y pruebas manuales en navegador correctas. Para obtener su hash: `git log -1 --format=%h --grep="^feat: integrar codigo ean y busqueda pos$"`.
+Commit de cierre de POS etapa 4, con verificaciones automáticas y pruebas manuales en navegador correctas. Para obtener su hash: `git log -1 --format=%h --grep="^feat: implementar carrito dinamico pos$"`.
 
 Etapa visual anterior: `a0c1048` — `feat: mejorar interfaz visual del sistema`.
 
@@ -87,17 +87,21 @@ Pruebas manuales en navegador correctas. Base modificada manualmente: codigo_bar
 - Solo productos activos; stock cero identificado como SIN STOCK
 - Consultas y edición de EAN sin modificar stock actual
 
+## POS ETAPA 4 — TERMINADA Y PROBADA
+
+Pruebas manuales en navegador correctas: terminal POS con sesión de caja seleccionada, escaneo EAN, búsqueda manual y carrito dinámico temporal en JavaScript. Permite sumar/restar cantidades y eliminar productos, limita visualmente por stock y calcula subtotales y total en centavos. Bloquea el cambio de sesión con carrito cargado. No modifica stock real; Finalizar venta permanece deshabilitado.
+
 ## En desarrollo
 
 Ninguno.
 
 ## Próximo gran bloque
 
-Caja + POS + Ventas — POS etapas 1, 2 y 3 terminadas.
+COBRO + CONFIRMACIÓN COMPLETA DE VENTA — agrupa las antiguas POS 5 y POS 6.
 
-Próximo objetivo: POS ETAPA 4 — Punto de Venta + carrito dinámico.
+Medios de pago, pagos combinados, efectivo entregado, vuelto y validación de pagos; creación de venta, detalle_ventas y pagos_ventas, descuento de stock y movimientos_stock VENTA dentro de una transacción completa.
 
-Alcance y orden por etapas en [POS_CAJA_VENTAS.md](POS_CAJA_VENTAS.md). POS 4 siguiente; etapas POS 5–9 pendientes.
+Luego: histórico/detalle de ventas, ticket e integración/pruebas finales. Alcance en [POS_CAJA_VENTAS.md](POS_CAJA_VENTAS.md).
 
 ## Reglas del proyecto
 

@@ -102,7 +102,11 @@ Crear o actualizar el producto y sus proveedores es una transacción. Al actuali
 
 Código EAN se guarda en codigo_barras como VARCHAR(50) para conservar ceros iniciales. NOT NULL y UNIQUE protegen la base; PHP exige texto no vacío, aplica trim, limita longitud y valida duplicados excluyendo el propio producto al editar. NOT NULL por sí solo no impide cadenas vacías.
 
-El escaneo busca el EAN con igualdad exacta; el nombre usa LIKE preparado, con hasta 30 resultados. Solo se consultan productos activos y se indica SIN STOCK cuando corresponde, sin cambiar existencias. PosController ofrece una acción JSON interna para JavaScript/jQuery con permiso VENDEDOR; no es una API REST ni implementa todavía carrito o ventas.
+El escaneo busca el EAN con igualdad exacta; el nombre usa LIKE preparado, con hasta 30 resultados. Solo se consultan productos activos y se indica SIN STOCK cuando corresponde, sin cambiar existencias. PosController ofrece una acción JSON interna para JavaScript/jQuery con permiso VENDEDOR; no es una API REST.
+
+## Carrito POS
+
+El carrito vive temporalmente en JavaScript y se pierde al recargar. La interfaz facilita escaneo, cantidades y eliminación, con importes visuales calculados en centavos enteros. No registra ventas ni cambia stock. JavaScript no será fuente confiable al vender: el servidor volverá a validar productos, precios, stock y total al confirmar.
 
 ## Stock y movimientos
 

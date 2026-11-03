@@ -33,6 +33,21 @@ class CajaSesionModel extends Model
         return DataBase::query('SELECT id_caja, nombre FROM cajas WHERE estado = 1 ORDER BY nombre');
     }
 
+    public static function sesionesDisponiblesPos()
+    {
+        return DataBase::query("SELECT s.id_caja_sesion, s.id_caja, c.nombre AS caja, u.nombre, u.apellido
+            FROM caja_sesiones s INNER JOIN cajas c ON c.id_caja = s.id_caja
+            INNER JOIN usuarios u ON u.id_usuario = s.id_usuario_apertura
+            WHERE s.estado = 'ABIERTA' AND c.estado = 1 ORDER BY c.nombre, s.id_caja_sesion");
+    }
+
+    public static function sesionDisponiblePos($id)
+    {
+        return DataBase::getRecord("SELECT s.id_caja_sesion, s.id_caja, c.nombre AS caja
+            FROM caja_sesiones s INNER JOIN cajas c ON c.id_caja = s.id_caja
+            WHERE s.id_caja_sesion = :id AND s.estado = 'ABIERTA' AND c.estado = 1", ['id' => $id]);
+    }
+
     public static function centavos($importe)
     {
         if (!is_string($importe) || !preg_match('/^\d{1,10}(?:\.\d{1,2})?$/D', $importe)) {
