@@ -11,8 +11,11 @@ class CompraController extends Controller
     public function actionIndex($parametro = null)
     {
         SessionController::onlyUsers(['RECEPCIONISTA']);
+        $filtros = ['id_compra' => $this->leerFiltro('id_compra', 10, true),
+            'numero_comprobante' => $this->leerFiltro('numero_comprobante', 50)];
         Response::render($this->viewDir(__NAMESPACE__), 'index', [
-            'compras' => CompraModel::listarCompras(),
+            'compras' => CompraModel::listarCompras($filtros['id_compra'], $filtros['numero_comprobante']),
+            'filtros' => $filtros,
             'mensaje' => ($_GET['resultado'] ?? '') === 'registrada' ? 'Compra registrada correctamente.' : ''
         ]);
     }

@@ -57,10 +57,6 @@
                             <label class="form-label" for="stock_minimo">Stock mínimo</label>
                             <input class="form-control" type="number" min="0" step="1" max="2147483647" id="stock_minimo" name="stock_minimo" value="<?= htmlspecialchars((string) ($datosProducto['stock_minimo'] ?? '0'), ENT_QUOTES, 'UTF-8') ?>">
                         </div>
-                        <div class="col-12 col-sm-6">
-                            <label class="form-label" for="stock_deseable">Stock deseable</label>
-                            <input class="form-control" type="number" min="0" step="1" max="2147483647" id="stock_deseable" name="stock_deseable" value="<?= htmlspecialchars((string) ($datosProducto['stock_deseable'] ?? '0'), ENT_QUOTES, 'UTF-8') ?>">
-                        </div>
                     </div>
                     <fieldset class="mb-4">
                         <legend class="fs-6 fw-semibold">Proveedores (opcional)</legend>

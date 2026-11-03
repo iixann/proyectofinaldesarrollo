@@ -17,6 +17,17 @@
         <?php if ($mensaje !== ''): ?>
             <div class="alert alert-success" role="status"><?= htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8') ?></div>
         <?php endif; ?>
+        <form method="get" action="/proyectofinaldesarrollo/producto/index" class="row g-3 align-items-end mb-4">
+            <div class="col-sm-4"><label class="form-label" for="nombre">Nombre del producto</label><input class="form-control" type="text" id="nombre" name="nombre" maxlength="150" value="<?= htmlspecialchars((string) $filtros['nombre'], ENT_QUOTES, 'UTF-8') ?>"></div>
+            <div class="col-sm-3"><label class="form-label" for="id_categoria">Categoría</label><select class="form-select" id="id_categoria" name="id_categoria"><option value="">Todas las categorías</option>
+                <?php foreach ($categorias as $categoria): ?><option value="<?= (int) $categoria->id_categoria ?>" <?= (string) $categoria->id_categoria === $filtros['id_categoria'] ? 'selected' : '' ?>><?= htmlspecialchars($categoria->nombre_categoria, ENT_QUOTES, 'UTF-8') ?></option><?php endforeach; ?>
+            </select></div>
+            <div class="col-sm-3"><label class="form-label" for="id_proveedor">Proveedor</label><select class="form-select" id="id_proveedor" name="id_proveedor"><option value="">Todos los proveedores</option>
+                <?php foreach ($proveedores as $proveedor): ?><option value="<?= (int) $proveedor->id_proveedor ?>" <?= (string) $proveedor->id_proveedor === $filtros['id_proveedor'] ? 'selected' : '' ?>><?= htmlspecialchars($proveedor->razon_social, ENT_QUOTES, 'UTF-8') ?></option><?php endforeach; ?>
+            </select></div>
+
+            <div class="col-auto"><button class="btn btn-outline-primary" type="submit">Buscar</button> <a class="btn btn-outline-secondary" href="/proyectofinaldesarrollo/producto/index">Limpiar</a></div>
+        </form>
         <section class="card border-0 shadow-sm rounded-4" aria-label="Listado de productos">
             <div class="card-body p-3 p-md-4">
                 <?php if (!$productos): ?>

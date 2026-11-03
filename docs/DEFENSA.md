@@ -94,9 +94,9 @@ Proveedores sigue el mismo recorrido y protección que Categorías. `ProveedorMo
 
 ## Productos
 
-`ProductoController` usa `onlyUsers(['DUEÑO'])` y exige POST para guardar, actualizar y dar de baja. `ProductoModel` lista con JOIN de categoría y comprueba el nombre dentro de la misma categoría excluyendo el propio ID al editar. Categoría y proveedores seleccionados deben estar activos; el precio es no negativo y los stocks son enteros no negativos, con mínimo menor o igual al deseable. Stock actual puede estar por debajo del mínimo; el listado lo señala como STOCK BAJO.
+`ProductoController` usa `onlyUsers(['DUEÑO'])` y exige POST para guardar, actualizar y dar de baja. `ProductoModel` lista con JOIN de categoría y comprueba el nombre dentro de la misma categoría excluyendo el propio ID al editar. Categoría y proveedores seleccionados deben estar activos; el precio es no negativo y los stocks son enteros no negativos, sin restricciones entre existencias y mínimo. Stock actual puede estar por debajo del mínimo; el listado lo señala como STOCK BAJO.
 
-Crear o actualizar el producto y sus proveedores es una transacción. Al actualizar asociaciones, se desactivan las anteriores y se insertan o recuperan las seleccionadas mediante el par único producto/proveedor, sin DELETE. Categorías, Proveedores y Productos admiten reactivación por POST: validan la existencia y actualizan estado a 1 y fecha_baja a NULL sobre el mismo registro, conservando sus claves únicas. El formulario avisa si una categoría o proveedor anterior dejó de estar activo. Los nuevos productos comienzan con stock 0 y su edición solo configura stock mínimo y deseable; los cambios de stock actual se registran desde Stock. No hay precio de compra en el producto.
+Crear o actualizar el producto y sus proveedores es una transacción. Al actualizar asociaciones, se desactivan las anteriores y se insertan o recuperan las seleccionadas mediante el par único producto/proveedor, sin DELETE. Categorías, Proveedores y Productos admiten reactivación por POST: validan la existencia y actualizan estado a 1 y fecha_baja a NULL sobre el mismo registro, conservando sus claves únicas. El formulario avisa si una categoría o proveedor anterior dejó de estar activo. Los nuevos productos comienzan con stock 0 y su edición solo configura stock mínimo; los cambios de stock actual se registran desde Stock. No hay precio de compra en el producto.
 
 ## Código EAN y consulta POS
 
@@ -160,3 +160,11 @@ DataBase crea PDO en una variable local, configura la conexión y recién despu�
 ## Material de estudio
 
 [GUIA_ESTUDIO.md](GUIA_ESTUDIO.md) recorre cada módulo, validaciones, tablas y preguntas de defensa. [DEMOSTRACION.md](DEMOSTRACION.md) describe el circuito y la validación local pendiente. El inicio por rol es navegación; onlyUsers sigue siendo la protección real en cada acción.
+
+## Consultas y Reposición
+
+Los buscadores usan GET, parámetros preparados y LIKE para texto; el ID de compra/venta se compara exactamente. Los filtros de Producto se combinan con AND y EXISTS consulta la relación N:M sin duplicar productos. Controller valida entradas; Model arma las consultas; View solo presenta datos escapados.
+
+Stock usa `stock_actual` y `stock_minimo`. Reposición es una consulta de productos activos con actual <= mínimo, ordenados por stock, y GROUP_CONCAT muestra sus proveedores asociados vigentes. No calcula cuánto comprar ni modifica stock. Permiso RECEPCIONISTA mediante onlyUsers.
+
+Solo ADMINISTRADOR da de baja/reactiva usuarios por POST; se conservan ID, roles e historial. El login exige usuario activo. Nuevas contraseñas: mínimo 9 caracteres en HTML y PHP, con password_hash/password_verify; no se alteran hashes anteriores.

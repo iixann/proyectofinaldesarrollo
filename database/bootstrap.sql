@@ -20,3 +20,6 @@ VALUES
 -- POS etapa 3: productos.codigo_barras es VARCHAR(50) NOT NULL UNIQUE.
 -- Todo producto requiere Código EAN como texto, conservando ceros iniciales.
 -- Este archivo no carga productos ni cambia la estructura de la base.
+
+-- Modelo de stock vigente: productos.stock_actual y productos.stock_minimo.
+-- Reposición consulta stock_actual <= stock_minimo; no requiere tablas ni datos iniciales.

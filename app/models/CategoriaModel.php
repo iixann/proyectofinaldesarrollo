@@ -10,9 +10,15 @@ class CategoriaModel extends Model
     protected $tabla = 'categorias';
     protected $clavePrimaria = 'id_categoria';
 
-    public static function listarCategorias()
+    public static function listarCategorias($busqueda = '')
     {
-        return DataBase::query('SELECT * FROM categorias ORDER BY id_categoria');
+        $sql = 'SELECT * FROM categorias';
+        $parametros = [];
+        if ($busqueda !== '') {
+            $sql .= " WHERE nombre_categoria LIKE :busqueda ESCAPE '!'";
+            $parametros = ['busqueda' => self::patronBusqueda($busqueda)];
+        }
+        return DataBase::query($sql . ' ORDER BY id_categoria', $parametros);
     }
 
     public static function buscarPorNombre($nombre)

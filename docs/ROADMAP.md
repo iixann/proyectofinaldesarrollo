@@ -22,7 +22,7 @@ Cerrar y probar cada módulo antes de iniciar el siguiente.
 
 ## ETAPA 3 - COMPLETA
 
-- Listado de stock con mínimo, deseable y aviso visual STOCK BAJO
+- Listado de stock con mínimo y aviso visual STOCK BAJO
 - Ajustes de entrada/salida con trazabilidad y usuario de sesión
 - Transacciones, bloqueo de fila y rollback; sin saldos negativos
 - Historial general y por producto
@@ -73,6 +73,12 @@ Bootstrap/Malbec en los módulos actuales, dashboard con accesos reales, inicio 
 ## ETAPA 9 - DOCUMENTACIÓN PREPARADA; DEFENSA/DEMO PENDIENTES
 
 README actualizado, GUIA_ESTUDIO.md y DEMOSTRACION.md disponibles. Practicar explicación y preguntas; demostrar el circuito al profesor y ajustar según sus correcciones.
+
+## Mejoras de gestión y Reposición — IMPLEMENTADAS
+
+Filtros combinables de Productos; búsqueda de Categorías/Proveedores; ID de Ventas y búsqueda de Compras por ID/comprobante. Usuarios con baja/reactivación administrativa y contraseña nueva de mínimo 9 caracteres.
+
+Stock usa solo `stock_actual` y `stock_minimo`. Reposición lista productos activos con `stock_actual <= stock_minimo` y todos sus proveedores asociados vigentes, sin modificar existencias ni generar compras. Verificaciones automáticas con simulaciones; pendientes la eliminación manual de la columna anterior y las pruebas de navegador de este bloque. No se inician funcionalidades adicionales.
 
 ## Criterio de avance
 

@@ -12,6 +12,11 @@
             <a class="btn btn-primary" href="/proyectofinaldesarrollo/compra/crear">Nueva compra</a>
         </div>
         <?php if ($mensaje !== ''): ?><div class="alert alert-success" role="status"><?= htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
+        <form method="get" action="/proyectofinaldesarrollo/compra/index" class="row g-3 align-items-end mb-4">
+            <div class="col-sm-4"><label class="form-label" for="id_compra">Número de compra</label><input class="form-control" type="number" id="id_compra" name="id_compra" maxlength="10" min="1" max="4294967295" step="1" value="<?= htmlspecialchars((string) $filtros['id_compra'], ENT_QUOTES, 'UTF-8') ?>"></div>
+            <div class="col-sm-4"><label class="form-label" for="numero_comprobante">Número de comprobante</label><input class="form-control" type="text" id="numero_comprobante" name="numero_comprobante" maxlength="50" value="<?= htmlspecialchars((string) $filtros['numero_comprobante'], ENT_QUOTES, 'UTF-8') ?>"></div>
+            <div class="col-auto"><button class="btn btn-outline-primary" type="submit">Buscar</button> <a class="btn btn-outline-secondary" href="/proyectofinaldesarrollo/compra/index">Limpiar</a></div>
+        </form>
         <section class="card border-0 shadow-sm rounded-4"><div class="card-body p-3 p-md-4">
             <?php if (!$compras): ?>
                 <p class="text-secondary text-center my-4">No hay compras registradas.</p>

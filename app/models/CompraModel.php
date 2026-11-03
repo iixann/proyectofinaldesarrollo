@@ -10,11 +10,21 @@ class CompraModel extends Model
     protected $tabla = 'compras';
     protected $clavePrimaria = 'id_compra';
 
-    public static function listarCompras()
+    public static function listarCompras($id = '', $comprobante = '')
     {
-        return DataBase::query('SELECT c.*, p.razon_social, u.nombre, u.apellido FROM compras c
+        $sql = 'SELECT c.*, p.razon_social, u.nombre, u.apellido FROM compras c
             INNER JOIN proveedores p ON p.id_proveedor = c.id_proveedor
-            INNER JOIN usuarios u ON u.id_usuario = c.id_usuario ORDER BY c.fecha_compra DESC, c.id_compra DESC');
+            INNER JOIN usuarios u ON u.id_usuario = c.id_usuario WHERE 1 = 1';
+        $parametros = [];
+        if ($id !== '') {
+            $sql .= ' AND c.id_compra = :id';
+            $parametros['id'] = $id;
+        }
+        if ($comprobante !== '') {
+            $sql .= " AND c.numero_comprobante LIKE :comprobante ESCAPE '!'";
+            $parametros['comprobante'] = self::patronBusqueda($comprobante);
+        }
+        return DataBase::query($sql . ' ORDER BY c.fecha_compra DESC, c.id_compra DESC', $parametros);
     }
 
     public static function buscarCompra($id)

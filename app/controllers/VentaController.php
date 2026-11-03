@@ -12,7 +12,7 @@ class VentaController extends Controller
     public function actionIndex($parametro = null)
     {
         SessionController::onlyUsers(['VENDEDOR']);
-        $filtros = [];
+        $filtros = ['id_venta' => $this->leerFiltro('id_venta', 10, true)];
         $error = '';
         foreach (['desde', 'hasta'] as $campo) {
             $fecha = $_GET[$campo] ?? '';
@@ -28,7 +28,7 @@ class VentaController extends Controller
         }
         if ($error !== '') http_response_code(400);
         Response::render('venta/', 'index', [
-            'ventas' => $error === '' ? VentaModel::listarVentas($filtros['desde'], $filtros['hasta']) : [],
+            'ventas' => $error === '' ? VentaModel::listarVentas($filtros['desde'], $filtros['hasta'], $filtros['id_venta']) : [],
             'filtros' => $filtros, 'error' => $error
         ]);
     }

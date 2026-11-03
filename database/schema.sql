@@ -90,7 +90,6 @@ CREATE TABLE productos (
     precio_venta DECIMAL(12,2) NOT NULL DEFAULT 0,
     stock_actual INT NOT NULL DEFAULT 0,
     stock_minimo INT NOT NULL DEFAULT 0,
-    stock_deseable INT NOT NULL DEFAULT 0,
     estado TINYINT(1) NOT NULL DEFAULT 1,
     fecha_alta DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     fecha_baja DATETIME NULL,

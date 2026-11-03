@@ -45,8 +45,21 @@ class UserModel extends Model
         return $usuarios;
     }
 
+    public static function baja($id)
+    {
+        return DataBase::execute('UPDATE usuarios SET estado = 0, fecha_baja = CURRENT_TIMESTAMP WHERE id_usuario = :id', ['id' => $id]);
+    }
+
+    public static function reactivar($id)
+    {
+        return DataBase::execute('UPDATE usuarios SET estado = 1, fecha_baja = NULL WHERE id_usuario = :id', ['id' => $id]);
+    }
+
     public static function crearUsuario($nombre, $apellido, $correo, $contrasena, $roles)
     {
+        if (mb_strlen($contrasena, 'UTF-8') < 9) {
+            throw new \DomainException('La contraseña debe tener al menos 9 caracteres.');
+        }
         $contrasenaCifrada = password_hash($contrasena, PASSWORD_DEFAULT);
         DataBase::iniciarTransaccion();
         try {

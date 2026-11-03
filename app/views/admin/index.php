@@ -28,6 +28,7 @@
                 ['nombre' => 'Proveedores', 'texto' => 'Datos comerciales y contacto', 'icono' => 'fa-truck', 'ruta' => 'proveedor/index'],
                 ['nombre' => 'Productos', 'texto' => 'EAN, precios y proveedores', 'icono' => 'fa-wine-bottle', 'ruta' => 'producto/index'],
                 ['nombre' => 'Stock', 'texto' => 'Existencias, ajustes y movimientos', 'icono' => 'fa-boxes-stacked', 'ruta' => 'stock/index'],
+                ['nombre' => 'Reposición', 'texto' => 'Productos con stock bajo', 'icono' => 'fa-list-check', 'ruta' => 'reposicion/index'],
                 ['nombre' => 'Compras', 'texto' => 'Recepción y reposición', 'icono' => 'fa-cart-shopping', 'ruta' => 'compra/index'],
                 ['nombre' => 'Cajas', 'texto' => 'Administración de terminales', 'icono' => 'fa-cash-register', 'ruta' => 'caja/index'],
                 ['nombre' => 'Sesiones de caja', 'texto' => 'Apertura, cierre e histórico', 'icono' => 'fa-door-open', 'ruta' => 'sesioncaja/index'],

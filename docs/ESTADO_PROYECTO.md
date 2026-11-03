@@ -1,10 +1,16 @@
 # Estado del proyecto
 
-## Último commit estable
+## Último bloque funcional
 
-fix: integrar version demostrable de la vineria
+`feat: agregar mejoras de gestion y reposicion`: implementado y verificado con base simulada; pendiente de prueba manual en navegador de estas mejoras. No se modificó la base real.
 
-Versión demostrable implementada e integrada. Sintaxis completa, navegación, vistas y circuito de negocio verificados con simulaciones. Cobro/histórico/ticket y la impresión deben validarse todavía con navegador y MariaDB locales; no se ejecutaron pruebas contra la base real. Para obtener su hash: `git log -1 --format=%h --grep="^fix: integrar version demostrable de la vineria$"`.
+- Productos: filtros GET combinables por nombre, categoría y proveedor mediante la relación N:M.
+- Categorías: búsqueda por nombre. Proveedores: razón social, CUIT y contacto.
+- Usuarios: baja lógica/reactivación por POST, exclusivas de ADMINISTRADOR; conserva roles e historial. Un usuario inactivo no puede iniciar sesión.
+- Nuevas contraseñas: mínimo 9 caracteres, validado en HTML y PHP; hashes anteriores intactos.
+- Histórico de ventas: ID junto con fechas. Compras: ID y comprobante.
+- Reposición: consulta de productos activos con `stock_actual <= stock_minimo`, todos sus proveedores asociados vigentes y orden por stock actual. Acceso RECEPCIONISTA/DUEÑO/ADMINISTRADOR; sin escrituras ni cálculos de compra.
+- El modelo actual de stock usa únicamente `stock_actual` y `stock_minimo`. Esquema documentado actualizado; queda una eliminación manual de columna en phpMyAdmin (ver próximo objetivo).
 
 Etapa visual anterior: `a0c1048` — `feat: mejorar interfaz visual del sistema`.
 
@@ -114,7 +120,7 @@ Validación local del circuito nuevo en navegador/MariaDB e impresión física. 
 
 ## Próximo objetivo
 
-Ejecutar [DEMOSTRACION.md](DEMOSTRACION.md) en el entorno local y practicar [GUIA_ESTUDIO.md](GUIA_ESTUDIO.md). Recoger correcciones del profesor. No hay cambios de esquema pendientes ni funcionalidades opcionales autorizadas para agregar ahora.
+Ejecutar [DEMOSTRACION.md](DEMOSTRACION.md) en el entorno local y practicar [GUIA_ESTUDIO.md](GUIA_ESTUDIO.md). Recoger correcciones del profesor. Aplicar manualmente en phpMyAdmin la eliminación de la columna anterior de stock, según el SQL entregado; es el único cambio de esquema pendiente. Probar buscadores, usuarios y Reposición en navegador. El desarrollo automático se detiene al cerrar este bloque.
 
 ## Reglas del proyecto
 

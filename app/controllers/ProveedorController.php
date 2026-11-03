@@ -17,9 +17,11 @@ class ProveedorController extends Controller
             'reactivada' => 'Proveedor reactivado correctamente.',
             'baja' => 'Proveedor dado de baja.'
         ];
+        $busqueda = $this->leerFiltro('busqueda');
         $resultado = is_string($_GET['resultado'] ?? null) ? $_GET['resultado'] : '';
         Response::render($this->viewDir(__NAMESPACE__), 'index', [
-            'proveedores' => ProveedorModel::listarProveedores(),
+            'proveedores' => ProveedorModel::listarProveedores($busqueda),
+            'busqueda' => $busqueda,
             'mensaje' => $mensajes[$resultado] ?? ''
         ]);
     }

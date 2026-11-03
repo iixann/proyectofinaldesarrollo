@@ -43,7 +43,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label" for="contrasena">Contraseña</label>
-                                    <input class="form-control" id="contrasena" type="password" name="contrasena" autocomplete="new-password" required>
+                                    <input class="form-control" id="contrasena" type="password" name="contrasena" minlength="9" autocomplete="new-password" required>
                                 </div>
                             </div>
                             <fieldset class="mb-4">

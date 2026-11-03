@@ -17,6 +17,10 @@
         <?php if ($mensaje !== ''): ?>
             <div class="alert alert-success" role="status"><?= htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8') ?></div>
         <?php endif; ?>
+        <form method="get" action="/proyectofinaldesarrollo/categoria/index" class="row g-3 align-items-end mb-4">
+            <div class="col-sm-4"><label class="form-label" for="busqueda">Nombre de categoría</label><input class="form-control" type="text" id="busqueda" name="busqueda" maxlength="150" value="<?= htmlspecialchars((string) $busqueda, ENT_QUOTES, 'UTF-8') ?>"></div>
+            <div class="col-auto"><button class="btn btn-outline-primary" type="submit">Buscar</button> <a class="btn btn-outline-secondary" href="/proyectofinaldesarrollo/categoria/index">Limpiar</a></div>
+        </form>
         <section class="card border-0 shadow-sm rounded-4" aria-label="Listado de categorías">
             <div class="card-body p-3 p-md-4">
                 <?php if (!$categorias): ?>

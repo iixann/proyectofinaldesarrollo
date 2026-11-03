@@ -10,9 +10,23 @@ class ProductoModel extends Model
     protected $tabla = 'productos';
     protected $clavePrimaria = 'id_producto';
 
-    public static function listarProductos()
+    public static function listarProductos($filtros = [])
     {
-        return DataBase::query('SELECT p.*, c.nombre_categoria FROM productos p INNER JOIN categorias c ON c.id_categoria = p.id_categoria ORDER BY p.id_producto');
+        $sql = 'SELECT p.*, c.nombre_categoria FROM productos p INNER JOIN categorias c ON c.id_categoria = p.id_categoria WHERE 1 = 1';
+        $parametros = [];
+        if (($filtros['nombre'] ?? '') !== '') {
+            $sql .= " AND p.nombre_producto LIKE :nombre ESCAPE '!'";
+            $parametros['nombre'] = self::patronBusqueda($filtros['nombre']);
+        }
+        if (($filtros['id_categoria'] ?? '') !== '') {
+            $sql .= ' AND p.id_categoria = :categoria';
+            $parametros['categoria'] = $filtros['id_categoria'];
+        }
+        if (($filtros['id_proveedor'] ?? '') !== '') {
+            $sql .= ' AND EXISTS (SELECT 1 FROM productos_proveedores pp WHERE pp.id_producto = p.id_producto AND pp.id_proveedor = :proveedor AND pp.estado = 1)';
+            $parametros['proveedor'] = $filtros['id_proveedor'];
+        }
+        return DataBase::query($sql . ' ORDER BY p.id_producto', $parametros);
     }
 
     public static function nombreDuplicado($nombre, $idCategoria, $id = null)
@@ -86,8 +100,8 @@ class ProductoModel extends Model
         $datosProducto['codigo_barras'] = self::validarCodigo($datosProducto['codigo_barras'] ?? null);
         DataBase::iniciarTransaccion();
         try {
-            $id = DataBase::insert('INSERT INTO productos (nombre_producto, codigo_barras, id_categoria, descripcion, precio_venta, stock_actual, stock_minimo, stock_deseable)
-                VALUES (:nombre_producto, :codigo_barras, :id_categoria, :descripcion, :precio_venta, 0, :stock_minimo, :stock_deseable)', $datosProducto);
+            $id = DataBase::insert('INSERT INTO productos (nombre_producto, codigo_barras, id_categoria, descripcion, precio_venta, stock_actual, stock_minimo)
+                VALUES (:nombre_producto, :codigo_barras, :id_categoria, :descripcion, :precio_venta, 0, :stock_minimo)', $datosProducto);
             self::asignarProveedores($id, $proveedores);
             DataBase::confirmarTransaccion();
             return $id;
@@ -106,7 +120,7 @@ class ProductoModel extends Model
             $datosProducto['id'] = $id;
             DataBase::execute('UPDATE productos SET nombre_producto = :nombre_producto, codigo_barras = :codigo_barras, id_categoria = :id_categoria,
                 descripcion = :descripcion, precio_venta = :precio_venta,
-                stock_minimo = :stock_minimo, stock_deseable = :stock_deseable WHERE id_producto = :id', $datosProducto);
+                stock_minimo = :stock_minimo WHERE id_producto = :id', $datosProducto);
             self::actualizarProveedores($id, $proveedores);
             DataBase::confirmarTransaccion();
         } catch (\Throwable $excepcion) {

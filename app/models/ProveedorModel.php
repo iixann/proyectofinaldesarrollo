@@ -10,9 +10,15 @@ class ProveedorModel extends Model
     protected $tabla = 'proveedores';
     protected $clavePrimaria = 'id_proveedor';
 
-    public static function listarProveedores()
+    public static function listarProveedores($busqueda = '')
     {
-        return DataBase::query('SELECT * FROM proveedores ORDER BY id_proveedor');
+        $sql = 'SELECT * FROM proveedores';
+        $parametros = [];
+        if ($busqueda !== '') {
+            $sql .= " WHERE razon_social LIKE :razon ESCAPE '!' OR cuit LIKE :cuit ESCAPE '!' OR nombre_contacto LIKE :contacto ESCAPE '!'";
+            $parametros = ['razon' => self::patronBusqueda($busqueda), 'cuit' => self::patronBusqueda($busqueda), 'contacto' => self::patronBusqueda($busqueda)];
+        }
+        return DataBase::query($sql . ' ORDER BY id_proveedor', $parametros);
     }
 
     public static function buscarPorCuit($cuit)

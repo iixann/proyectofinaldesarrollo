@@ -17,7 +17,7 @@
                 <p class="text-secondary text-center my-4">No hay productos activos.</p>
             <?php else: ?>
                 <div class="table-responsive"><table class="table table-hover align-middle mb-0">
-                    <thead class="table-light"><tr><th scope="col">Producto</th><th scope="col">Categoría</th><th scope="col">Stock actual</th><th scope="col">Stock mínimo</th><th scope="col">Stock deseable</th><th scope="col">Estado de stock</th><th scope="col">Acciones</th></tr></thead>
+                    <thead class="table-light"><tr><th scope="col">Producto</th><th scope="col">Categoría</th><th scope="col">Stock actual</th><th scope="col">Stock mínimo</th><th scope="col">Estado de stock</th><th scope="col">Acciones</th></tr></thead>
                     <tbody>
                         <?php foreach ($productos as $producto): ?>
                             <?php $stockBajo = (int) $producto->stock_actual <= (int) $producto->stock_minimo; ?>
@@ -26,7 +26,6 @@
                                 <td><?= htmlspecialchars($producto->nombre_categoria, ENT_QUOTES, 'UTF-8') ?></td>
                                 <td><?= htmlspecialchars((string) $producto->stock_actual, ENT_QUOTES, 'UTF-8') ?></td>
                                 <td><?= htmlspecialchars((string) $producto->stock_minimo, ENT_QUOTES, 'UTF-8') ?></td>
-                                <td><?= htmlspecialchars((string) $producto->stock_deseable, ENT_QUOTES, 'UTF-8') ?></td>
                                 <td><span class="badge <?= $stockBajo ? 'bg-warning-subtle text-warning-emphasis' : 'bg-success-subtle text-success-emphasis' ?>"><?= $stockBajo ? 'STOCK BAJO' : 'NORMAL' ?></span></td>
                                 <td><div class="d-flex flex-wrap gap-2">
                                     <a class="btn btn-outline-primary btn-sm" href="/proyectofinaldesarrollo/stock/ajustar/<?= htmlspecialchars((string) $producto->id_producto, ENT_QUOTES, 'UTF-8') ?>">Ajustar stock</a>

@@ -15,6 +15,7 @@
             </div>
             <a class="btn btn-primary flex-shrink-0" href="/proyectofinaldesarrollo/user/crear"><i class="fa-solid fa-user-plus me-2" aria-hidden="true"></i>Crear usuario</a>
         </div>
+        <?php if ($mensaje !== ''): ?><div class="alert alert-success" role="status"><?= htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
         <section class="card border-0 shadow-sm rounded-4" aria-label="Listado de usuarios">
             <?php if (empty($usuarios)): ?>
                 <div class="card-body text-center p-5">
@@ -26,7 +27,7 @@
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
                             <caption class="visually-hidden">Usuarios, estado y roles asignados</caption>
-                            <thead class="table-light"><tr><th scope="col">ID</th><th scope="col">Nombre</th><th scope="col">Apellido</th><th scope="col">Email</th><th scope="col">Estado</th><th scope="col">Roles</th></tr></thead>
+                            <thead class="table-light"><tr><th scope="col">ID</th><th scope="col">Nombre</th><th scope="col">Apellido</th><th scope="col">Email</th><th scope="col">Estado</th><th scope="col">Roles</th><th scope="col">Acciones</th></tr></thead>
                             <tbody>
                                 <?php foreach ($usuarios as $usuario): ?>
                                     <tr>
@@ -42,6 +43,9 @@
                                                 <?php endforeach; ?>
                                             </div>
                                         </td>
+                                        <td><form method="post" action="/proyectofinaldesarrollo/user/<?= (int) $usuario->estado === 1 ? 'baja' : 'reactivar' ?>/<?= (int) $usuario->id_usuario ?>">
+                                            <button class="btn btn-sm <?= (int) $usuario->estado === 1 ? 'btn-outline-danger' : 'btn-outline-success' ?>" type="submit"><?= (int) $usuario->estado === 1 ? 'Dar de baja' : 'Dar de alta' ?></button>
+                                        </form></td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>

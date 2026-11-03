@@ -27,7 +27,7 @@ Preguntas: ¿por qué escapar si ya se usan prepared statements? Son problemas d
 - Controladores: SessionController y UserController; AdminController protege el panel.
 - Modelo: UserModel. Vistas: session/login y user/index/crear.
 - Flujo: validar credenciales y usuario activo → consultar roles activos/vigentes → regenerar ID de sesión → guardar identidad → elegir inicio.
-- Alta: solo ADMINISTRADOR; valida datos, correo único y roles válidos. Una transacción guarda usuario con hash y asignaciones, o revierte todo.
+- Alta: solo ADMINISTRADOR; valida datos, correo único, roles válidos y contraseña de mínimo 9 caracteres en HTML/PHP. Una transacción guarda usuario con hash y asignaciones, o revierte todo.
 - Evita usuario parcial sin sus roles y contraseñas en texto plano. La sesión conserva los roles cargados al ingresar; no consulta sus cambios en cada acción.
 - Defensa: explicar el JOIN para roles vigentes y por qué varios roles requieren usuarios_roles.
 - Preguntas: ¿qué ocurre si falla la segunda asignación? Rollback. ¿Por qué no guardar el password en la sesión? La navegación no lo necesita.
@@ -40,6 +40,7 @@ Preguntas: ¿por qué escapar si ya se usan prepared statements? Son problemas d
 - Permiso: DUEÑO (también ADMINISTRADOR). Altas, edición, baja y reactivación exigen POST.
 - Categoría: nombre obligatorio, hasta 100 caracteres, único incluso entre inactivas. Editar excluye su propio ID.
 - Proveedor: razón social obligatoria; CUIT opcional y único como string, email opcional válido. Opcionales vacíos se guardan NULL. Se respetan longitudes del esquema.
+- Sus listados buscan por nombre de categoría o razón social/CUIT/contacto de proveedor con GET y LIKE preparado.
 - Baja/reactivación no borran referencias históricas. No necesitan transacción para una sola actualización independiente.
 - Defensa: diferenciar NULL de cadena vacía y explicar por qué un proveedor sin CUIT no debe bloquear otros sin CUIT.
 - Preguntas: ¿por qué no DELETE? Compras/productos pueden referenciarlo. ¿Por qué reactivar en vez de crear otro registro? Conserva identidad y evita duplicados.
@@ -49,9 +50,10 @@ Preguntas: ¿por qué escapar si ya se usan prepared statements? Son problemas d
 - Problema: catálogo con precio comercial, clasificación, códigos y opciones de abastecimiento.
 - Tablas: productos, categorias, proveedores y productos_proveedores.
 - Controlador/modelo: ProductoController/ProductoModel. Vistas: producto/index, crear y editar.
-- Permiso: DUEÑO. Categoría activa obligatoria; proveedores activos opcionales; nombre único dentro de categoría, EAN obligatorio único; precio compatible con DECIMAL(12,2), mínimos/deseables enteros con mínimo <= deseable.
+- Permiso: DUEÑO. Categoría activa obligatoria; proveedores activos opcionales; nombre único dentro de categoría, EAN obligatorio único; precio compatible con DECIMAL(12,2), stock mínimo entero no negativo.
 - Código EAN usa VARCHAR para conservar ceros iniciales. PHP aplica trim, longitud y duplicados; NOT NULL/UNIQUE son protección de base, pero NOT NULL no impide una cadena vacía.
 - Crear/actualizar producto y asociaciones es transaccional. Asociaciones quitadas se desactivan; volver a seleccionarlas recupera el mismo par único, sin DELETE.
+- El listado combina filtros GET por nombre, categoría y proveedor; EXISTS evita duplicados de la relación N:M.
 - Stock inicial es 0 y no se cambia desde edición. Precio de compra no va aquí: queda en detalle_compras.
 - Defensa: explicar N:M y por qué un producto puede comprarse a distintos proveedores.
 - Preguntas: ¿por qué 000123 no es un entero? El cero forma parte del identificador. ¿Qué pasa si una categoría anterior se inactiva? El formulario pide una activa para guardar.
@@ -118,7 +120,7 @@ Preguntas: ¿por qué escapar si ya se usan prepared statements? Son problemas d
 
 - Problema: consultar y reimprimir ventas sin repetir sus efectos.
 - VentaController index/ver/ticket y VentaModel listarVentas/buscarVenta/detallesVenta/pagosVenta. Vistas venta/index, ver y ticket. Permiso VENDEDOR.
-- Filtro de fechas validado y preparado, hasta 100 ventas recientes. Detalle usa precios/subtotales históricos y muestra pagos, entregado, vuelto y referencia.
+- Filtros de fechas e ID de venta validados y preparados, hasta 100 ventas recientes. Detalle usa precios/subtotales históricos y muestra pagos, entregado, vuelto y referencia.
 - Ticket de 72 mm con window.print(), comercio Identidad Singular, venta, fecha/hora, caja, vendedor, líneas, total y pagos. Se reimprime desde histórico; solo realiza SELECT.
 - No integra impresora fiscal ni llama a hardware desde la transacción. Nombres se leen por JOIN y pueden reflejar renombrados posteriores; los importes históricos permanecen guardados.
 - Defensa: separar confirmar, consultar e imprimir. Una reimpresión no es una nueva venta.
@@ -127,3 +129,13 @@ Preguntas: ¿por qué escapar si ya se usan prepared statements? Son problemas d
 ## 12. Qué comprobar antes de defender
 
 Seguir DEMOSTRACION.md, explicar un permiso denegado, un rollback y el precio histórico. Las pruebas automáticas usan simulaciones: no equivalen a probar concurrencia real ni impresora física. No afirmar funciones que no existen: cancelaciones, devoluciones, cuentas corrientes, clientes obligatorios, promociones y servicios fiscales/bancarios están fuera del bloque implementado.
+
+## 13. Consultas de gestión y Reposición
+
+UserController/UserModel permiten baja/reactivación administrativa por POST con estado y fecha_baja, conservando roles e historial. SessionController ya impide el login inactivo; reactivarlo permite volver a ingresar. Contraseñas nuevas de 8 caracteres se rechazan y de 9 se aceptan, sin modificar hashes existentes.
+
+CompraController/CompraModel filtran ID exacto y comprobante parcial; VentaController/VentaModel combinan ID exacto y fechas. Estos cambios solo consultan históricos: no vuelven a registrar operaciones.
+
+ReposicionController autoriza RECEPCIONISTA y pide a ReposicionModel los productos activos con `stock_actual <= stock_minimo`. DataBase prepara la consulta y Response entrega la vista reposicion/index. Se muestran EAN, categoría, proveedores asociados vigentes (GROUP_CONCAT), stock actual y mínimo; se ordena por stock ascendente. No hay cantidad de compra calculada ni escrituras. La navegación y el panel enlazan `/reposicion/index`.
+
+Para defender: explicar por qué igualdad al mínimo también aparece; cómo EXISTS evita duplicar un producto con varios proveedores; por qué un filtro GET no modifica datos; por qué una baja de usuario conserva su historial y bloquea nuevos inicios de sesión.

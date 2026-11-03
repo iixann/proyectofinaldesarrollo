@@ -12,9 +12,10 @@
             <a class="btn btn-primary" href="/proyectofinaldesarrollo/pos/index">Ir al Punto de Venta</a>
         </div>
         <form method="get" action="/proyectofinaldesarrollo/venta/index" class="row g-3 align-items-end mb-4">
+            <div class="col-sm-4"><label class="form-label" for="id_venta">Número de venta</label><input class="form-control" type="number" id="id_venta" name="id_venta" maxlength="10" min="1" max="4294967295" step="1" value="<?= htmlspecialchars((string) $filtros['id_venta'], ENT_QUOTES, 'UTF-8') ?>"></div>
             <div class="col-sm-4"><label class="form-label" for="desde">Desde</label><input class="form-control" type="date" id="desde" name="desde" value="<?= htmlspecialchars($filtros['desde'], ENT_QUOTES, 'UTF-8') ?>"></div>
             <div class="col-sm-4"><label class="form-label" for="hasta">Hasta</label><input class="form-control" type="date" id="hasta" name="hasta" value="<?= htmlspecialchars($filtros['hasta'], ENT_QUOTES, 'UTF-8') ?>"></div>
-            <div class="col-sm-4"><button class="btn btn-outline-primary" type="submit">Filtrar</button> <a class="btn btn-outline-secondary" href="/proyectofinaldesarrollo/venta/index">Limpiar</a></div>
+            <div class="col-sm-4"><button class="btn btn-outline-primary" type="submit">Buscar</button> <a class="btn btn-outline-secondary" href="/proyectofinaldesarrollo/venta/index">Limpiar</a></div>
         </form>
         <?php if ($error !== ''): ?><p class="alert alert-warning" role="alert"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></p><?php endif; ?>
         <p class="text-secondary small">Hasta 100 ventas más recientes del período seleccionado. Las ventas confirmadas son de solo lectura.</p>

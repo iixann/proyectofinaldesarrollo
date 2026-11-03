@@ -12,7 +12,43 @@ class UserController extends Controller
     {
         SessionController::onlyUsers(['ADMINISTRADOR']);
         $usuarios = UserModel::listarUsuarios();
-        Response::render($this->viewDir(__NAMESPACE__), 'index', ['usuarios' => $usuarios]);
+        $mensajes = ['baja' => 'Usuario dado de baja.', 'reactivado' => 'Usuario reactivado correctamente.'];
+        $resultado = is_string($_GET['resultado'] ?? null) ? $_GET['resultado'] : '';
+        Response::render($this->viewDir(__NAMESPACE__), 'index', [
+            'usuarios' => $usuarios, 'mensaje' => $mensajes[$resultado] ?? ''
+        ]);
+    }
+
+    public function actionBaja($id = null)
+    {
+        $this->cambiarEstado($id, false);
+    }
+
+    public function actionReactivar($id = null)
+    {
+        $this->cambiarEstado($id, true);
+    }
+
+    private function cambiarEstado($id, $activo)
+    {
+        SessionController::onlyUsers(['ADMINISTRADOR']);
+        if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+            http_response_code(405);
+            header('Allow: POST');
+            exit('Método no permitido');
+        }
+        if (!is_string($id) || !ctype_digit($id) || (float) $id < 1 || (float) $id > 4294967295) {
+            http_response_code(400);
+            exit('ID de usuario inválido.');
+        }
+        if (!UserModel::findId($id)) {
+            http_response_code(404);
+            exit('El usuario no existe.');
+        }
+        if ($activo) UserModel::reactivar($id);
+        else UserModel::baja($id);
+        header('Location: /proyectofinaldesarrollo/user/index?resultado=' . ($activo ? 'reactivado' : 'baja'), true, 303);
+        exit;
     }
 
     public function actionCrear()
@@ -52,6 +88,9 @@ class UserController extends Controller
         }
         if (!filter_var($correo, FILTER_VALIDATE_EMAIL)) {
             $errores[] = 'Ingresá un correo electrónico válido.';
+        }
+        if (mb_strlen($contrasena, 'UTF-8') < 9) {
+            $errores[] = 'La contraseña debe tener al menos 9 caracteres.';
         }
         if (trim($contrasena) === '' || strlen($contrasena) > 72 || strpos($contrasena, "\0") !== false) {
             $errores[] = 'Ingresá una contraseña no vacía de hasta 72 bytes, sin caracteres nulos.';

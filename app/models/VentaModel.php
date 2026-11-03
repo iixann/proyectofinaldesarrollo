@@ -15,7 +15,7 @@ class VentaModel extends Model
         return DataBase::query('SELECT id_medio_pago, nombre FROM medios_pago WHERE estado = 1 ORDER BY id_medio_pago');
     }
 
-    public static function listarVentas($desde = '', $hasta = '')
+    public static function listarVentas($desde = '', $hasta = '', $id = '')
     {
         $sql = 'SELECT v.*, c.nombre AS caja, u.nombre, u.apellido FROM ventas v
             INNER JOIN caja_sesiones s ON s.id_caja_sesion = v.id_caja_sesion
@@ -29,6 +29,10 @@ class VentaModel extends Model
         if ($hasta !== '') {
             $sql .= ' AND v.fecha_venta < DATE_ADD(:hasta, INTERVAL 1 DAY)';
             $parametros['hasta'] = $hasta;
+        }
+        if ($id !== '') {
+            $sql .= ' AND v.id_venta = :id';
+            $parametros['id'] = $id;
         }
         return DataBase::query($sql . ' ORDER BY v.fecha_venta DESC, v.id_venta DESC LIMIT 100', $parametros);
     }

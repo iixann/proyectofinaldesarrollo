@@ -5,6 +5,8 @@ namespace app\controllers;
 use \Controller;
 use \Response;
 use app\models\ProductoModel;
+use app\models\CategoriaModel;
+use app\models\ProveedorModel;
 
 class ProductoController extends Controller
 {
@@ -17,9 +19,14 @@ class ProductoController extends Controller
             'reactivada' => 'Producto reactivado correctamente.',
             'baja' => 'Producto dado de baja.'
         ];
+        $filtros = ['nombre' => $this->leerFiltro('nombre'),
+            'id_categoria' => $this->leerFiltro('id_categoria', 10, true),
+            'id_proveedor' => $this->leerFiltro('id_proveedor', 10, true)];
         $resultado = is_string($_GET['resultado'] ?? null) ? $_GET['resultado'] : '';
         Response::render($this->viewDir(__NAMESPACE__), 'index', [
-            'productos' => ProductoModel::listarProductos(),
+            'productos' => ProductoModel::listarProductos($filtros),
+            'filtros' => $filtros, 'categorias' => CategoriaModel::listarCategorias(),
+            'proveedores' => ProveedorModel::listarProveedores(),
             'mensaje' => $mensajes[$resultado] ?? ''
         ]);
     }
@@ -116,7 +123,7 @@ class ProductoController extends Controller
     {
         $datosProducto = [];
         $errores = [];
-        foreach (['nombre_producto', 'codigo_barras', 'id_categoria', 'descripcion', 'precio_venta', 'stock_minimo', 'stock_deseable'] as $campo) {
+        foreach (['nombre_producto', 'codigo_barras', 'id_categoria', 'descripcion', 'precio_venta', 'stock_minimo'] as $campo) {
             $datosProducto[$campo] = is_string($_POST[$campo] ?? null) ? trim($_POST[$campo]) : '';
         }
         if ($datosProducto['nombre_producto'] === '') {
@@ -145,16 +152,13 @@ class ProductoController extends Controller
         if (!preg_match('/^\d{1,10}(?:\.\d{1,2})?$/D', $precio)) {
             $errores[] = 'Ingresá un precio de venta mayor o igual a cero, con hasta dos decimales y diez dígitos enteros.';
         }
-        foreach (['stock_minimo' => 'Stock mínimo', 'stock_deseable' => 'Stock deseable'] as $campo => $etiqueta) {
+        foreach (['stock_minimo' => 'Stock mínimo'] as $campo => $etiqueta) {
             if ($datosProducto[$campo] === '') {
                 $datosProducto[$campo] = '0';
             }
             if (!ctype_digit($datosProducto[$campo]) || filter_var($datosProducto[$campo], FILTER_VALIDATE_INT, ['options' => ['min_range' => 0, 'max_range' => 2147483647]]) === false) {
                 $errores[] = $etiqueta . ': ingresá un entero mayor o igual a cero.';
             }
-        }
-        if ((float) $datosProducto['stock_minimo'] > (float) $datosProducto['stock_deseable']) {
-            $errores[] = 'El stock mínimo no puede superar al stock deseable.';
         }
         $seleccionados = $_POST['proveedores'] ?? [];
         $proveedores = [];

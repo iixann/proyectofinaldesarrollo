@@ -17,9 +17,11 @@ class CategoriaController extends Controller
             'reactivada' => 'Categoría reactivada correctamente.',
             'baja' => 'Categoría dada de baja.'
         ];
+        $busqueda = $this->leerFiltro('busqueda');
         $resultado = is_string($_GET['resultado'] ?? null) ? $_GET['resultado'] : '';
         Response::render($this->viewDir(__NAMESPACE__), 'index', [
-            'categorias' => CategoriaModel::listarCategorias(),
+            'categorias' => CategoriaModel::listarCategorias($busqueda),
+            'busqueda' => $busqueda,
             'mensaje' => $mensajes[$resultado] ?? ''
         ]);
     }

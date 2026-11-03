@@ -5,6 +5,11 @@ class Model
     protected $tabla;
     protected $clavePrimaria = "id";
 
+    protected static function patronBusqueda($texto)
+    {
+        return '%' . str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $texto) . '%';
+    }
+
     public static function findId($id)
     {
         $modelo = new static();

@@ -4,15 +4,15 @@ Proyecto académico en PHP puro, MVC del profesor, PDO/MariaDB, Bootstrap 5 y Ja
 
 ## Funcionalidad disponible
 
-- Login, logout, sesiones, usuarios con múltiples roles y autorización centralizada.
-- Categorías, proveedores y productos: alta, edición, baja lógica y reactivación.
+- Login, logout, sesiones, usuarios con múltiples roles, baja/reactivación administrativa y autorización centralizada. Nuevas contraseñas de mínimo 9 caracteres en HTML/PHP.
+- Categorías, proveedores y productos: alta, edición, baja lógica y reactivación; búsquedas textuales y filtros combinables de producto por nombre/categoría/proveedor.
 - Código EAN obligatorio, único y textual; categorías y proveedores N:M del producto.
-- Stock actual, mínimos/deseables, ajustes y trazabilidad mediante movimientos.
+- Stock actual y mínimo, ajustes y trazabilidad mediante movimientos. Reposición lista productos activos con `stock_actual <= stock_minimo`, con todos sus proveedores asociados vigentes; no modifica stock ni genera compras.
 - Compras con detalles históricos, incremento de stock y movimientos COMPRA.
 - Cajas físicas y sesiones de apertura/cierre con arqueo e histórico.
 - POS: sesión abierta, escaneo EAN, búsqueda manual, carrito y cobro combinado.
 - Venta transaccional: precios reales, detalle, pagos, descuento de stock y movimientos VENTA.
-- Histórico de ventas con filtro de fechas, detalle y ticket imprimible/reimpresión mediante `window.print()`.
+- Histórico de compras por ID/comprobante y de ventas por ID/fechas, detalle y ticket imprimible/reimpresión mediante `window.print()`.
 
 El circuito está integrado y verificado con DataBase/DOM simulados. Los módulos previos hasta el carrito fueron probados manualmente por el usuario. Cobro, histórico, ticket e integración final requieren todavía comprobarse en el navegador y la MariaDB local del comercio; no se ejecutaron ventas de prueba en la base real desde Codex.
 
@@ -46,7 +46,7 @@ Todas bajo `/proyectofinaldesarrollo`:
 | `/admin/index` | Panel exclusivo de administrador |
 | `/user/index` | Usuarios, exclusivo de administrador |
 | `/categoria/index`, `/proveedor/index`, `/producto/index`, `/caja/index` | Administración, rol funcional DUEÑO |
-| `/compra/index`, `/stock/index`, `/stock/movimientos` | Recepción/stock, rol RECEPCIONISTA |
+| `/compra/index`, `/stock/index`, `/stock/movimientos`, `/reposicion/index` | Recepción/stock, rol RECEPCIONISTA |
 | `/sesioncaja/index`, `/sesioncaja/abrir` | Apertura, cierre e histórico, rol VENDEDOR |
 | `/pos/index` | POS con sesión ABIERTA en caja activa |
 | `/venta/confirmar` | POST JSON interno protegido con sesión, rol y token |
@@ -77,3 +77,5 @@ git diff --check
 - [Repaso breve de defensa](docs/DEFENSA.md)
 
 La impresión académica no integra un controlador fiscal. No se implementaron cancelaciones, devoluciones, cuentas corrientes ni integraciones bancarias/fiscales. Los nombres de producto/caja/medio se consultan desde maestros y pueden reflejar renombrados; los precios, cantidades, importes, entregado y vuelto históricos permanecen guardados.
+
+Las mejoras de gestión y Reposición se verificaron con una base simulada; requieren su recorrido manual en navegador. El esquema documentado usa únicamente stock actual y mínimo: queda pendiente aplicar manualmente la eliminación de la columna anterior de stock, según el SQL entregado al cerrar este bloque. La aplicación no ejecuta ese cambio.
