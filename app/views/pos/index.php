@@ -118,6 +118,10 @@
         <?php endif; ?>
     </main>
     <?php require APP_PATH . 'views/inc/footer.php'; ?>
-    <script src="/proyectofinaldesarrollo/js/pos.js" defer></script>
+    <?php
+    // Cambiar la URL con el contenido evita mezclar una vista nueva con JS anterior en caché.
+    $versionPos = substr(hash_file('sha256', APP_PATH . '../public/js/pos.js'), 0, 12);
+    ?>
+    <script src="/proyectofinaldesarrollo/js/pos.js?v=<?= htmlspecialchars($versionPos, ENT_QUOTES, 'UTF-8') ?>" defer></script>
 </body>
 </html>
