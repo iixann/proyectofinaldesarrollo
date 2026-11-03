@@ -34,7 +34,7 @@
             <?php if (!$seleccionada): ?>
                 <p class="alert alert-info">Seleccioná una sesión abierta para habilitar la búsqueda y el carrito.</p>
             <?php else: ?>
-                <div id="terminalPos" data-sesion="<?= htmlspecialchars((string) $seleccionada->id_caja_sesion, ENT_QUOTES, 'UTF-8') ?>">
+                <div id="terminalPos" data-sesion="<?= htmlspecialchars((string) $seleccionada->id_caja_sesion, ENT_QUOTES, 'UTF-8') ?>" data-token="<?= htmlspecialchars($tokenVenta, ENT_QUOTES, 'UTF-8') ?>">
                     <p class="text-primary fw-semibold">Operando en <?= htmlspecialchars($seleccionada->caja, ENT_QUOTES, 'UTF-8') ?> · Sesión #<?= htmlspecialchars((string) $seleccionada->id_caja_sesion, ENT_QUOTES, 'UTF-8') ?></p>
                     <div class="row g-4">
                         <div class="col-12 col-xl-6">
@@ -79,8 +79,36 @@
                                     <p class="text-secondary fw-semibold mb-1">TOTAL</p>
                                     <p class="display-6 fw-bold text-primary" id="totalCarrito">$ 0,00</p>
                                 </div>
-                                <button class="btn btn-primary btn-lg w-100" type="button" disabled>Finalizar venta</button>
-                                <p class="text-secondary small mt-2 mb-0">El cobro y la confirmación estarán disponibles en las próximas etapas. El carrito es temporal y se pierde al recargar o salir.</p>
+                                <section class="border-top pt-3" aria-labelledby="tituloCobro">
+                                    <h3 class="h5" id="tituloCobro">Cobro</h3>
+                                    <p class="text-secondary small">Distribuí el total entre uno o varios medios. Dejá vacíos los que no uses.</p>
+                                    <?php if (!$mediosPago): ?><p class="alert alert-warning">No hay medios de pago activos.</p><?php endif; ?>
+                                    <div class="table-responsive"><table class="table align-middle">
+                                        <thead><tr><th scope="col">Medio</th><th scope="col">Monto aplicado</th><th scope="col">Entregado / referencia</th></tr></thead>
+                                        <tbody id="filasPago">
+                                            <?php foreach ($mediosPago as $medio): ?>
+                                                <tr data-medio="<?= htmlspecialchars((string) $medio->id_medio_pago, ENT_QUOTES, 'UTF-8') ?>" data-efectivo="<?= $medio->nombre === 'EFECTIVO' ? '1' : '0' ?>">
+                                                    <td><?= htmlspecialchars($medio->nombre, ENT_QUOTES, 'UTF-8') ?></td>
+                                                    <td><input class="form-control form-control-sm" type="number" min="0" max="9999999999.99" step="0.01" data-monto aria-label="Monto aplicado <?= htmlspecialchars($medio->nombre, ENT_QUOTES, 'UTF-8') ?>"></td>
+                                                    <td>
+                                                        <?php if ($medio->nombre === 'EFECTIVO'): ?>
+                                                            <label class="form-label small">Entregado
+                                                                <input class="form-control form-control-sm" type="number" min="0" max="9999999999.99" step="0.01" data-entregado aria-label="Efectivo entregado">
+                                                            </label>
+                                                            <small class="d-block text-secondary" data-vuelto>Vuelto: $ 0,00</small>
+                                                        <?php else: ?>
+                                                            <input class="form-control form-control-sm" type="text" maxlength="150" data-referencia placeholder="Referencia opcional" aria-label="Referencia <?= htmlspecialchars($medio->nombre, ENT_QUOTES, 'UTF-8') ?>">
+                                                        <?php endif; ?>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table></div>
+                                    <p class="mb-1">Total aplicado: <strong id="totalPagado">$ 0,00</strong></p>
+                                    <p class="small" id="estadoPagos" role="status">Agregá productos para iniciar el cobro.</p>
+                                    <button class="btn btn-primary btn-lg w-100" type="button" id="confirmarVenta" disabled>Confirmar venta</button>
+                                    <p class="text-secondary small mt-2 mb-0">Al confirmar se registra la venta y se descuenta stock. Precios, existencias y total se validan nuevamente en servidor. El carrito y los pagos son temporales hasta confirmar.</p>
+                                </section>
                             </div></section>
                         </div>
                     </div>

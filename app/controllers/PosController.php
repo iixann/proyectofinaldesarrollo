@@ -6,6 +6,7 @@ use \Controller;
 use \Response;
 use app\models\ProductoModel;
 use app\models\CajaSesionModel;
+use app\models\VentaModel;
 
 class PosController extends Controller
 {
@@ -31,8 +32,12 @@ class PosController extends Controller
         } elseif (count($sesiones) === 1) {
             $seleccionada = $sesiones[0];
         }
+        if (empty($_SESSION['csrf_venta'])) {
+            $_SESSION['csrf_venta'] = bin2hex(random_bytes(32));
+        }
         Response::render($this->viewDir(__NAMESPACE__), 'index', [
-            'sesiones' => $sesiones, 'seleccionada' => $seleccionada, 'mensaje' => $mensaje
+            'sesiones' => $sesiones, 'seleccionada' => $seleccionada, 'mensaje' => $mensaje,
+            'mediosPago' => VentaModel::mediosActivos(), 'tokenVenta' => $_SESSION['csrf_venta']
         ]);
     }
 

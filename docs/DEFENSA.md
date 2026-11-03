@@ -106,7 +106,7 @@ El escaneo busca el EAN con igualdad exacta; el nombre usa LIKE preparado, con h
 
 ## Carrito POS
 
-El carrito vive temporalmente en JavaScript y se pierde al recargar. La interfaz facilita escaneo, cantidades y eliminación, con importes visuales calculados en centavos enteros. No registra ventas ni cambia stock. JavaScript no será fuente confiable al vender: el servidor volverá a validar productos, precios, stock y total al confirmar.
+El carrito vive temporalmente en JavaScript y se pierde al recargar. La interfaz facilita escaneo, cantidades y eliminación, con importes visuales calculados en centavos enteros. No registra ventas ni cambia stock. JavaScript no será fuente confiable al vender: el servidor valida productos, precios, stock y total al confirmar.
 
 ## Stock y movimientos
 
@@ -127,6 +127,12 @@ Precio, subtotal y total se calculan en centavos enteros y se envían como caden
 Caja es la terminal física; caja_sesiones registra cada apertura y cierre. CajaController protege la administración con DUEÑO; SesioncajaController protege apertura, cierre e histórico con VENDEDOR. Las cajas usan baja lógica y reactivación, sin borrar su historial. No hay límite de sesiones por usuario, solamente una abierta por caja física.
 
 CajaSesionModel abre una transacción y bloquea la caja con SELECT ... FOR UPDATE antes de comprobar sesiones abiertas e insertar: evita que dos aperturas simultáneas creen turnos para la misma caja. Para cerrar bloquea la sesión para impedir cierres simultáneos, verifica ABIERTA y recalcula ventas activas y pagos EFECTIVO (monto aplicado). PHP toma estos totales de la base, sin confiar en el navegador. Efectivo esperado = fondo inicial + efectivo vendido; diferencia = contado - esperado. Calcula en centavos, guarda el cierre completo o hace rollback. Sin ventas las sumas devuelven cero. El cierre histórico es de solo lectura. Las ventas futuras deberán bloquear esa misma sesión antes de confirmarse.
+
+## Cobro y confirmación de venta
+
+VentaController recibe JSON por POST, exige VENDEDOR y un token de formulario ligado a la sesión para evitar envíos externos. VentaModel bloquea sesión abierta, caja activa, productos ordenados por ID y medios activos. Rechaza cantidades/productos/medios duplicados o inválidos; toma los precios reales, calcula en centavos y exige suma exacta de pagos. En efectivo guarda monto aplicado, entregado y vuelto recalculado; en otros medios estos últimos quedan NULL.
+
+Una transacción guarda venta, detalle histórico, stock, movimientos VENTA y pagos. Ante un fallo hace rollback. Comparte el bloqueo de sesión con el cierre; no llama a métodos que abran transacciones anidadas. JavaScript bloquea el doble clic y limpia el carrito solamente tras el éxito. El cierre suma monto aplicado en efectivo, no entregado. Las verificaciones de este bloque usan DataBase y frontend simulados.
 
 ## Contraseñas
 

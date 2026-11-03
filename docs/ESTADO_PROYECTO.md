@@ -2,9 +2,9 @@
 
 ## Último commit estable
 
-feat: implementar carrito dinamico pos
+feat: implementar cobro y confirmacion de ventas
 
-Commit de cierre de POS etapa 4, con verificaciones automáticas y pruebas manuales en navegador correctas. Para obtener su hash: `git log -1 --format=%h --grep="^feat: implementar carrito dinamico pos$"`.
+Cierre de Cobro + Confirmación con pruebas esenciales automatizadas sobre DataBase y frontend simulados. La comprobación contra MariaDB real y en navegador queda para la demostración local. Para obtener su hash: `git log -1 --format=%h --grep="^feat: implementar cobro y confirmacion de ventas$"`.
 
 Etapa visual anterior: `a0c1048` — `feat: mejorar interfaz visual del sistema`.
 
@@ -91,17 +91,17 @@ Pruebas manuales en navegador correctas. Base modificada manualmente: codigo_bar
 
 Pruebas manuales en navegador correctas: terminal POS con sesión de caja seleccionada, escaneo EAN, búsqueda manual y carrito dinámico temporal en JavaScript. Permite sumar/restar cantidades y eliminar productos, limita visualmente por stock y calcula subtotales y total en centavos. Bloquea el cambio de sesión con carrito cargado. No modifica stock real; Finalizar venta permanece deshabilitado.
 
+## Cobro + Confirmación — TERMINADO
+
+Medios activos y pagos combinados; efectivo entregado y vuelto. PHP toma usuario de sesión y reconstruye productos, precios y total con centavos. Una transacción guarda venta, detalles, pagos, stock y movimientos VENTA; bloquea sesión y productos con FOR UPDATE y revierte todo ante fallos. Token de formulario y bloqueo de doble clic. Pruebas esenciales con DataBase/DOM simulados correctas; pendiente de validación local sobre la base real.
+
 ## En desarrollo
 
 Ninguno.
 
-## Próximo gran bloque
+## Próximo objetivo
 
-COBRO + CONFIRMACIÓN COMPLETA DE VENTA — agrupa las antiguas POS 5 y POS 6.
-
-Medios de pago, pagos combinados, efectivo entregado, vuelto y validación de pagos; creación de venta, detalle_ventas y pagos_ventas, descuento de stock y movimientos_stock VENTA dentro de una transacción completa.
-
-Luego: histórico/detalle de ventas, ticket e integración/pruebas finales. Alcance en [POS_CAJA_VENTAS.md](POS_CAJA_VENTAS.md).
+Histórico + detalle + ticket imprimible/reimpresión; luego integración de la versión demostrable.
 
 ## Reglas del proyecto
 
