@@ -1,6 +1,6 @@
 # Caja + POS + Ventas
 
-Estado: POS etapas 1, 2, 3 y 4 terminadas. Modelo de datos definido y tablas creadas manualmente en phpMyAdmin, según confirmación del usuario. POS 2 (Cajas + apertura/cierre) implementada y probada manualmente en navegador. POS 3 (Código EAN obligatorio y búsqueda de productos) terminado y probado manualmente. POS 4 (Punto de Venta + carrito dinámico) terminado y probado manualmente. Cobro + Confirmación (POS 5 + POS 6) implementado y probado con simulaciones. Siguiente: histórico/detalle y ticket. Este documento no crea tablas ni contiene SQL para ejecutar. Se mantiene PHP puro, MVC del profesor, PDO centralizado en DataBase, autorización con onlyUsers() y Bootstrap/Malbec, sin capas nuevas.
+Estado: POS etapas 1, 2, 3 y 4 terminadas. Modelo de datos definido y tablas creadas manualmente en phpMyAdmin, según confirmación del usuario. POS 2 (Cajas + apertura/cierre) implementada y probada manualmente en navegador. POS 3 (Código EAN obligatorio y búsqueda de productos) terminado y probado manualmente. POS 4 (Punto de Venta + carrito dinámico) terminado y probado manualmente. Cobro + Confirmación (POS 5 + POS 6) implementado y probado con simulaciones. Histórico/detalle y ticket implementados y verificados con fixtures. Siguiente: integración final. Este documento no crea tablas ni contiene SQL para ejecutar. Se mantiene PHP puro, MVC del profesor, PDO centralizado en DataBase, autorización con onlyUsers() y Bootstrap/Malbec, sin capas nuevas.
 
 ## 1. Objetivo general
 
@@ -179,7 +179,7 @@ Productos incorpora codigo_barras VARCHAR(50) NOT NULL UNIQUE, según modificaci
 
 ## 19. Orden de implementación
 
-POS 1–4 terminados; POS 4 probado manualmente. Cobro + Confirmación (POS 5 + POS 6) terminado con pruebas simuladas. POS 7–9 permanecen pendientes.
+POS 1–4 terminados; POS 4 probado manualmente. Cobro + Confirmación (POS 5 + POS 6) terminado con pruebas simuladas. POS 7 y POS 8 terminados con pruebas simuladas; POS 9 pendiente.
 
 | Etapa | Alcance |
 |---|---|
@@ -188,9 +188,9 @@ POS 1–4 terminados; POS 4 probado manualmente. Cobro + Confirmación (POS 5 + 
 | POS 3 — TERMINADO | Código EAN obligatorio y búsqueda de productos; probado manualmente |
 | POS 4 — TERMINADO | Punto de Venta + carrito dinámico; probado manualmente |
 | POS 5 + POS 6 — TERMINADO | Cobro + Confirmación de venta: medios, pagos combinados, efectivo entregado/vuelto; venta, detalle, pagos, stock y movimiento en una transacción |
-| POS 7 | Histórico y detalle de ventas |
-| POS 8 | Ticket imprimible |
-| POS 9 | Pruebas completas |
+| POS 7 — TERMINADO | Histórico y detalle de ventas |
+| POS 8 — TERMINADO | Ticket imprimible |
+| POS 9 — SIGUIENTE | Pruebas completas |
 
 Cada etapa sigue: implementar → probar → commit → siguiente etapa. En POS 1, el resultado es el diseño y el SQL para administrar manualmente desde phpMyAdmin; la aplicación no crea ni modifica el esquema automáticamente.
 

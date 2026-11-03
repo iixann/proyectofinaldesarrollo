@@ -134,6 +134,10 @@ VentaController recibe JSON por POST, exige VENDEDOR y un token de formulario li
 
 Una transacción guarda venta, detalle histórico, stock, movimientos VENTA y pagos. Ante un fallo hace rollback. Comparte el bloqueo de sesión con el cierre; no llama a métodos que abran transacciones anidadas. JavaScript bloquea el doble clic y limpia el carrito solamente tras el éxito. El cierre suma monto aplicado en efectivo, no entregado. Las verificaciones de este bloque usan DataBase y frontend simulados.
 
+## Histórico y ticket
+
+VentaController permite listar, consultar e imprimir con permiso VENDEDOR. Detalle y pagos se leen desde sus tablas históricas, sin recalcular con el precio actual. El filtro de fechas usa parámetros y el listado muestra hasta 100 ventas recientes. El ticket usa CSS para 72 mm y window.print(); se puede reimprimir desde una venta y no realiza escrituras ni depende de un equipo fiscal. Los nombres de maestros provienen de JOIN y pueden reflejar renombrados posteriores; cantidades, precios e importes guardados se conservan.
+
 ## Contraseñas
 
 - `password_hash($contrasena, PASSWORD_DEFAULT)` se usa en `UserModel::crearUsuario()` para generar el hash que se guarda en `usuarios.password`. No se guarda la contraseña en texto plano; el hash no se descifra.

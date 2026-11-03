@@ -2,9 +2,9 @@
 
 ## Último commit estable
 
-feat: implementar cobro y confirmacion de ventas
+feat: implementar historico y ticket de ventas
 
-Cierre de Cobro + Confirmación con pruebas esenciales automatizadas sobre DataBase y frontend simulados. La comprobación contra MariaDB real y en navegador queda para la demostración local. Para obtener su hash: `git log -1 --format=%h --grep="^feat: implementar cobro y confirmacion de ventas$"`.
+Cierre de histórico/detalle y ticket con pruebas automatizadas de rutas, permisos, datos históricos y vistas sobre DataBase simulada. La comprobación contra MariaDB real y en navegador queda para la demostración local. Para obtener su hash: `git log -1 --format=%h --grep="^feat: implementar historico y ticket de ventas$"`.
 
 Etapa visual anterior: `a0c1048` — `feat: mejorar interfaz visual del sistema`.
 
@@ -95,13 +95,17 @@ Pruebas manuales en navegador correctas: terminal POS con sesión de caja selecc
 
 Medios activos y pagos combinados; efectivo entregado y vuelto. PHP toma usuario de sesión y reconstruye productos, precios y total con centavos. Una transacción guarda venta, detalles, pagos, stock y movimientos VENTA; bloquea sesión y productos con FOR UPDATE y revierte todo ante fallos. Token de formulario y bloqueo de doble clic. Pruebas esenciales con DataBase/DOM simulados correctas; pendiente de validación local sobre la base real.
 
+## Histórico + detalle + ticket — TERMINADO
+
+Ventas con filtro por fechas (hasta 100 resultados), detalle de solo lectura y ticket térmico de 72 mm mediante window.print(), reimprimible desde histórico y accesible tras confirmar. Precios, cantidades, importes, entregado y vuelto provienen de los registros guardados. Nombres de maestros se consultan por JOIN; no se guardan copias de nombres. Probado con fixtures, pendiente de validación local de impresión/base real.
+
 ## En desarrollo
 
 Ninguno.
 
 ## Próximo objetivo
 
-Histórico + detalle + ticket imprimible/reimpresión; luego integración de la versión demostrable.
+Integración y estabilización de la versión demostrable; documentación de estudio y defensa.
 
 ## Reglas del proyecto
 

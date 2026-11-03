@@ -49,7 +49,9 @@ $inicioNavegacion = $esAdministrador ? '/proyectofinaldesarrollo/admin/index' : 
                         <?php if ($puedeOperarCaja): ?>
                         <li class="nav-item"><a class="nav-link <?= $seccionActual === 'consulta_pos' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'consulta_pos' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/pos/index">Punto de Venta</a></li>
                         <?php endif; ?>
-                        <li class="nav-item"><span class="nav-link disabled" aria-disabled="true" title="Próximamente">Ventas<span class="visually-hidden">: próximamente</span></span></li>
+                        <?php if ($puedeOperarCaja): ?>
+                        <li class="nav-item"><a class="nav-link <?= $seccionActual === 'ventas' ? 'active text-primary fw-semibold' : '' ?>" href="/proyectofinaldesarrollo/venta/index">Ventas</a></li>
+                        <?php endif; ?>
                         <li class="nav-item ms-xl-2 mt-2 mt-xl-0">
                             <a class="btn btn-outline-primary btn-sm" href="/proyectofinaldesarrollo/session/logout"><i class="fa-solid fa-right-from-bracket me-2" aria-hidden="true"></i>Cerrar sesión</a>
                         </li>

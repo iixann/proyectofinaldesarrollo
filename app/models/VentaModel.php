@@ -15,6 +15,44 @@ class VentaModel extends Model
         return DataBase::query('SELECT id_medio_pago, nombre FROM medios_pago WHERE estado = 1 ORDER BY id_medio_pago');
     }
 
+    public static function listarVentas($desde = '', $hasta = '')
+    {
+        $sql = 'SELECT v.*, c.nombre AS caja, u.nombre, u.apellido FROM ventas v
+            INNER JOIN caja_sesiones s ON s.id_caja_sesion = v.id_caja_sesion
+            INNER JOIN cajas c ON c.id_caja = s.id_caja
+            INNER JOIN usuarios u ON u.id_usuario = v.id_usuario WHERE 1 = 1';
+        $parametros = [];
+        if ($desde !== '') {
+            $sql .= ' AND v.fecha_venta >= :desde';
+            $parametros['desde'] = $desde;
+        }
+        if ($hasta !== '') {
+            $sql .= ' AND v.fecha_venta < DATE_ADD(:hasta, INTERVAL 1 DAY)';
+            $parametros['hasta'] = $hasta;
+        }
+        return DataBase::query($sql . ' ORDER BY v.fecha_venta DESC, v.id_venta DESC LIMIT 100', $parametros);
+    }
+
+    public static function buscarVenta($id)
+    {
+        return DataBase::getRecord('SELECT v.*, c.nombre AS caja, u.nombre, u.apellido FROM ventas v
+            INNER JOIN caja_sesiones s ON s.id_caja_sesion = v.id_caja_sesion
+            INNER JOIN cajas c ON c.id_caja = s.id_caja
+            INNER JOIN usuarios u ON u.id_usuario = v.id_usuario WHERE v.id_venta = :id', ['id' => $id]);
+    }
+
+    public static function detallesVenta($id)
+    {
+        return DataBase::query('SELECT d.*, p.nombre_producto, p.codigo_barras FROM detalle_ventas d
+            INNER JOIN productos p ON p.id_producto = d.id_producto WHERE d.id_venta = :id ORDER BY d.id_detalle_venta', ['id' => $id]);
+    }
+
+    public static function pagosVenta($id)
+    {
+        return DataBase::query('SELECT p.*, m.nombre AS medio FROM pagos_ventas p
+            INNER JOIN medios_pago m ON m.id_medio_pago = p.id_medio_pago WHERE p.id_venta = :id ORDER BY p.id_pago_venta', ['id' => $id]);
+    }
+
     private static function idValido($id)
     {
         return (is_int($id) || is_string($id)) && ctype_digit((string) $id)

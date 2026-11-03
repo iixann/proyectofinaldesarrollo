@@ -3,10 +3,68 @@
 namespace app\controllers;
 
 use \Controller;
+use \Response;
 use app\models\VentaModel;
+use app\models\CajaSesionModel;
 
 class VentaController extends Controller
 {
+    public function actionIndex($parametro = null)
+    {
+        SessionController::onlyUsers(['VENDEDOR']);
+        $filtros = [];
+        $error = '';
+        foreach (['desde', 'hasta'] as $campo) {
+            $fecha = $_GET[$campo] ?? '';
+            if (!is_string($fecha) || ($fecha !== '' && (!preg_match('/^\d{4}-\d{2}-\d{2}$/D', $fecha)
+                || !checkdate((int) substr($fecha, 5, 2), (int) substr($fecha, 8, 2), (int) substr($fecha, 0, 4))))) {
+                $error = 'Ingresá fechas válidas.';
+                $fecha = '';
+            }
+            $filtros[$campo] = $fecha;
+        }
+        if ($filtros['desde'] !== '' && $filtros['hasta'] !== '' && $filtros['desde'] > $filtros['hasta']) {
+            $error = 'La fecha desde no puede superar la fecha hasta.';
+        }
+        if ($error !== '') http_response_code(400);
+        Response::render('venta/', 'index', [
+            'ventas' => $error === '' ? VentaModel::listarVentas($filtros['desde'], $filtros['hasta']) : [],
+            'filtros' => $filtros, 'error' => $error
+        ]);
+    }
+
+    public function actionVer($id = null)
+    {
+        SessionController::onlyUsers(['VENDEDOR']);
+        Response::render('venta/', 'ver', $this->datosVenta($id));
+    }
+
+    public function actionTicket($id = null)
+    {
+        SessionController::onlyUsers(['VENDEDOR']);
+        Response::render('venta/', 'ticket', $this->datosVenta($id));
+    }
+
+    private function datosVenta($id)
+    {
+        if (!is_string($id) || !ctype_digit($id) || (float) $id < 1 || (float) $id > 4294967295) {
+            http_response_code(400);
+            echo 'ID de venta inválido.';
+            exit;
+        }
+        $venta = VentaModel::buscarVenta($id);
+        if (!$venta) {
+            http_response_code(404);
+            echo 'La venta no existe.';
+            exit;
+        }
+        $pagos = VentaModel::pagosVenta($id);
+        $totalPagado = 0;
+        foreach ($pagos as $pago) $totalPagado += CajaSesionModel::centavos((string) $pago->monto);
+        return ['venta' => $venta, 'detalles' => VentaModel::detallesVenta($id), 'pagos' => $pagos,
+            'totalPagado' => CajaSesionModel::decimal($totalPagado)];
+    }
+
     public function actionConfirmar()
     {
         SessionController::onlyUsers(['VENDEDOR']);

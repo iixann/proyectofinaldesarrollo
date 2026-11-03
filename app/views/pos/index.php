@@ -55,6 +55,7 @@
                                     </div>
                                 </form>
                             </div></section>
+                            <a id="verUltimaVenta" class="btn btn-outline-primary mb-3" hidden>Ver venta / imprimir ticket</a>
                             <p id="mensajePos" role="status" aria-live="polite" class="alert alert-info">Escaneá un producto o buscá por nombre.</p>
                             <section class="card border-0 shadow-sm rounded-4" id="resultadosBusqueda" hidden><div class="card-body p-3">
                                 <h2 class="h5">Resultados</h2>

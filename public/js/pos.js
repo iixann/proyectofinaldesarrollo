@@ -305,6 +305,9 @@ function iniciarPos() {
             resultados.replaceChildren();
             seccionResultados.hidden = true;
             codigo.value = '';
+            const enlaceVenta = document.getElementById('verUltimaVenta');
+            enlaceVenta.href = '/proyectofinaldesarrollo/venta/ver/' + datos.id_venta;
+            enlaceVenta.hidden = false;
             informar('Venta #' + datos.id_venta + ' registrada correctamente. Total: $ ' + datos.total);
         } catch (error) {
             informar(error.message || 'No se recibió confirmación de la venta. No se reenvió automáticamente.', true);

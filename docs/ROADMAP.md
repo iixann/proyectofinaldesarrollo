@@ -41,7 +41,7 @@ El aviso de stock bajo es visual; Compras permite registrar la reposición.
 
 ## ETAPA 5 - CAJA + POS + VENTAS — EN CURSO
 
-POS 1 terminado: diseño definitivo y estructura de base creados manualmente. POS 2 terminado y probado manualmente: Cajas + apertura/cierre. POS 3 terminado y probado manualmente: EAN obligatorio y búsqueda de productos. POS 4 terminado y probado: Punto de Venta + carrito dinámico. Cobro + Confirmación (POS 5 + POS 6) implementado y verificado con simulaciones. Siguiente: histórico/detalle y ticket. Alcance completo en [POS_CAJA_VENTAS.md](POS_CAJA_VENTAS.md). No se trata de un CRUD simple: incluye operación de caja, carrito, pagos, confirmación transaccional, histórico y ticket.
+POS 1 terminado: diseño definitivo y estructura de base creados manualmente. POS 2 terminado y probado manualmente: Cajas + apertura/cierre. POS 3 terminado y probado manualmente: EAN obligatorio y búsqueda de productos. POS 4 terminado y probado: Punto de Venta + carrito dinámico. Cobro + Confirmación (POS 5 + POS 6) implementado y verificado con simulaciones. Histórico/detalle y ticket implementados con pruebas simuladas. Siguiente: integración final. Alcance completo en [POS_CAJA_VENTAS.md](POS_CAJA_VENTAS.md). No se trata de un CRUD simple: incluye operación de caja, carrito, pagos, confirmación transaccional, histórico y ticket.
 
 Orden de avance; POS 1–4 terminados y siguientes bloques pendientes:
 
@@ -50,11 +50,11 @@ Orden de avance; POS 1–4 terminados y siguientes bloques pendientes:
 3. POS 3 — TERMINADO: Código EAN obligatorio y búsqueda de productos; pruebas manuales correctas.
 4. POS 4 — TERMINADO: Punto de Venta + carrito dinámico; probado manualmente.
 5. POS 5 + POS 6 — TERMINADO: COBRO + CONFIRMACIÓN DE VENTA. Medios y pagos combinados, efectivo entregado/vuelto; venta, detalle, pagos, stock y movimiento en una transacción completa.
-6. POS 7 — SIGUIENTE: histórico y detalle de ventas.
-7. POS 8 — PENDIENTE: ticket imprimible.
-8. POS 9 — PENDIENTE: integración y pruebas finales.
+6. POS 7 — TERMINADO: histórico y detalle de ventas.
+7. POS 8 — TERMINADO: ticket imprimible.
+8. POS 9 — SIGUIENTE: integración y pruebas finales.
 
-Cada etapa: implementar → probar → commit → siguiente etapa. No implementar todo en un único cambio. La estructura de base de POS 1 ya fue creada manualmente. POS 4 está terminado y probado manualmente. POS 5 y POS 6 se cerraron como un bloque funcional con pruebas simuladas; POS 7–9 continúan pendientes.
+Cada etapa: implementar → probar → commit → siguiente etapa. No implementar todo en un único cambio. La estructura de base de POS 1 ya fue creada manualmente. POS 4 está terminado y probado manualmente. POS 5 y POS 6 se cerraron como un bloque funcional con pruebas simuladas; POS 7 y POS 8 terminados con fixtures; POS 9 pendiente.
 
 Las etapas 2 a 5 forman la prioridad funcional. Verificar la integración al terminar cada etapa.
 
