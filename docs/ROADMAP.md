@@ -80,6 +80,10 @@ Filtros combinables de Productos; búsqueda de Categorías/Proveedores; ID de Ve
 
 Stock usa solo `stock_actual` y `stock_minimo`. Reposición lista productos activos con `stock_actual <= stock_minimo` y todos sus proveedores asociados vigentes, sin modificar existencias ni generar compras. Verificaciones automáticas con simulaciones; pendientes la eliminación manual de la columna anterior y las pruebas de navegador de este bloque. No se inician funcionalidades adicionales.
 
+## Mejoras operativas de cajas, Compras y Reposición — IMPLEMENTADAS
+
+Cierre exclusivo del usuario que abrió y POS en sesiones propias, conservando supervisión. Filtros combinables en Reposición y proveedor en Compras. Alta rápida de proveedor/producto dentro de Nueva compra, con asociación activa automática, stock inicial 0 y validaciones compartidas; el CRUD completo mantiene sus permisos. Verificado con fixtures/JavaScript; prueba manual pendiente. Sin cambios nuevos de esquema. Próximo paso: pulido final, sin agregar funcionalidades automáticamente.
+
 ## Criterio de avance
 
 Un módulo queda terminado cuando cumple su objetivo concreto, fue probado en navegador, se corrigieron los errores, se explicó su lógica importante, se actualizó la documentación y se creó su commit.

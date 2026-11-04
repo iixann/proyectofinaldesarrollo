@@ -35,6 +35,40 @@ class ProveedorModel extends Model
         return $proveedor && (string) $proveedor->id_proveedor !== (string) $id;
     }
 
+    public static function validarDatos($entrada, $id = null)
+    {
+        $datosProveedor = [];
+        $errores = [];
+        $campos = [
+            'razon_social' => ['Razón social', 150],
+            'cuit' => ['CUIT', 13],
+            'nombre_contacto' => ['Nombre de contacto', 100],
+            'telefono' => ['Teléfono', 50],
+            'email' => ['Email', 150],
+            'direccion' => ['Dirección', 200]
+        ];
+        foreach ($campos as $campo => [$etiqueta, $limite]) {
+            $valor = is_string($entrada[$campo] ?? null) ? trim($entrada[$campo]) : '';
+            $datosProveedor[$campo] = $valor;
+            if (!mb_check_encoding($valor, 'UTF-8') || (isset($entrada[$campo]) && !is_string($entrada[$campo]))) {
+                $errores[] = $etiqueta . ': ingresá un texto válido.';
+            }
+            if (mb_strlen($valor, 'UTF-8') > $limite) {
+                $errores[] = $etiqueta . ': ingresá hasta ' . $limite . ' caracteres.';
+            }
+        }
+        if ($datosProveedor['razon_social'] === '') {
+            $errores[] = 'Ingresá una razón social.';
+        }
+        if ($datosProveedor['email'] !== '' && !filter_var($datosProveedor['email'], FILTER_VALIDATE_EMAIL)) {
+            $errores[] = 'El correo electrónico no es válido.';
+        }
+        if ($datosProveedor['cuit'] !== '' && mb_check_encoding($datosProveedor['cuit'], 'UTF-8') && self::cuitDuplicado($datosProveedor['cuit'], $id)) {
+            $errores[] = 'Ya existe un proveedor con ese CUIT.';
+        }
+        return [$datosProveedor, $errores];
+    }
+
     private static function parametros($datosProveedor)
     {
         $parametros = ['razon_social' => $datosProveedor['razon_social']];

@@ -102,9 +102,12 @@ class VentaModel extends Model
         ksort($medios, SORT_NUMERIC);
         DataBase::iniciarTransaccion();
         try {
-            $sesion = DataBase::getRecord('SELECT id_caja, estado FROM caja_sesiones WHERE id_caja_sesion = :id FOR UPDATE', ['id' => $idSesion]);
+            $sesion = DataBase::getRecord('SELECT id_caja, estado, id_usuario_apertura FROM caja_sesiones WHERE id_caja_sesion = :id FOR UPDATE', ['id' => $idSesion]);
             if (!$sesion || $sesion->estado !== 'ABIERTA') {
                 throw new \DomainException('La sesión de caja ya no está abierta.', 409);
+            }
+            if ((string) $sesion->id_usuario_apertura !== (string) $idUsuario) {
+                throw new \DomainException('Solo podés vender en una sesión de caja que abriste.', 403);
             }
             $caja = DataBase::getRecord('SELECT estado FROM cajas WHERE id_caja = :id FOR UPDATE', ['id' => $sesion->id_caja]);
             if (!$caja || (int) $caja->estado !== 1) {

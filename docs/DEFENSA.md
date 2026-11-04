@@ -174,3 +174,9 @@ Solo ADMINISTRADOR da de baja/reactiva usuarios por POST; se conservan ID, roles
 Un hash no permite recuperar la contraseña original; se restablece con password_hash y la temporal también queda hasheada. Solo ADMINISTRADOR puede hacerlo por POST con token, sin cambiar estado/roles. `debe_cambiar_password = 1` lleva al cambio propio obligatorio; onlyUsers consulta el usuario antes de autorizar cualquier módulo y compara una firma del hash con la sesión para invalidar accesos previos al reset. No basta ocultar el menú.
 
 El cambio valida mínimo 9 caracteres, confirmación y diferencia respecto de la temporal; bloquea la fila dentro de una transacción para evitar sobrescribir otro reset concurrente, guarda el hash y deja el indicador en 0. La CLI local valida un ADMINISTRADOR existente y reutiliza configuración/modelo: no ofrece login web, contraseña maestra ni correo. El indicador anterior se renombra, sin crear dos campos equivalentes.
+
+## Propiedad de caja y altas rápidas de Compra
+
+La identidad del usuario se toma de PHP. Cerrar exige que coincida con id_usuario_apertura, incluso para administrador/dueño; se comprueba también bajo FOR UPDATE. POS lista sesiones propias y la venta valida esa misma propiedad dentro de su transacción. Supervisar no equivale a cerrar una caja ajena.
+
+Reposición agrega filtros GET sin cambiar actual <= mínimo; EXISTS evita duplicados por proveedor y no recorta los proveedores mostrados. Compras combina proveedor e ID/comprobante. Sus modales usan POST, token y JSON interno; RECEPCIONISTA puede crear maestros en ese contexto, sin acceso a sus CRUD completos. Las validaciones se comparten en los modelos. Producto + asociación activa se guardan juntos, con stock 0; la compra posterior registra cantidad/precio histórico, suma stock y genera COMPRA en su transacción habitual. Precio de venta y de compra siguen separados.

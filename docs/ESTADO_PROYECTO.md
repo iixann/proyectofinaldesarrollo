@@ -2,6 +2,17 @@
 
 ## Último bloque funcional
 
+`feat: mejorar operacion de cajas compras y reposicion`: implementado y verificado con fixtures y simulación JavaScript; pendiente de recorrido manual en navegador.
+
+- El cierre normal exige `id_usuario_apertura` igual al usuario autenticado, tanto al mostrar el formulario como bajo FOR UPDATE; no hay excepción administrativa. Las consultas de supervisión se conservan.
+- POS lista y valida sesiones abiertas propias; la confirmación de venta revalida la propiedad dentro de su transacción.
+- Reposición combina nombre, EAN exacto, categoría y proveedor, manteniendo actual <= mínimo y todos los proveedores asociados sin duplicar filas.
+- Compras combina proveedor con ID/comprobante. Nueva compra ofrece altas rápidas de proveedor y producto mediante modales, POST, token de sesión y JSON interno, sin abandonar la compra.
+- Altas rápidas permitidas para RECEPCIONISTA/DUEÑO/ADMINISTRADOR; CRUD completos mantienen DUEÑO/ADMINISTRADOR. Validaciones compartidas en modelos; el producto nace con stock 0 y asociación activa al proveedor elegido.
+- La compra confirmada conserva su transacción habitual. Verificado: compra suma, venta resta, movimientos y cierre correctos; rollback del alta de producto si falla su asociación. No hay cambios de esquema en este bloque ni escrituras sobre la base real desde Codex.
+
+## Restablecimiento de contraseñas — bloque anterior
+
 `feat: agregar restablecimiento seguro de contrasenas`: restablecimiento administrativo, cambio obligatorio y herramienta técnica CLI implementados y verificados con base simulada; pendiente de prueba manual local.
 
 - Solo ADMINISTRADOR restablece contraseñas desde Usuarios, con temporal de mínimo 9 caracteres y confirmación, almacenada como hash.
@@ -119,7 +130,7 @@ Validación local del circuito nuevo en navegador/MariaDB e impresión física. 
 
 ## Próximo objetivo
 
-Aplicar manualmente el renombrado del indicador de contraseña y probar los flujos web/CLI en entorno local. Luego pulido final y recorrido de DEMOSTRACION.md para defensa. Si sigue pendiente, la eliminación de la columna anterior de stock pertenece al bloque previo. Desarrollo automático detenido al publicar este bloque; no se agregan más funcionalidades.
+Probar en navegador la propiedad de caja, filtros y altas rápidas de Compra; luego pulido final y recorrido de DEMOSTRACION.md. Si aún no se aplicaron, el renombrado del indicador de contraseña y la eliminación de la columna anterior de stock pertenecen a bloques previos; este bloque no requiere ALTER. Desarrollo automático detenido tras publicar las mejoras operativas.
 
 ## Reglas del proyecto
 

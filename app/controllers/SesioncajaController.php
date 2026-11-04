@@ -51,6 +51,7 @@ class SesioncajaController extends Controller
     {
         SessionController::onlyUsers(['VENDEDOR']);
         $sesion = $this->buscarSesion($id);
+        $this->exigirPropietario($sesion);
         if ($sesion->estado !== 'ABIERTA') {
             http_response_code(409);
             echo 'La sesión ya está cerrada. Consultá su detalle desde el listado.';
@@ -64,10 +65,16 @@ class SesioncajaController extends Controller
         SessionController::onlyUsers(['VENDEDOR']);
         $this->exigirPost();
         $sesion = $this->buscarSesion($id);
+        $this->exigirPropietario($sesion);
         $datos = $this->leerDatos(['efectivo_contado', 'observacion_cierre']);
         try {
             CajaSesionModel::cerrar($sesion->id_caja_sesion, $_SESSION['usuario']['id_usuario'], $datos['efectivo_contado'], $datos['observacion_cierre']);
         } catch (\DomainException $excepcion) {
+            if ($excepcion->getCode() === 403) {
+                http_response_code(403);
+                echo 'Solo podés cerrar la sesión de caja que abriste.';
+                return;
+            }
             http_response_code(422);
             $sesion = CajaSesionModel::buscarSesion($id);
             if ($sesion->estado !== 'ABIERTA') {
@@ -91,6 +98,14 @@ class SesioncajaController extends Controller
         SessionController::onlyUsers(['VENDEDOR']);
         $sesion = $this->buscarSesion($id);
         Response::render('caja_sesion/', 'ver', ['sesion' => $sesion, 'totalesMedios' => CajaSesionModel::totalesPorMedio($id)]);
+    }
+
+    private function exigirPropietario($sesion)
+    {
+        if ((string) $sesion->id_usuario_apertura !== (string) $_SESSION['usuario']['id_usuario']) {
+            http_response_code(403);
+            exit('Solo podés cerrar la sesión de caja que abriste.');
+        }
     }
 
     private function idValido($id)

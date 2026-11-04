@@ -91,8 +91,8 @@ class VentaController extends Controller
         try {
             $venta = VentaModel::confirmar($datos['id_caja_sesion'] ?? null, $datos['productos'] ?? null, $datos['pagos'] ?? null, $_SESSION['usuario']['id_usuario']);
         } catch (\DomainException $excepcion) {
-            $cerrada = $excepcion->getCode() === 409;
-            $this->json(['ok' => false, 'mensaje' => $excepcion->getMessage(), 'sesion_no_disponible' => $cerrada], $cerrada ? 409 : 422);
+            $cerrada = in_array($excepcion->getCode(), [403, 409], true);
+            $this->json(['ok' => false, 'mensaje' => $excepcion->getMessage(), 'sesion_no_disponible' => $cerrada], $cerrada ? $excepcion->getCode() : 422);
             return;
         } catch (\Throwable $excepcion) {
             error_log($excepcion->getMessage());

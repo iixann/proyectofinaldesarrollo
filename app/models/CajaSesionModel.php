@@ -33,19 +33,21 @@ class CajaSesionModel extends Model
         return DataBase::query('SELECT id_caja, nombre FROM cajas WHERE estado = 1 ORDER BY nombre');
     }
 
-    public static function sesionesDisponiblesPos()
+    public static function sesionesDisponiblesPos($idUsuario)
     {
         return DataBase::query("SELECT s.id_caja_sesion, s.id_caja, c.nombre AS caja, u.nombre, u.apellido
             FROM caja_sesiones s INNER JOIN cajas c ON c.id_caja = s.id_caja
             INNER JOIN usuarios u ON u.id_usuario = s.id_usuario_apertura
-            WHERE s.estado = 'ABIERTA' AND c.estado = 1 ORDER BY c.nombre, s.id_caja_sesion");
+            WHERE s.estado = 'ABIERTA' AND c.estado = 1 AND s.id_usuario_apertura = :usuario
+            ORDER BY c.nombre, s.id_caja_sesion", ['usuario' => $idUsuario]);
     }
 
-    public static function sesionDisponiblePos($id)
+    public static function sesionDisponiblePos($id, $idUsuario)
     {
         return DataBase::getRecord("SELECT s.id_caja_sesion, s.id_caja, c.nombre AS caja
             FROM caja_sesiones s INNER JOIN cajas c ON c.id_caja = s.id_caja
-            WHERE s.id_caja_sesion = :id AND s.estado = 'ABIERTA' AND c.estado = 1", ['id' => $id]);
+            WHERE s.id_caja_sesion = :id AND s.estado = 'ABIERTA' AND c.estado = 1
+            AND s.id_usuario_apertura = :usuario", ['id' => $id, 'usuario' => $idUsuario]);
     }
 
     public static function centavos($importe)
@@ -115,6 +117,9 @@ class CajaSesionModel extends Model
         DataBase::iniciarTransaccion();
         try {
             $sesion = DataBase::getRecord('SELECT * FROM caja_sesiones WHERE id_caja_sesion = :id FOR UPDATE', ['id' => $id]);
+            if ($sesion && (string) $sesion->id_usuario_apertura !== (string) $idUsuario) {
+                throw new \DomainException('Solo podés cerrar la sesión de caja que abriste.', 403);
+            }
             if (!$sesion || $sesion->estado !== 'ABIERTA') {
                 throw new \DomainException('La sesión no existe o ya está cerrada.');
             }

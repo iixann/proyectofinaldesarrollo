@@ -121,45 +121,7 @@ class ProductoController extends Controller
 
     private function guardar($id = null)
     {
-        $datosProducto = [];
-        $errores = [];
-        foreach (['nombre_producto', 'codigo_barras', 'id_categoria', 'descripcion', 'precio_venta', 'stock_minimo'] as $campo) {
-            $datosProducto[$campo] = is_string($_POST[$campo] ?? null) ? trim($_POST[$campo]) : '';
-        }
-        if ($datosProducto['nombre_producto'] === '') {
-            $errores[] = 'Ingresá el nombre del producto.';
-        } elseif (mb_strlen($datosProducto['nombre_producto'], 'UTF-8') > 150) {
-            $errores[] = 'El nombre debe tener hasta 150 caracteres.';
-        }
-        if (mb_strlen($datosProducto['descripcion'], 'UTF-8') > 255) {
-            $errores[] = 'La descripción debe tener hasta 255 caracteres.';
-        }
-        if (isset($_POST['codigo_barras']) && !is_string($_POST['codigo_barras'])) {
-            $errores[] = 'Ingresá un Código EAN válido como texto.';
-        } elseif ($datosProducto['codigo_barras'] === '') {
-            $errores[] = 'Ingresá el Código EAN. Es obligatorio.';
-        } elseif (!mb_check_encoding($datosProducto['codigo_barras'], 'UTF-8') || mb_strlen($datosProducto['codigo_barras'], 'UTF-8') > 50) {
-            $errores[] = 'El Código EAN debe tener hasta 50 caracteres válidos.';
-        } elseif (ProductoModel::codigoDuplicado($datosProducto['codigo_barras'], $id)) {
-            $errores[] = 'Ya existe un producto con ese Código EAN, incluso si está inactivo.';
-        }
-        $categorias = array_map('strval', array_column(ProductoModel::obtenerCategoriasActivas(), 'id_categoria'));
-        $categoriaValida = ctype_digit($datosProducto['id_categoria']) && in_array($datosProducto['id_categoria'], $categorias, true);
-        if (!$categoriaValida) {
-            $errores[] = 'Seleccioná una categoría activa válida.';
-        }
-        $precio = $datosProducto['precio_venta'];
-        if (!preg_match('/^\d{1,10}(?:\.\d{1,2})?$/D', $precio)) {
-            $errores[] = 'Ingresá un precio de venta mayor o igual a cero, con hasta dos decimales y diez dígitos enteros.';
-        }
-        foreach (['stock_minimo' => 'Stock mínimo'] as $campo => $etiqueta) {
-            if ($datosProducto[$campo] === '') {
-                $datosProducto[$campo] = '0';
-            }
-            if (!ctype_digit($datosProducto[$campo]) || filter_var($datosProducto[$campo], FILTER_VALIDATE_INT, ['options' => ['min_range' => 0, 'max_range' => 2147483647]]) === false) {
-                $errores[] = $etiqueta . ': ingresá un entero mayor o igual a cero.';
-            }
-        }
+        [$datosProducto, $errores] = ProductoModel::validarDatos($_POST, $id);
         $seleccionados = $_POST['proveedores'] ?? [];
         $proveedores = [];
         $activos = array_map('strval', array_column(ProductoModel::obtenerProveedoresActivos(), 'id_proveedor'));
@@ -175,9 +137,6 @@ class ProductoController extends Controller
             }
         }
         $proveedores = array_values(array_unique($proveedores));
-        if ($categoriaValida && $datosProducto['nombre_producto'] !== '' && ProductoModel::nombreDuplicado($datosProducto['nombre_producto'], $datosProducto['id_categoria'], $id)) {
-            $errores[] = 'Ya existe ese producto en la categoría seleccionada.';
-        }
         $datosProducto['proveedores'] = $proveedores;
         $vista = $id === null ? 'crear' : 'editar';
         if ($errores) {

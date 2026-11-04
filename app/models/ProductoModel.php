@@ -94,6 +94,56 @@ class ProductoModel extends Model
         self::asignarProveedores($id, $proveedores);
     }
 
+    public static function validarDatos($entrada, $id = null)
+    {
+        $datosProducto = [];
+        $errores = [];
+        foreach (['nombre_producto', 'codigo_barras', 'id_categoria', 'descripcion', 'precio_venta', 'stock_minimo'] as $campo) {
+            $datosProducto[$campo] = is_string($entrada[$campo] ?? null) ? trim($entrada[$campo]) : '';
+            if (!mb_check_encoding($datosProducto[$campo], 'UTF-8') || (isset($entrada[$campo]) && !is_string($entrada[$campo]))) {
+                $errores[] = 'Ingresá un texto válido para ' . $campo . '.';
+            }
+        }
+        if ($datosProducto['nombre_producto'] === '') {
+            $errores[] = 'Ingresá el nombre del producto.';
+        } elseif (mb_strlen($datosProducto['nombre_producto'], 'UTF-8') > 150) {
+            $errores[] = 'El nombre debe tener hasta 150 caracteres.';
+        }
+        if (mb_strlen($datosProducto['descripcion'], 'UTF-8') > 255) {
+            $errores[] = 'La descripción debe tener hasta 255 caracteres.';
+        }
+        if (isset($entrada['codigo_barras']) && !is_string($entrada['codigo_barras'])) {
+            $errores[] = 'Ingresá un Código EAN válido como texto.';
+        } elseif ($datosProducto['codigo_barras'] === '') {
+            $errores[] = 'Ingresá el Código EAN. Es obligatorio.';
+        } elseif (!mb_check_encoding($datosProducto['codigo_barras'], 'UTF-8') || mb_strlen($datosProducto['codigo_barras'], 'UTF-8') > 50) {
+            $errores[] = 'El Código EAN debe tener hasta 50 caracteres válidos.';
+        } elseif (self::codigoDuplicado($datosProducto['codigo_barras'], $id)) {
+            $errores[] = 'Ya existe un producto con ese Código EAN, incluso si está inactivo.';
+        }
+        $categorias = array_map('strval', array_column(self::obtenerCategoriasActivas(), 'id_categoria'));
+        $categoriaValida = ctype_digit($datosProducto['id_categoria']) && in_array($datosProducto['id_categoria'], $categorias, true);
+        if (!$categoriaValida) {
+            $errores[] = 'Seleccioná una categoría activa válida.';
+        }
+        $precio = $datosProducto['precio_venta'];
+        if (!preg_match('/^\d{1,10}(?:\.\d{1,2})?$/D', $precio)) {
+            $errores[] = 'Ingresá un precio de venta mayor o igual a cero, con hasta dos decimales y diez dígitos enteros.';
+        }
+        foreach (['stock_minimo' => 'Stock mínimo'] as $campo => $etiqueta) {
+            if ($datosProducto[$campo] === '') {
+                $datosProducto[$campo] = '0';
+            }
+            if (!ctype_digit($datosProducto[$campo]) || filter_var($datosProducto[$campo], FILTER_VALIDATE_INT, ['options' => ['min_range' => 0, 'max_range' => 2147483647]]) === false) {
+                $errores[] = $etiqueta . ': ingresá un entero mayor o igual a cero.';
+            }
+        }
+        if ($categoriaValida && $datosProducto['nombre_producto'] !== '' && mb_check_encoding($datosProducto['nombre_producto'], 'UTF-8') && self::nombreDuplicado($datosProducto['nombre_producto'], $datosProducto['id_categoria'], $id)) {
+            $errores[] = 'Ya existe ese producto en la categoría seleccionada.';
+        }
+        return [$datosProducto, $errores];
+    }
+
     public static function crearProducto($datosProducto, $proveedores)
     {
         unset($datosProducto['stock_actual']);

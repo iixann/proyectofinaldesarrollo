@@ -9,6 +9,38 @@
     <main class="container py-4 py-md-5 flex-grow-1" id="contenido">
         <h1 class="h2 fw-bold mb-3">Reposición</h1>
         <p class="text-secondary">Productos activos con stock actual menor o igual al mínimo. Esta consulta no modifica existencias ni genera compras.</p>
+        <form method="get" action="/proyectofinaldesarrollo/reposicion/index" class="row g-3 align-items-end mb-4">
+            <div class="col-sm-6 col-lg-3">
+                <label class="form-label" for="nombre">Nombre</label>
+                <input class="form-control" type="text" id="nombre" name="nombre" maxlength="150" value="<?= htmlspecialchars($filtros['nombre'], ENT_QUOTES, 'UTF-8') ?>">
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <label class="form-label" for="codigo_barras">Código EAN</label>
+                <input class="form-control" type="text" id="codigo_barras" name="codigo_barras" maxlength="50" placeholder="Código exacto" value="<?= htmlspecialchars($filtros['codigo_barras'], ENT_QUOTES, 'UTF-8') ?>">
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <label class="form-label" for="id_categoria">Categoría</label>
+                <select class="form-select" id="id_categoria" name="id_categoria">
+                    <option value="">Todas las categorías</option>
+                    <?php foreach ($categorias as $categoria): ?>
+                        <option value="<?= (int) $categoria->id_categoria ?>" <?= (string) $categoria->id_categoria === $filtros['id_categoria'] ? 'selected' : '' ?>><?= htmlspecialchars($categoria->nombre_categoria, ENT_QUOTES, 'UTF-8') ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <label class="form-label" for="id_proveedor">Proveedor</label>
+                <select class="form-select" id="id_proveedor" name="id_proveedor">
+                    <option value="">Todos los proveedores</option>
+                    <?php foreach ($proveedores as $proveedor): ?>
+                        <option value="<?= (int) $proveedor->id_proveedor ?>" <?= (string) $proveedor->id_proveedor === $filtros['id_proveedor'] ? 'selected' : '' ?>><?= htmlspecialchars($proveedor->razon_social, ENT_QUOTES, 'UTF-8') ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="col-12">
+                <button class="btn btn-outline-primary" type="submit">Buscar</button>
+                <a class="btn btn-outline-secondary" href="/proyectofinaldesarrollo/reposicion/index">Limpiar</a>
+            </div>
+        </form>
         <section class="card border-0 shadow-sm rounded-4"><div class="card-body p-3 p-md-4">
             <?php if (!$productos): ?><p class="text-secondary text-center my-4">No hay productos que necesiten reposición.</p><?php else: ?>
                 <div class="table-responsive"><table class="table table-hover align-middle mb-0">

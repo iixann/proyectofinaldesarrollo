@@ -13,7 +13,7 @@ class PosController extends Controller
     public function actionIndex($parametro = null)
     {
         SessionController::onlyUsers(['VENDEDOR']);
-        $sesiones = CajaSesionModel::sesionesDisponiblesPos();
+        $sesiones = CajaSesionModel::sesionesDisponiblesPos($_SESSION['usuario']['id_usuario']);
         $seleccionada = null;
         $mensaje = '';
         if (array_key_exists('sesion', $_GET)) {
@@ -72,8 +72,8 @@ class PosController extends Controller
             return;
         }
         try {
-            if (!CajaSesionModel::sesionDisponiblePos($idSesion)) {
-                $this->json(['ok' => false, 'mensaje' => 'La sesión ya no está abierta o la caja está inactiva. Volvé a sesiones de caja.', 'sesion_no_disponible' => true], 409);
+            if (!CajaSesionModel::sesionDisponiblePos($idSesion, $_SESSION['usuario']['id_usuario'])) {
+                $this->json(['ok' => false, 'mensaje' => 'La sesión no es propia, ya no está abierta o la caja está inactiva. Volvé a sesiones de caja.', 'sesion_no_disponible' => true], 409);
                 return;
             }
             if ($porCodigo) {

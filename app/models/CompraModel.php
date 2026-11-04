@@ -10,7 +10,7 @@ class CompraModel extends Model
     protected $tabla = 'compras';
     protected $clavePrimaria = 'id_compra';
 
-    public static function listarCompras($id = '', $comprobante = '')
+    public static function listarCompras($id = '', $comprobante = '', $idProveedor = '')
     {
         $sql = 'SELECT c.*, p.razon_social, u.nombre, u.apellido FROM compras c
             INNER JOIN proveedores p ON p.id_proveedor = c.id_proveedor
@@ -23,6 +23,10 @@ class CompraModel extends Model
         if ($comprobante !== '') {
             $sql .= " AND c.numero_comprobante LIKE :comprobante ESCAPE '!'";
             $parametros['comprobante'] = self::patronBusqueda($comprobante);
+        }
+        if ($idProveedor !== '') {
+            $sql .= ' AND c.id_proveedor = :proveedor';
+            $parametros['proveedor'] = $idProveedor;
         }
         return DataBase::query($sql . ' ORDER BY c.fecha_compra DESC, c.id_compra DESC', $parametros);
     }

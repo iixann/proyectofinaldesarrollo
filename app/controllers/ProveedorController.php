@@ -107,32 +107,7 @@ class ProveedorController extends Controller
 
     private function guardar($id = null)
     {
-        $datosProveedor = [];
-        $errores = [];
-        $campos = [
-            'razon_social' => ['Razón social', 150],
-            'cuit' => ['CUIT', 13],
-            'nombre_contacto' => ['Nombre de contacto', 100],
-            'telefono' => ['Teléfono', 50],
-            'email' => ['Email', 150],
-            'direccion' => ['Dirección', 200]
-        ];
-        foreach ($campos as $campo => [$etiqueta, $limite]) {
-            $valor = is_string($_POST[$campo] ?? null) ? trim($_POST[$campo]) : '';
-            $datosProveedor[$campo] = $valor;
-            if (mb_strlen($valor, 'UTF-8') > $limite) {
-                $errores[] = $etiqueta . ': ingresá hasta ' . $limite . ' caracteres.';
-            }
-        }
-        if ($datosProveedor['razon_social'] === '') {
-            $errores[] = 'Ingresá una razón social.';
-        }
-        if ($datosProveedor['email'] !== '' && !filter_var($datosProveedor['email'], FILTER_VALIDATE_EMAIL)) {
-            $errores[] = 'El correo electrónico no es válido.';
-        }
-        if ($datosProveedor['cuit'] !== '' && ProveedorModel::cuitDuplicado($datosProveedor['cuit'], $id)) {
-            $errores[] = 'Ya existe un proveedor con ese CUIT.';
-        }
+        [$datosProveedor, $errores] = ProveedorModel::validarDatos($_POST, $id);
         $vista = $id === null ? 'crear' : 'editar';
         if ($errores) {
             http_response_code(422);
