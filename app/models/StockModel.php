@@ -10,9 +10,29 @@ class StockModel extends Model
     protected $tabla = 'productos';
     protected $clavePrimaria = 'id_producto';
 
-    public static function listarProductosActivos()
+    public static function listarProductosActivos($filtros = [])
     {
-        return DataBase::query('SELECT p.*, c.nombre_categoria FROM productos p INNER JOIN categorias c ON c.id_categoria = p.id_categoria WHERE p.estado = 1 ORDER BY p.nombre_producto');
+        $sql = 'SELECT p.*, c.nombre_categoria FROM productos p
+            INNER JOIN categorias c ON c.id_categoria = p.id_categoria WHERE p.estado = 1';
+        $parametros = [];
+        if (($filtros['nombre'] ?? '') !== '') {
+            $sql .= " AND p.nombre_producto LIKE :nombre ESCAPE '!'";
+            $parametros['nombre'] = self::patronBusqueda($filtros['nombre']);
+        }
+        if (($filtros['codigo_barras'] ?? '') !== '') {
+            $sql .= ' AND p.codigo_barras = :codigo';
+            $parametros['codigo'] = $filtros['codigo_barras'];
+        }
+        if (($filtros['id_categoria'] ?? '') !== '') {
+            $sql .= ' AND p.id_categoria = :categoria';
+            $parametros['categoria'] = $filtros['id_categoria'];
+        }
+        if (($filtros['id_proveedor'] ?? '') !== '') {
+            $sql .= ' AND EXISTS (SELECT 1 FROM productos_proveedores pp
+                WHERE pp.id_producto = p.id_producto AND pp.id_proveedor = :proveedor AND pp.estado = 1)';
+            $parametros['proveedor'] = $filtros['id_proveedor'];
+        }
+        return DataBase::query($sql . ' ORDER BY p.nombre_producto', $parametros);
     }
 
     public static function listarMovimientos($idProducto = null)

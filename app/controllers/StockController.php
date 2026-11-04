@@ -5,14 +5,25 @@ namespace app\controllers;
 use \Controller;
 use \Response;
 use app\models\StockModel;
+use app\models\CategoriaModel;
+use app\models\ProveedorModel;
 
 class StockController extends Controller
 {
     public function actionIndex($parametro = null)
     {
         SessionController::onlyUsers(['RECEPCIONISTA']);
+        $filtros = [
+            'nombre' => $this->leerFiltro('nombre'),
+            'codigo_barras' => $this->leerFiltro('codigo_barras', 50),
+            'id_categoria' => $this->leerFiltro('id_categoria', 10, true),
+            'id_proveedor' => $this->leerFiltro('id_proveedor', 10, true)
+        ];
         Response::render($this->viewDir(__NAMESPACE__), 'index', [
-            'productos' => StockModel::listarProductosActivos(),
+            'productos' => StockModel::listarProductosActivos($filtros),
+            'filtros' => $filtros,
+            'categorias' => CategoriaModel::listarCategorias(),
+            'proveedores' => ProveedorModel::listarProveedores(),
             'mensaje' => ($_GET['resultado'] ?? '') === 'registrado' ? 'Movimiento registrado correctamente.' : ''
         ]);
     }
