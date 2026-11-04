@@ -27,7 +27,7 @@
                     <label class="form-label" for="monto_inicial">Monto inicial *</label>
                     <input class="form-control" type="number" min="0" max="9999999999.99" step="0.01" id="monto_inicial" name="monto_inicial" value="<?= htmlspecialchars($datos['monto_inicial'] ?? '0.00', ENT_QUOTES, 'UTF-8') ?>" required>
                 </div>
-                <div class="d-flex gap-2 border-top pt-4">
+                <div class="acciones-formulario d-flex flex-wrap gap-2 border-top pt-4">
                     <button class="btn btn-primary" type="submit" <?= !$cajas ? 'disabled' : '' ?>>Abrir caja</button>
                     <a class="btn btn-outline-secondary" href="/proyectofinaldesarrollo/sesioncaja/index">Cancelar</a>
                 </div>

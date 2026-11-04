@@ -75,7 +75,7 @@
                             <p class="text-warning-emphasis small mt-2">Hay proveedores asociados que ya no están activos. Al guardar se conservarán solamente los proveedores activos seleccionados.</p>
                         <?php endif; ?>
                     </fieldset>
-                    <div class="d-flex flex-wrap gap-2 border-top pt-4">
+                    <div class="acciones-formulario d-flex flex-wrap gap-2 border-top pt-4">
                         <button class="btn btn-primary" type="submit">Guardar cambios</button>
                         <a class="btn btn-outline-secondary" href="/proyectofinaldesarrollo/producto/index">Cancelar</a>
                     </div>

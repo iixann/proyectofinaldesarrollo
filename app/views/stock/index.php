@@ -12,7 +12,7 @@
             <a class="btn btn-outline-primary" href="/proyectofinaldesarrollo/stock/movimientos">Ver movimientos</a>
         </div>
         <?php if ($mensaje !== ''): ?><div class="alert alert-success" role="status"><?= htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
-        <form method="get" action="/proyectofinaldesarrollo/stock/index" class="row g-3 align-items-end mb-4">
+        <form method="get" action="/proyectofinaldesarrollo/stock/index" class="filtros-listado row g-3 align-items-end mb-4">
             <div class="col-sm-6 col-lg-3">
                 <label class="form-label" for="nombre">Nombre</label>
                 <input class="form-control" type="text" id="nombre" name="nombre" maxlength="150" value="<?= htmlspecialchars($filtros['nombre'], ENT_QUOTES, 'UTF-8') ?>">
@@ -48,7 +48,7 @@
             <?php if (!$productos): ?>
                 <p class="text-secondary text-center my-4">No hay productos activos para los filtros seleccionados.</p>
             <?php else: ?>
-                <div class="table-responsive"><table class="table table-hover align-middle mb-0">
+                <div class="table-responsive" tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p><table class="table table-hover align-middle mb-0">
                     <thead class="table-light"><tr><th scope="col">Producto</th><th scope="col">Categoría</th><th scope="col">Stock actual</th><th scope="col">Stock mínimo</th><th scope="col">Estado de stock</th><th scope="col">Acciones</th></tr></thead>
                     <tbody>
                         <?php foreach ($productos as $producto): ?>
@@ -59,7 +59,7 @@
                                 <td><?= htmlspecialchars((string) $producto->stock_actual, ENT_QUOTES, 'UTF-8') ?></td>
                                 <td><?= htmlspecialchars((string) $producto->stock_minimo, ENT_QUOTES, 'UTF-8') ?></td>
                                 <td><span class="badge <?= $stockBajo ? 'bg-warning-subtle text-warning-emphasis' : 'bg-success-subtle text-success-emphasis' ?>"><?= $stockBajo ? 'STOCK BAJO' : 'NORMAL' ?></span></td>
-                                <td><div class="d-flex flex-wrap gap-2">
+                                <td><div class="acciones-tabla d-flex flex-wrap gap-2">
                                     <a class="btn btn-outline-primary btn-sm" href="/proyectofinaldesarrollo/stock/ajustar/<?= htmlspecialchars((string) $producto->id_producto, ENT_QUOTES, 'UTF-8') ?>">Ajustar stock</a>
                                     <a class="btn btn-outline-secondary btn-sm" href="/proyectofinaldesarrollo/stock/movimientos/<?= htmlspecialchars((string) $producto->id_producto, ENT_QUOTES, 'UTF-8') ?>">Ver movimientos</a>
                                 </div></td>

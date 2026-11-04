@@ -12,7 +12,7 @@
             <a class="btn btn-primary" href="/proyectofinaldesarrollo/compra/crear">Nueva compra</a>
         </div>
         <?php if ($mensaje !== ''): ?><div class="alert alert-success" role="status"><?= htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
-        <form method="get" action="/proyectofinaldesarrollo/compra/index" class="row g-3 align-items-end mb-4">
+        <form method="get" action="/proyectofinaldesarrollo/compra/index" class="filtros-listado row g-3 align-items-end mb-4">
             <div class="col-sm-4"><label class="form-label" for="id_compra">Número de compra</label><input class="form-control" type="number" id="id_compra" name="id_compra" maxlength="10" min="1" max="4294967295" step="1" value="<?= htmlspecialchars((string) $filtros['id_compra'], ENT_QUOTES, 'UTF-8') ?>"></div>
             <div class="col-sm-4"><label class="form-label" for="numero_comprobante">Número de comprobante</label><input class="form-control" type="text" id="numero_comprobante" name="numero_comprobante" maxlength="50" value="<?= htmlspecialchars((string) $filtros['numero_comprobante'], ENT_QUOTES, 'UTF-8') ?>"></div>
             <div class="col-sm-4"><label class="form-label" for="id_proveedor">Proveedor</label><select class="form-select" id="id_proveedor" name="id_proveedor">
@@ -23,9 +23,9 @@
         </form>
         <section class="card border-0 shadow-sm rounded-4"><div class="card-body p-3 p-md-4">
             <?php if (!$compras): ?>
-                <p class="text-secondary text-center my-4">No hay compras registradas.</p>
+                <p class="text-secondary text-center my-4">No se encontraron compras. Probá otros filtros o registrá una nueva.</p>
             <?php else: ?>
-                <div class="table-responsive"><table class="table table-hover align-middle mb-0">
+                <div class="table-responsive" tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p><table class="table table-hover align-middle mb-0">
                     <thead class="table-light"><tr><th scope="col">ID</th><th scope="col">Fecha</th><th scope="col">Proveedor</th><th scope="col">Comprobante</th><th scope="col">Usuario</th><th scope="col">Total</th><th scope="col">Estado recepción</th><th scope="col">Acciones</th></tr></thead>
                     <tbody>
                         <?php foreach ($compras as $compra): ?>
@@ -36,8 +36,8 @@
                                 <td><?= htmlspecialchars($compra->numero_comprobante ?? '', ENT_QUOTES, 'UTF-8') ?></td>
                                 <td><?= htmlspecialchars($compra->nombre . ' ' . $compra->apellido, ENT_QUOTES, 'UTF-8') ?></td>
                                 <td>$ <?= htmlspecialchars((string) $compra->total, ENT_QUOTES, 'UTF-8') ?></td>
-                                <td><span class="badge <?= $compra->estado_recepcion === 'PENDIENTE' ? 'text-bg-warning' : ($compra->estado_recepcion === 'RECEPCIONADA' ? 'text-bg-success' : 'text-bg-danger') ?>"><?= htmlspecialchars($compra->estado_recepcion, ENT_QUOTES, 'UTF-8') ?></span></td>
-                                <td><?php if ((int) $compra->estado === 1 && $compra->estado_recepcion === 'PENDIENTE'): ?><a class="btn btn-outline-success btn-sm" href="/proyectofinaldesarrollo/recepcion/compra/<?= (int) $compra->id_compra ?>">Recepcionar</a><?php endif; ?> <a class="btn btn-outline-primary btn-sm" href="/proyectofinaldesarrollo/compra/ver/<?= htmlspecialchars((string) $compra->id_compra, ENT_QUOTES, 'UTF-8') ?>">Ver</a></td>
+                                <td><span class="badge <?= $compra->estado_recepcion === 'PENDIENTE' ? 'bg-warning-subtle text-warning-emphasis' : ($compra->estado_recepcion === 'RECEPCIONADA' ? 'bg-success-subtle text-success-emphasis' : 'bg-danger-subtle text-danger-emphasis') ?>"><?= htmlspecialchars($compra->estado_recepcion, ENT_QUOTES, 'UTF-8') ?></span></td>
+                                <td><div class="acciones-tabla d-flex flex-wrap gap-2"><?php if ((int) $compra->estado === 1 && $compra->estado_recepcion === 'PENDIENTE'): ?><a class="btn btn-outline-success btn-sm" href="/proyectofinaldesarrollo/recepcion/compra/<?= (int) $compra->id_compra ?>">Recepcionar</a><?php endif; ?> <a class="btn btn-outline-primary btn-sm" href="/proyectofinaldesarrollo/compra/ver/<?= htmlspecialchars((string) $compra->id_compra, ENT_QUOTES, 'UTF-8') ?>">Ver</a></div></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>

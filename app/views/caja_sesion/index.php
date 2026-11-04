@@ -14,7 +14,7 @@
         <?php if ($mensaje !== ''): ?><div class="alert alert-success" role="status"><?= htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
         <section class="card border-0 shadow-sm rounded-4"><div class="card-body p-3 p-md-4">
             <?php if (!$sesiones): ?><p class="text-secondary text-center my-4">No hay sesiones de caja registradas.</p><?php else: ?>
-                <div class="table-responsive"><table class="table table-hover align-middle mb-0">
+                <div class="table-responsive" tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p><table class="table table-hover align-middle mb-0">
                     <thead class="table-light"><tr><th scope="col">ID sesión</th><th scope="col">Caja</th><th scope="col">Usuario apertura</th><th scope="col">Fecha apertura</th><th scope="col">Monto inicial</th><th scope="col">Estado</th><th scope="col">Acciones</th></tr></thead>
                     <tbody>
                         <?php foreach ($sesiones as $sesion): ?>
@@ -25,7 +25,7 @@
                                 <td><?= htmlspecialchars($sesion->fecha_apertura, ENT_QUOTES, 'UTF-8') ?></td>
                                 <td>$ <?= htmlspecialchars((string) $sesion->monto_inicial, ENT_QUOTES, 'UTF-8') ?></td>
                                 <td><span class="badge <?= $sesion->estado === 'ABIERTA' ? 'bg-success-subtle text-success-emphasis' : 'bg-secondary-subtle text-secondary-emphasis' ?>"><?= htmlspecialchars($sesion->estado, ENT_QUOTES, 'UTF-8') ?></span></td>
-                                <td><div class="d-flex gap-2">
+                                <td><div class="acciones-tabla d-flex flex-wrap gap-2">
                                     <a class="btn btn-outline-secondary btn-sm" href="/proyectofinaldesarrollo/sesioncaja/ver/<?= htmlspecialchars((string) $sesion->id_caja_sesion, ENT_QUOTES, 'UTF-8') ?>">Ver</a>
                                     <?php if ($sesion->estado === 'ABIERTA' && \app\models\CajaSesionModel::puedeCerrar($sesion->id_usuario_apertura, $_SESSION['usuario']['id_usuario'], $_SESSION['usuario']['roles'])): ?>
                                         <a class="btn btn-outline-primary btn-sm" href="/proyectofinaldesarrollo/sesioncaja/cerrar/<?= htmlspecialchars((string) $sesion->id_caja_sesion, ENT_QUOTES, 'UTF-8') ?>">Cerrar caja</a>

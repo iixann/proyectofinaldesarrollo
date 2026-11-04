@@ -11,7 +11,7 @@
         <section class="mb-5" aria-labelledby="bienvenida">
             <p class="text-primary fw-semibold small mb-2"><i class="fa-solid fa-house me-2" aria-hidden="true"></i>INICIO</p>
             <h1 class="h2 fw-bold mb-2" id="bienvenida">Bienvenido, <?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellido'], ENT_QUOTES, 'UTF-8') ?></h1>
-            <p class="text-secondary mb-3">Panel de administración</p>
+            <p class="text-secondary mb-3">Panel principal</p>
             <div class="d-flex flex-wrap align-items-center gap-2">
                 <span class="small text-secondary">Roles actuales:</span>
                 <?php foreach ($usuario['roles'] as $rol): ?>
@@ -23,7 +23,7 @@
         <section aria-labelledby="accesosRapidos">
             <h2 class="h5 fw-semibold mb-4" id="accesosRapidos">Accesos rápidos</h2>
             <?php $modulos = [
-                ['nombre' => 'Usuarios', 'texto' => 'Usuarios y roles', 'icono' => 'fa-users', 'ruta' => 'user/index'],
+                ['nombre' => 'Usuarios', 'texto' => 'Usuarios y roles', 'icono' => 'fa-users', 'ruta' => 'user/index', 'soloAdministrador' => true],
                 ['nombre' => 'Categorías', 'texto' => 'Clasificación del catálogo', 'icono' => 'fa-tags', 'ruta' => 'categoria/index'],
                 ['nombre' => 'Proveedores', 'texto' => 'Datos comerciales y contacto', 'icono' => 'fa-truck', 'ruta' => 'proveedor/index'],
                 ['nombre' => 'Productos', 'texto' => 'EAN, precios y proveedores', 'icono' => 'fa-wine-bottle', 'ruta' => 'producto/index'],
@@ -38,6 +38,7 @@
             ]; ?>
             <div class="row g-4">
                 <?php foreach ($modulos as $modulo): ?>
+                    <?php if (!empty($modulo['soloAdministrador']) && !\app\controllers\SessionController::esAdministrador()) { continue; } ?>
                     <div class="col-12 col-md-6 col-lg-4"><article class="card tarjeta-modulo h-100 border-0 shadow-sm rounded-4">
                         <div class="card-body p-4 d-flex flex-column align-items-start">
                             <span class="icono-modulo rounded-3 bg-primary-subtle text-primary mb-3"><i class="fa-solid <?= htmlspecialchars($modulo['icono'], ENT_QUOTES, 'UTF-8') ?>" aria-hidden="true"></i></span>

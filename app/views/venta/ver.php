@@ -15,11 +15,11 @@
             <p>Fecha: <?= htmlspecialchars($venta->fecha_venta, ENT_QUOTES, 'UTF-8') ?></p>
             <p>Caja: <?= htmlspecialchars($venta->caja, ENT_QUOTES, 'UTF-8') ?> · Sesión #<?= (int) $venta->id_caja_sesion ?></p>
             <p>Vendedor: <?= htmlspecialchars($venta->nombre . ' ' . $venta->apellido, ENT_QUOTES, 'UTF-8') ?></p>
-            <p class="mb-0">Estado: <?= (int) $venta->estado === 1 ? 'CONFIRMADA' : 'INACTIVA' ?></p>
+            <p class="mb-0">Estado: <span class="badge <?= (int) $venta->estado === 1 ? 'bg-success-subtle text-success-emphasis' : 'bg-secondary-subtle text-secondary-emphasis' ?>"><?= (int) $venta->estado === 1 ? 'CONFIRMADA' : 'INACTIVA' ?></span></p>
         </div></section>
         <section class="card border-0 shadow-sm rounded-4 mb-4"><div class="card-body p-4">
             <h2 class="h5">Productos vendidos</h2>
-            <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Producto</th><th>Cantidad</th><th>Precio histórico</th><th>Subtotal</th></tr></thead><tbody>
+            <div class="table-responsive" tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p><table class="table align-middle"><thead><tr><th>Producto</th><th>Cantidad</th><th>Precio histórico</th><th>Subtotal</th></tr></thead><tbody>
                 <?php foreach ($detalles as $detalle): ?><tr>
                     <td><?= htmlspecialchars($detalle->nombre_producto, ENT_QUOTES, 'UTF-8') ?></td><td><?= (int) $detalle->cantidad ?></td>
                     <td>$ <?= htmlspecialchars((string) $detalle->precio_unitario, ENT_QUOTES, 'UTF-8') ?></td><td>$ <?= htmlspecialchars((string) $detalle->subtotal, ENT_QUOTES, 'UTF-8') ?></td>
@@ -29,7 +29,7 @@
         </div></section>
         <section class="card border-0 shadow-sm rounded-4"><div class="card-body p-4">
             <h2 class="h5">Pagos</h2>
-            <div class="table-responsive"><table class="table"><thead><tr><th>Medio</th><th>Aplicado</th><th>Entregado</th><th>Vuelto</th><th>Referencia</th></tr></thead><tbody>
+            <div class="table-responsive" tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p><table class="table"><thead><tr><th>Medio</th><th>Aplicado</th><th>Entregado</th><th>Vuelto</th><th>Referencia</th></tr></thead><tbody>
                 <?php foreach ($pagos as $pago): ?><tr>
                     <td><?= htmlspecialchars($pago->medio, ENT_QUOTES, 'UTF-8') ?></td><td>$ <?= htmlspecialchars((string) $pago->monto, ENT_QUOTES, 'UTF-8') ?></td>
                     <td><?= $pago->monto_entregado === null ? '—' : '$ ' . htmlspecialchars((string) $pago->monto_entregado, ENT_QUOTES, 'UTF-8') ?></td>

@@ -17,16 +17,16 @@
         <?php if ($mensaje !== ''): ?>
             <div class="alert alert-success" role="status"><?= htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8') ?></div>
         <?php endif; ?>
-        <form method="get" action="/proyectofinaldesarrollo/proveedor/index" class="row g-3 align-items-end mb-4">
+        <form method="get" action="/proyectofinaldesarrollo/proveedor/index" class="filtros-listado row g-3 align-items-end mb-4">
             <div class="col-sm-4"><label class="form-label" for="busqueda">Razón social, CUIT o contacto</label><input class="form-control" type="text" id="busqueda" name="busqueda" maxlength="150" value="<?= htmlspecialchars((string) $busqueda, ENT_QUOTES, 'UTF-8') ?>"></div>
             <div class="col-auto"><button class="btn btn-outline-primary" type="submit">Buscar</button> <a class="btn btn-outline-secondary" href="/proyectofinaldesarrollo/proveedor/index">Limpiar</a></div>
         </form>
         <section class="card border-0 shadow-sm rounded-4" aria-label="Listado de proveedores">
             <div class="card-body p-3 p-md-4">
                 <?php if (!$proveedores): ?>
-                    <p class="text-secondary text-center my-4">No hay proveedores registrados.</p>
+                    <p class="text-secondary text-center my-4">No se encontraron proveedores. Probá otra búsqueda o creá un proveedor.</p>
                 <?php else: ?>
-                    <div class="table-responsive">
+                    <div class="table-responsive" tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p>
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light"><tr><th scope="col">ID</th><th scope="col">Razón social</th><th scope="col">CUIT</th><th scope="col">Contacto</th><th scope="col">Teléfono</th><th scope="col">Email</th><th scope="col">Estado</th><th scope="col">Acciones</th></tr></thead>
                             <tbody>
@@ -39,7 +39,7 @@
                                         <td><?= htmlspecialchars($proveedor->telefono ?? '', ENT_QUOTES, 'UTF-8') ?></td>
                                         <td><?= htmlspecialchars($proveedor->email ?? '', ENT_QUOTES, 'UTF-8') ?></td>
                                         <td><span class="badge rounded-pill <?= (int) $proveedor->estado === 1 ? 'bg-success-subtle text-success-emphasis' : 'bg-secondary-subtle text-secondary-emphasis' ?>"><?= (int) $proveedor->estado === 1 ? 'ACTIVO' : 'INACTIVO' ?></span></td>
-                                        <td><div class="d-flex flex-wrap gap-2">
+                                        <td><div class="acciones-tabla d-flex flex-wrap gap-2">
                                             <a class="btn btn-outline-primary btn-sm" href="/proyectofinaldesarrollo/proveedor/editar/<?= htmlspecialchars((string) $proveedor->id_proveedor, ENT_QUOTES, 'UTF-8') ?>">Editar</a>
                                             <?php if ((int) $proveedor->estado === 1): ?>
                                                 <form method="post" action="/proyectofinaldesarrollo/proveedor/baja/<?= htmlspecialchars((string) $proveedor->id_proveedor, ENT_QUOTES, 'UTF-8') ?>">
@@ -47,7 +47,7 @@
                                                 </form>
                                             <?php else: ?>
                                                 <form method="post" action="/proyectofinaldesarrollo/proveedor/reactivar/<?= htmlspecialchars((string) $proveedor->id_proveedor, ENT_QUOTES, 'UTF-8') ?>">
-                                                    <button class="btn btn-outline-success btn-sm" type="submit">Dar de alta</button>
+                                                    <button class="btn btn-outline-success btn-sm" type="submit">Reactivar</button>
                                                 </form>
                                             <?php endif; ?>
                                         </div></td>

@@ -5,16 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Ticket #<?= (int) $venta->id_venta ?> | Identidad Singular</title>
     <style>
-        body { font: 12px monospace; color: #000; background: #fff; margin: 16px auto; width: 72mm; }
+        body { font: 12px monospace; color: #000; background: #fff; margin: 16px auto; width: 72mm; max-width: calc(100% - 24px); }
         h1 { font-size: 18px; margin-bottom: 4px; } h2 { font-size: 14px; }
         header { text-align: center; } p { margin: 6px 0; overflow-wrap: anywhere; }
         table { border-collapse: collapse; width: 100%; font-size: inherit; table-layout: fixed; }
         th, td { padding: 4px 0; vertical-align: top; overflow-wrap: anywhere; }
         .importe { text-align: right; } .separador { border-top: 1px dashed #000; margin-top: 10px; padding-top: 8px; }
         .total { font-size: 16px; font-weight: bold; } .no-imprimir { margin-bottom: 20px; }
-        button { padding: 8px; background: #6D1A36; color: white; border: 0; cursor: pointer; }
+        .no-imprimir { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+        .no-imprimir a { color: #6D1A36; padding: 8px 0; }
+        button { min-height: 40px; border-radius: 5px; padding: 8px; background: #6D1A36; color: white; border: 0; cursor: pointer; }
         @page { margin: 4mm; }
-        @media print { body { margin: 0; } .no-imprimir { display: none; } tr { break-inside: avoid; } }
+        @media print { body { margin: 0; width: 72mm; max-width: none; } .no-imprimir { display: none; } tr { break-inside: avoid; } }
     </style>
 </head>
 <body>

@@ -16,16 +16,18 @@
             <form method="post" action="/proyectofinaldesarrollo/session/guardarPassword">
                 <input type="hidden" name="csrf_password" value="<?= htmlspecialchars($token, ENT_QUOTES, 'UTF-8') ?>">
                 <div class="mb-3">
-                    <label class="form-label" for="contrasena">Nueva contraseña</label>
+                    <label class="form-label" for="contrasena">Nueva contraseña *</label>
                     <input class="form-control" id="contrasena" name="contrasena" type="password" minlength="9" autocomplete="new-password" required>
                     <div class="form-text">Mínimo 9 caracteres y hasta 72 bytes.</div>
                 </div>
                 <div class="mb-4">
-                    <label class="form-label" for="confirmacion">Confirmar nueva contraseña</label>
+                    <label class="form-label" for="confirmacion">Confirmar nueva contraseña *</label>
                     <input class="form-control" id="confirmacion" name="confirmacion" type="password" minlength="9" autocomplete="new-password" required>
                 </div>
+                <div class="acciones-formulario d-flex flex-wrap gap-2">
                 <button class="btn btn-primary" type="submit">Guardar nueva contraseña</button>
                 <a class="btn btn-outline-secondary" href="/proyectofinaldesarrollo/session/logout">Cerrar sesión</a>
+                </div>
             </form>
         </div></section>
     </main>

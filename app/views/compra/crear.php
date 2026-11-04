@@ -42,7 +42,7 @@
                 <?php if ($esRecepcionDirecta): ?><div class="mb-4"><label class="form-label" for="motivo_rechazo">Motivo de rechazo (obligatorio si rechazás)</label><textarea class="form-control" id="motivo_rechazo" name="motivo_rechazo" maxlength="255"><?= htmlspecialchars($datos['motivo_rechazo'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea></div><?php endif; ?>
                 <h2 class="h5"><?= $esRecepcionDirecta ? 'Productos recibidos' : 'Productos de la compra' ?></h2>
                 <p class="text-secondary small">Los productos nuevos se asocian al proveedor elegido. Para productos existentes, las asociaciones se administran desde Productos.</p>
-                <div class="table-responsive mb-3"><table class="table align-middle">
+                <div class="table-responsive mb-3" tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p><table class="table align-middle tabla-renglones">
                     <thead><tr><th scope="col">Producto *</th><th scope="col"><?= $esRecepcionDirecta ? 'Cantidad recibida *' : 'Cantidad *' ?></th><?php if (!$esRecepcionDirecta): ?><th scope="col">Precio unitario *</th><?php endif; ?><th scope="col">Acción</th></tr></thead>
                     <tbody id="renglonesCompra">
                         <?php $renglones = $renglones ?: [['id_producto' => '', 'cantidad' => '', 'precio_unitario' => '']]; ?>
@@ -66,8 +66,12 @@
                     </tbody>
                 </table></div>
                 <button class="btn btn-outline-primary mb-4" type="button" id="agregarRenglon">Agregar producto</button>
+                <?php if (!$esRecepcionDirecta): ?><div class="resumen-importes d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3" aria-live="polite">
+                    <div><p class="fw-semibold mb-1">Total estimado de la compra</p><p class="small text-secondary mb-0" id="ayudaTotalCompra">El importe definitivo se calcula al registrar la compra.</p></div>
+                    <output id="totalCompra" aria-label="Total estimado de la compra">$ 0,00</output>
+                </div><?php endif; ?>
                 <p class="text-secondary small"><?= $esRecepcionDirecta ? 'No se crea una compra. Para aceptar, todas las cantidades deben ser mayores a 0.' : 'El total se calcula al registrar la compra. El precio de venta de los productos no se modifica.' ?></p>
-                <div class="d-flex flex-wrap gap-2 border-top pt-4">
+                <div class="acciones-formulario d-flex flex-wrap gap-2 border-top pt-4">
                     <button class="btn btn-primary" type="submit" <?= $esRecepcionDirecta ? 'name="decision" value="ACEPTADA"' : '' ?> id="registrarCompra" <?= !$proveedores || !$productos ? 'disabled' : '' ?>><?= $esRecepcionDirecta ? 'Aceptar recepción directa' : 'Registrar compra' ?></button>
                     <?php if ($esRecepcionDirecta): ?><button class="btn btn-outline-danger" type="submit" name="decision" value="RECHAZADA" id="rechazarRecepcion" <?= !$proveedores || !$productos ? 'disabled' : '' ?>>Rechazar recepción directa</button><?php endif; ?>
                     <a class="btn btn-outline-secondary" href="/proyectofinaldesarrollo/<?= $esRecepcionDirecta ? 'recepcion' : 'compra' ?>/index">Cancelar</a>

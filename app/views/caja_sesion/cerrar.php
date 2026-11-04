@@ -38,7 +38,7 @@
                     <label class="form-label" for="observacion_cierre">Observación</label>
                     <textarea class="form-control" id="observacion_cierre" name="observacion_cierre" rows="3" maxlength="255"><?= htmlspecialchars($datos['observacion_cierre'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
                 </div>
-                <div class="d-flex gap-2 border-top pt-4">
+                <div class="acciones-formulario d-flex flex-wrap gap-2 border-top pt-4">
                     <button class="btn btn-primary" type="submit">Confirmar cierre</button>
                     <a class="btn btn-outline-secondary" href="/proyectofinaldesarrollo/sesioncaja/index">Cancelar</a>
                 </div>

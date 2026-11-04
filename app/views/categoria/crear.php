@@ -19,10 +19,10 @@
                 <?php endif; ?>
                 <form method="post" action="/proyectofinaldesarrollo/categoria/guardar">
                     <div class="mb-4">
-                        <label class="form-label" for="nombre_categoria">Nombre de categoría</label>
+                        <label class="form-label" for="nombre_categoria">Nombre de categoría *</label>
                         <input class="form-control" id="nombre_categoria" name="nombre_categoria" type="text" maxlength="100" value="<?= htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8') ?>" required>
                     </div>
-                    <div class="d-flex flex-wrap gap-2 border-top pt-4">
+                    <div class="acciones-formulario d-flex flex-wrap gap-2 border-top pt-4">
                         <button class="btn btn-primary" type="submit">Guardar categoría</button>
                         <a class="btn btn-outline-secondary" href="/proyectofinaldesarrollo/categoria/index">Cancelar</a>
                     </div>

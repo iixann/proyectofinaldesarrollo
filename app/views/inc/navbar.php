@@ -21,8 +21,10 @@ $inicioNavegacion = \app\controllers\SessionController::destinoInicio() ?? '/pro
                 </button>
                 <div class="collapse navbar-collapse mt-3 mt-xl-0" id="navegacionPrincipal">
                     <ul class="navbar-nav ms-auto flex-wrap align-items-xl-center gap-xl-1">
-                        <?php if ($esAdministrador): ?>
+                        <?php if ($puedeAdministrarMaestros): ?>
                         <li class="nav-item"><a class="nav-link <?= $seccionActual === 'inicio' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'inicio' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/admin/index">Inicio</a></li>
+                        <?php endif; ?>
+                        <?php if ($esAdministrador): ?>
                         <li class="nav-item"><a class="nav-link <?= $seccionActual === 'usuarios' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'usuarios' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/user/index">Usuarios</a></li>
                         <?php endif; ?>
                         <?php if ($puedeAdministrarMaestros): ?>
@@ -44,19 +46,19 @@ $inicioNavegacion = \app\controllers\SessionController::destinoInicio() ?? '/pro
                         <li class="nav-item"><a class="nav-link <?= $seccionActual === 'compras' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'compras' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/compra/index">Compras</a></li>
                         <?php endif; ?>
                         <?php if ($puedeGestionarOperaciones): ?>
-                        <li class="nav-item"><a class="nav-link <?= $seccionActual === 'recepciones' ? 'active text-primary fw-semibold' : '' ?>" href="/proyectofinaldesarrollo/recepcion/index">Recepción</a></li>
+                        <li class="nav-item"><a class="nav-link <?= $seccionActual === 'recepciones' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'recepciones' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/recepcion/index">Recepción</a></li>
                         <?php endif; ?>
                         <?php if ($puedeGestionarOperaciones): ?>
                         <li class="nav-item"><a class="nav-link <?= $seccionActual === 'stock' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'stock' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/stock/index">Stock</a></li>
                         <?php endif; ?>
                         <?php if ($puedeGestionarOperaciones): ?>
-                        <li class="nav-item"><a class="nav-link <?= $seccionActual === 'reposicion' ? 'active text-primary fw-semibold' : '' ?>" href="/proyectofinaldesarrollo/reposicion/index">Reposición</a></li>
+                        <li class="nav-item"><a class="nav-link <?= $seccionActual === 'reposicion' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'reposicion' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/reposicion/index">Reposición</a></li>
                         <?php endif; ?>
                         <?php if ($puedeOperarCaja): ?>
                         <li class="nav-item"><a class="nav-link <?= $seccionActual === 'consulta_pos' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'consulta_pos' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/pos/index">Punto de Venta</a></li>
                         <?php endif; ?>
                         <?php if ($puedeOperarCaja): ?>
-                        <li class="nav-item"><a class="nav-link <?= $seccionActual === 'ventas' ? 'active text-primary fw-semibold' : '' ?>" href="/proyectofinaldesarrollo/venta/index">Ventas</a></li>
+                        <li class="nav-item"><a class="nav-link <?= $seccionActual === 'ventas' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'ventas' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/venta/index">Ventas</a></li>
                         <?php endif; ?>
                         <li class="nav-item ms-xl-2 mt-2 mt-xl-0">
                             <a class="btn btn-outline-primary btn-sm" href="/proyectofinaldesarrollo/session/logout"><i class="fa-solid fa-right-from-bracket me-2" aria-hidden="true"></i>Cerrar sesión</a>

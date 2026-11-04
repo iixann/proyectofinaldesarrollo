@@ -19,14 +19,14 @@
                 <?php endif; ?>
                 <form method="post" action="/proyectofinaldesarrollo/caja/actualizar/<?= htmlspecialchars((string) $id, ENT_QUOTES, 'UTF-8') ?>">
                     <div class="mb-4">
-                        <label class="form-label" for="nombre">Nombre de caja</label>
+                        <label class="form-label" for="nombre">Nombre de caja *</label>
                         <input class="form-control" id="nombre" name="nombre" type="text" maxlength="100" value="<?= htmlspecialchars($datos['nombre'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required>
                     </div>
                     <div class="mb-4">
                         <label class="form-label" for="descripcion">Descripción</label>
                         <textarea class="form-control" id="descripcion" name="descripcion" maxlength="255" rows="3"><?= htmlspecialchars($datos['descripcion'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
                     </div>
-                    <div class="d-flex flex-wrap gap-2 border-top pt-4">
+                    <div class="acciones-formulario d-flex flex-wrap gap-2 border-top pt-4">
                         <button class="btn btn-primary" type="submit">Guardar cambios</button>
                         <a class="btn btn-outline-secondary" href="/proyectofinaldesarrollo/caja/index">Cancelar</a>
                     </div>

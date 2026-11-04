@@ -12,7 +12,7 @@
         <section class="card border-0 shadow-sm rounded-4"><div class="card-body p-4">
             <dl class="row mb-0">
                 <dt class="col-sm-4">Caja</dt><dd class="col-sm-8"><?= htmlspecialchars($sesion->caja, ENT_QUOTES, 'UTF-8') ?></dd>
-                <dt class="col-sm-4">Estado</dt><dd class="col-sm-8"><?= htmlspecialchars($sesion->estado, ENT_QUOTES, 'UTF-8') ?></dd>
+                <dt class="col-sm-4">Estado</dt><dd class="col-sm-8"><span class="badge <?= $sesion->estado === 'ABIERTA' ? 'bg-success-subtle text-success-emphasis' : 'bg-secondary-subtle text-secondary-emphasis' ?>"><?= htmlspecialchars($sesion->estado, ENT_QUOTES, 'UTF-8') ?></span></dd>
                 <dt class="col-sm-4">Usuario apertura</dt><dd class="col-sm-8"><?= htmlspecialchars($sesion->nombre . ' ' . $sesion->apellido, ENT_QUOTES, 'UTF-8') ?></dd>
                 <dt class="col-sm-4">Fecha apertura</dt><dd class="col-sm-8"><?= htmlspecialchars($sesion->fecha_apertura, ENT_QUOTES, 'UTF-8') ?></dd>
                 <dt class="col-sm-4">Monto inicial</dt><dd class="col-sm-8">$ <?= htmlspecialchars((string) $sesion->monto_inicial, ENT_QUOTES, 'UTF-8') ?></dd>

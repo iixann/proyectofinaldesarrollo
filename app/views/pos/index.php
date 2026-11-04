@@ -19,7 +19,7 @@
             <section class="card border-0 shadow-sm rounded-4 mb-4"><div class="card-body p-4">
                 <form method="get" action="/proyectofinaldesarrollo/pos/index" class="row align-items-end g-3">
                     <div class="col-lg-9">
-                        <label class="form-label fw-semibold" for="sesionPos">Caja / sesión abierta</label>
+                        <label class="form-label fw-semibold" for="sesionPos">Caja / sesión abierta *</label>
                         <select class="form-select" name="sesion" id="sesionPos" required>
                             <option value="">Seleccioná una sesión para operar</option>
                             <?php foreach ($sesiones as $sesion): ?>
@@ -40,7 +40,7 @@
                         <div class="col-12 col-xl-6">
                             <section class="card border-0 shadow-sm rounded-4 mb-3"><div class="card-body p-4">
                                 <form action="/proyectofinaldesarrollo/pos/buscar" method="get" id="buscarEan" class="mb-4">
-                                    <label class="form-label fw-semibold" for="codigo">Código EAN</label>
+                                    <label class="form-label fw-semibold" for="codigo">Código EAN *</label>
                                     <div class="input-group input-group-lg">
                                         <input class="form-control" type="text" id="codigo" name="codigo" maxlength="50" autocomplete="off" required autofocus>
                                         <button class="btn btn-primary" type="submit">Agregar</button>
@@ -48,7 +48,7 @@
                                     <p class="text-secondary small mt-2 mb-0">Escaneá o escribí el EAN y presioná Enter.</p>
                                 </form>
                                 <form action="/proyectofinaldesarrollo/pos/buscar" method="get" id="buscarNombre">
-                                    <label class="form-label" for="nombre">Búsqueda manual por nombre</label>
+                                    <label class="form-label" for="nombre">Búsqueda manual por nombre *</label>
                                     <div class="input-group">
                                         <input class="form-control" type="text" id="nombre" name="nombre" maxlength="150" required>
                                         <button class="btn btn-outline-primary" type="submit">Buscar</button>
@@ -59,7 +59,7 @@
                             <p id="mensajePos" role="status" aria-live="polite" class="alert alert-info">Escaneá un producto o buscá por nombre.</p>
                             <section class="card border-0 shadow-sm rounded-4" id="resultadosBusqueda" hidden><div class="card-body p-3">
                                 <h2 class="h5">Resultados</h2>
-                                <div class="table-responsive"><table class="table table-hover align-middle mb-0">
+                                <div class="table-responsive" tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p><table class="table table-hover align-middle mb-0">
                                     <thead class="table-light"><tr><th scope="col">Producto</th><th scope="col">Categoría</th><th scope="col">EAN</th><th scope="col">Precio</th><th scope="col">Stock</th><th scope="col">Acción</th></tr></thead>
                                     <tbody id="productosEncontrados"></tbody>
                                 </table></div>
@@ -67,16 +67,16 @@
                         </div>
                         <div class="col-12 col-xl-6">
                             <section class="card border-0 shadow-sm rounded-4"><div class="card-body p-4">
-                                <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+                                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                                     <h2 class="h4 mb-0">Carrito</h2>
                                     <button class="btn btn-outline-secondary btn-sm" type="button" id="vaciarCarrito">Vaciar carrito</button>
                                 </div>
                                 <p class="text-secondary text-center py-4" id="carritoVacio">Carrito vacío</p>
-                                <div class="table-responsive" id="tablaCarrito" hidden><table class="table align-middle">
+                                <div class="table-responsive" id="tablaCarrito" hidden tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p><table class="table align-middle">
                                     <thead class="table-light"><tr><th scope="col">Producto</th><th scope="col">Cantidad</th><th scope="col">Precio</th><th scope="col">Subtotal</th><th scope="col">Acción</th></tr></thead>
                                     <tbody id="lineasCarrito"></tbody>
                                 </table></div>
-                                <div class="border-top pt-4 mt-3 text-end">
+                                <div class="resumen-importes mt-3 mb-3 text-end">
                                     <p class="text-secondary fw-semibold mb-1">TOTAL</p>
                                     <p class="display-6 fw-bold text-primary" id="totalCarrito">$ 0,00</p>
                                 </div>
@@ -84,7 +84,7 @@
                                     <h3 class="h5" id="tituloCobro">Cobro</h3>
                                     <p class="text-secondary small">Distribuí el total entre uno o varios medios. Dejá vacíos los que no uses.</p>
                                     <?php if (!$mediosPago): ?><p class="alert alert-warning">No hay medios de pago activos.</p><?php endif; ?>
-                                    <div class="table-responsive"><table class="table align-middle">
+                                    <div class="table-responsive" tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p><table class="table align-middle">
                                         <thead><tr><th scope="col">Medio</th><th scope="col">Monto aplicado</th><th scope="col">Entregado / referencia</th></tr></thead>
                                         <tbody id="filasPago">
                                             <?php foreach ($mediosPago as $medio): ?>
@@ -108,7 +108,7 @@
                                     <p class="mb-1">Total aplicado: <strong id="totalPagado">$ 0,00</strong></p>
                                     <p class="small" id="estadoPagos" role="status">Agregá productos para iniciar el cobro.</p>
                                     <button class="btn btn-primary btn-lg w-100" type="button" id="confirmarVenta" disabled>Confirmar venta</button>
-                                    <p class="text-secondary small mt-2 mb-0">Al confirmar se registra la venta y se descuenta stock. Precios, existencias y total se validan nuevamente en servidor. El carrito y los pagos son temporales hasta confirmar.</p>
+                                    <p class="text-secondary small mt-2 mb-0">Al confirmar se registra la venta y se descuenta stock. Si cambiaron precios o existencias, revisá los productos antes de reintentar. El carrito se pierde al recargar.</p>
                                 </section>
                             </div></section>
                         </div>

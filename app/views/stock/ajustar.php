@@ -16,7 +16,7 @@
             </ul></div><?php endif; ?>
             <form method="post" action="/proyectofinaldesarrollo/stock/guardarAjuste/<?= htmlspecialchars((string) $producto->id_producto, ENT_QUOTES, 'UTF-8') ?>">
                 <div class="mb-3">
-                    <label class="form-label" for="tipo">Tipo</label>
+                    <label class="form-label" for="tipo">Tipo *</label>
                     <select class="form-select" id="tipo" name="tipo" required>
                         <option value="AJUSTE_ENTRADA" <?= ($datos['tipo'] ?? '') === 'AJUSTE_ENTRADA' ? 'selected' : '' ?>>Entrada</option>
                         <option value="AJUSTE_SALIDA" <?= ($datos['tipo'] ?? '') === 'AJUSTE_SALIDA' ? 'selected' : '' ?>>Salida</option>
@@ -30,7 +30,7 @@
                     <label class="form-label" for="observacion">Observación</label>
                     <textarea class="form-control" id="observacion" name="observacion" maxlength="255" rows="3"><?= htmlspecialchars($datos['observacion'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
                 </div>
-                <div class="d-flex flex-wrap gap-2 border-top pt-4">
+                <div class="acciones-formulario d-flex flex-wrap gap-2 border-top pt-4">
                     <button class="btn btn-primary" type="submit">Registrar movimiento</button>
                     <a class="btn btn-outline-secondary" href="/proyectofinaldesarrollo/stock/index">Cancelar</a>
                 </div>

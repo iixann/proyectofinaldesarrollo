@@ -14,7 +14,7 @@
             <?php if (!$movimientos): ?>
                 <p class="text-secondary text-center my-4">No hay movimientos registrados.</p>
             <?php else: ?>
-                <div class="table-responsive"><table class="table table-hover align-middle mb-0">
+                <div class="table-responsive" tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p><table class="table table-hover align-middle mb-0">
                     <thead class="table-light"><tr><th scope="col">Fecha</th><th scope="col">Producto</th><th scope="col">Tipo</th><th scope="col">Cantidad</th><th scope="col">Stock anterior</th><th scope="col">Stock nuevo</th><th scope="col">Usuario</th><th scope="col">Observación</th></tr></thead>
                     <tbody>
                         <?php foreach ($movimientos as $movimiento): ?>

@@ -1,5 +1,5 @@
     <div class="modal fade" id="modalProveedorRapido" tabindex="-1" aria-labelledby="tituloProveedorRapido" aria-hidden="true">
-        <div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-sm-down"><div class="modal-content">
             <div class="modal-header"><h2 class="modal-title fs-5" id="tituloProveedorRapido">Nuevo proveedor</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
             <form id="formularioProveedorRapido" method="post" action="/proyectofinaldesarrollo/compra/crearProveedorRapido">
                 <div class="modal-body">
@@ -16,7 +16,7 @@
         </div></div>
     </div>
     <div class="modal fade" id="modalProductoRapido" tabindex="-1" aria-labelledby="tituloProductoRapido" aria-hidden="true">
-        <div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-sm-down"><div class="modal-content">
             <div class="modal-header"><h2 class="modal-title fs-5" id="tituloProductoRapido">Nuevo producto</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
             <form id="formularioProductoRapido" method="post" action="/proyectofinaldesarrollo/compra/crearProductoRapido">
                 <div class="modal-body">

@@ -30,7 +30,7 @@ class SessionController extends Controller
         $roles = $_SESSION['usuario']['roles'];
         $rutas = [
             'ADMINISTRADOR' => 'admin/index',
-            'DUEÑO' => 'categoria/index',
+            'DUEÑO' => 'admin/index',
             'VENDEDOR' => 'sesioncaja/index',
             'RECEPCIONISTA' => 'stock/index'
         ];

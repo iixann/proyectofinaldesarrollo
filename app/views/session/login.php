@@ -24,11 +24,11 @@
                         <?php else: ?>
                             <form method="post" action="/proyectofinaldesarrollo/session/ingresar">
                                 <div class="mb-3">
-                                    <label class="form-label" for="correo">Correo electrónico</label>
+                                    <label class="form-label" for="correo">Correo electrónico *</label>
                                     <input class="form-control" id="correo" type="email" name="correo" value="<?= htmlspecialchars($correo, ENT_QUOTES, 'UTF-8') ?>" autocomplete="username" required>
                                 </div>
                                 <div class="mb-4">
-                                    <label class="form-label" for="contrasena">Contraseña</label>
+                                    <label class="form-label" for="contrasena">Contraseña *</label>
                                     <input class="form-control" id="contrasena" type="password" name="contrasena" autocomplete="current-password" required>
                                 </div>
                                 <button class="btn btn-primary w-100 py-2" type="submit"><i class="fa-solid fa-right-to-bracket me-2" aria-hidden="true"></i>Ingresar</button>

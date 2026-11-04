@@ -30,19 +30,19 @@
                         <form method="post" action="/proyectofinaldesarrollo/user/guardar">
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
-                                    <label class="form-label" for="nombre">Nombre</label>
+                                    <label class="form-label" for="nombre">Nombre *</label>
                                     <input class="form-control" id="nombre" type="text" name="nombre" value="<?= htmlspecialchars($datosUsuario['nombre'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label" for="apellido">Apellido</label>
+                                    <label class="form-label" for="apellido">Apellido *</label>
                                     <input class="form-control" id="apellido" type="text" name="apellido" value="<?= htmlspecialchars($datosUsuario['apellido'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label" for="correo">Email</label>
+                                    <label class="form-label" for="correo">Email *</label>
                                     <input class="form-control" id="correo" type="email" name="correo" value="<?= htmlspecialchars($datosUsuario['correo'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label" for="contrasena">Contraseña</label>
+                                    <label class="form-label" for="contrasena">Contraseña *</label>
                                     <input class="form-control" id="contrasena" type="password" name="contrasena" minlength="9" autocomplete="new-password" required>
                                 </div>
                             </div>
@@ -60,7 +60,7 @@
                                 </div>
                                 <?php if (!$roles): ?><p class="alert alert-warning mt-3 mb-0">No hay roles activos disponibles.</p><?php endif; ?>
                             </fieldset>
-                            <div class="d-flex flex-wrap gap-2 border-top pt-4">
+                            <div class="acciones-formulario d-flex flex-wrap gap-2 border-top pt-4">
                                 <button class="btn btn-primary" type="submit" <?= !$roles ? 'disabled' : '' ?>><i class="fa-solid fa-user-plus me-2" aria-hidden="true"></i>Guardar usuario</button>
                                 <a class="btn btn-outline-secondary" href="/proyectofinaldesarrollo/user/index">Cancelar</a>
                             </div>

@@ -14,6 +14,33 @@
     let pendiente = false;
     let filaProducto = null;
 
+    // Solo presentación: no agrega importes al POST ni interviene en el guardado.
+    function mostrarTotalEstimado() {
+        const salida = document.getElementById('totalCompra');
+        if (!salida || esRecepcion) return;
+        let total = 0;
+        let completo = true;
+        cuerpo.querySelectorAll('tr').forEach(function (fila) {
+            const cantidad = fila.querySelector('input[name$="[cantidad]"]').value;
+            const precio = fila.querySelector('input[name$="[precio_unitario]"]').value;
+            if (cantidad === '' && precio === '') return;
+            if (!/^\d+$/.test(cantidad) || !/^\d{1,10}(?:\.\d{1,2})?$/.test(precio)) {
+                completo = false;
+                return;
+            }
+            const partes = precio.split('.');
+            const centavos = Number(partes[0]) * 100 + Number((partes[1] || '').padEnd(2, '0'));
+            const subtotal = Number(cantidad) * centavos;
+            if (!Number.isSafeInteger(subtotal) || !Number.isSafeInteger(total + subtotal)) {
+                completo = false;
+                return;
+            }
+            total += subtotal;
+        });
+        salida.textContent = completo ? new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(total / 100) : 'Revisá los importes';
+    }
+    cuerpo.addEventListener('input', mostrarTotalEstimado);
+
     function informar(texto, error = false) {
         mensaje.textContent = texto;
         mensaje.className = 'alert ' + (error ? 'alert-warning' : 'alert-success');
@@ -31,6 +58,7 @@
     }
 
     function actualizarDisponibilidad() {
+        mostrarTotalEstimado();
         const disponibles = productos.some(producto => String(producto.id_proveedor) === proveedor.value);
         registrar.disabled = pendiente || !proveedor.value || !disponibles;
         const rechazar = document.getElementById('rechazarRecepcion');
@@ -61,6 +89,7 @@
             const fila = evento.target.closest('tr');
             if (cuerpo.rows.length > 1) fila.remove();
             else fila.querySelectorAll('[name]').forEach(campo => { campo.value = ''; });
+            mostrarTotalEstimado();
         }
         if (evento.target.matches('[data-nuevo-producto]') && proveedor.value && !pendiente) {
             filaProducto = evento.target.closest('tr');

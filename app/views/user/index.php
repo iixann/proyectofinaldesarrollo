@@ -24,7 +24,7 @@
                 </div>
             <?php else: ?>
                 <div class="card-body p-3 p-md-4">
-                    <div class="table-responsive">
+                    <div class="table-responsive" tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p>
                         <table class="table table-hover align-middle mb-0">
                             <caption class="visually-hidden">Usuarios, estado y roles asignados</caption>
                             <thead class="table-light"><tr><th scope="col">ID</th><th scope="col">Nombre</th><th scope="col">Apellido</th><th scope="col">Email</th><th scope="col">Estado</th><th scope="col">Roles</th><th scope="col">Acciones</th></tr></thead>
@@ -43,11 +43,11 @@
                                                 <?php endforeach; ?>
                                             </div>
                                         </td>
-                                        <td><form method="post" action="/proyectofinaldesarrollo/user/<?= (int) $usuario->estado === 1 ? 'baja' : 'reactivar' ?>/<?= (int) $usuario->id_usuario ?>">
-                                            <button class="btn btn-sm <?= (int) $usuario->estado === 1 ? 'btn-outline-danger' : 'btn-outline-success' ?>" type="submit"><?= (int) $usuario->estado === 1 ? 'Dar de baja' : 'Dar de alta' ?></button>
+                                        <td><div class="acciones-tabla d-flex flex-wrap gap-2"><form method="post" action="/proyectofinaldesarrollo/user/<?= (int) $usuario->estado === 1 ? 'baja' : 'reactivar' ?>/<?= (int) $usuario->id_usuario ?>">
+                                            <button class="btn btn-sm <?= (int) $usuario->estado === 1 ? 'btn-outline-danger' : 'btn-outline-success' ?>" type="submit"><?= (int) $usuario->estado === 1 ? 'Dar de baja' : 'Reactivar' ?></button>
                                         </form>
-                                            <a class="btn btn-sm btn-outline-primary mt-2" href="/proyectofinaldesarrollo/user/restablecerPassword/<?= (int) $usuario->id_usuario ?>">Restablecer contraseña</a>
-                                        </td>
+                                            <a class="btn btn-sm btn-outline-primary" href="/proyectofinaldesarrollo/user/restablecerPassword/<?= (int) $usuario->id_usuario ?>">Restablecer contraseña</a>
+                                        </div></td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>

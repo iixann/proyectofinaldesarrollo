@@ -44,7 +44,7 @@
                             <input class="form-control" id="direccion" name="direccion" type="text" maxlength="200" value="<?= htmlspecialchars($datosProveedor['direccion'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                         </div>
                     </div>
-                    <div class="d-flex flex-wrap gap-2 border-top pt-4">
+                    <div class="acciones-formulario d-flex flex-wrap gap-2 border-top pt-4">
                         <button class="btn btn-primary" type="submit">Guardar cambios</button>
                         <a class="btn btn-outline-secondary" href="/proyectofinaldesarrollo/proveedor/index">Cancelar</a>
                     </div>

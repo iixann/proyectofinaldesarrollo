@@ -9,7 +9,7 @@
     <main class="container py-4 py-md-5 flex-grow-1" id="contenido">
         <h1 class="h2 fw-bold mb-3">Reposición</h1>
         <p class="text-secondary">Productos activos con stock actual menor o igual al mínimo. Esta consulta no modifica existencias ni genera compras.</p>
-        <form method="get" action="/proyectofinaldesarrollo/reposicion/index" class="row g-3 align-items-end mb-4">
+        <form method="get" action="/proyectofinaldesarrollo/reposicion/index" class="filtros-listado row g-3 align-items-end mb-4">
             <div class="col-sm-6 col-lg-3">
                 <label class="form-label" for="nombre">Nombre</label>
                 <input class="form-control" type="text" id="nombre" name="nombre" maxlength="150" value="<?= htmlspecialchars($filtros['nombre'], ENT_QUOTES, 'UTF-8') ?>">
@@ -42,8 +42,8 @@
             </div>
         </form>
         <section class="card border-0 shadow-sm rounded-4"><div class="card-body p-3 p-md-4">
-            <?php if (!$productos): ?><p class="text-secondary text-center my-4">No hay productos que necesiten reposición.</p><?php else: ?>
-                <div class="table-responsive"><table class="table table-hover align-middle mb-0">
+            <?php if (!$productos): ?><p class="text-secondary text-center my-4">No hay productos que requieran reposición para los filtros seleccionados.</p><?php else: ?>
+                <div class="table-responsive" tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p><table class="table table-hover align-middle mb-0">
                     <thead class="table-light"><tr><th>Producto</th><th>Código EAN</th><th>Categoría</th><th>Proveedores</th><th>Stock actual</th><th>Stock mínimo</th><th>Estado de stock</th></tr></thead>
                     <tbody><?php foreach ($productos as $producto): ?><tr>
                         <td><?= htmlspecialchars($producto->nombre_producto, ENT_QUOTES, 'UTF-8') ?></td>
