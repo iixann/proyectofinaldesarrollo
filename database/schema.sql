@@ -19,7 +19,7 @@ CREATE TABLE usuarios (
     email VARCHAR(150) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     estado TINYINT(1) NOT NULL DEFAULT 1,
-    requiere_cambio_password TINYINT(1) NOT NULL DEFAULT 1,
+    debe_cambiar_password TINYINT(1) NOT NULL DEFAULT 0,
     fecha_alta DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     fecha_baja DATETIME NULL
 ) ENGINE=InnoDB

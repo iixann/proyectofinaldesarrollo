@@ -79,3 +79,24 @@ git diff --check
 La impresión académica no integra un controlador fiscal. No se implementaron cancelaciones, devoluciones, cuentas corrientes ni integraciones bancarias/fiscales. Los nombres de producto/caja/medio se consultan desde maestros y pueden reflejar renombrados; los precios, cantidades, importes, entregado y vuelto históricos permanecen guardados.
 
 Las mejoras de gestión y Reposición se verificaron con una base simulada; requieren su recorrido manual en navegador. El esquema documentado usa únicamente stock actual y mínimo: queda pendiente aplicar manualmente la eliminación de la columna anterior de stock, según el SQL entregado al cerrar este bloque. La aplicación no ejecuta ese cambio.
+
+## Restablecimiento de contraseñas
+
+Las contraseñas no se recuperan: se reemplaza su hash. Solo ADMINISTRADOR accede a «Restablecer contraseña» en Usuarios; ingresa una temporal de mínimo 9 caracteres y su confirmación. Se guarda con password_hash y `debe_cambiar_password = 1`, sin alterar estado, roles ni historial. El usuario debe ingresar con esa temporal y reemplazarla antes de utilizar cualquier módulo; el servidor bloquea URLs directas y las sesiones anteriores al reset. La nueva clave debe diferir de la temporal y deja el indicador en 0. Los formularios nuevos exigen POST y token de sesión.
+
+Para recuperar técnicamente el acceso de un administrador existente desde la terminal local:
+
+```sh
+/opt/lampp/bin/php tools/reset_admin_password.php
+```
+
+Solicita email, temporal y confirmación; oculta la contraseña en terminal. Reutiliza .env/DataBase, valida rol ADMINISTRADOR activo/vigente y no reactiva usuarios. Solo funciona en CLI y tools está bloqueado para Apache. No hay contraseña maestra ni recuperación por correo.
+
+Antes de usar esta versión, aplicar manualmente en phpMyAdmin el único cambio de esquema de este bloque (el campo anterior ya existía):
+
+```sql
+ALTER TABLE usuarios
+    CHANGE COLUMN requiere_cambio_password debe_cambiar_password TINYINT(1) NOT NULL DEFAULT 0;
+```
+
+El renombrado conserva los valores existentes; los usuarios que ya tenían 1 deberán cambiar la contraseña al ingresar. No se ejecuta SQL automáticamente. Eliminar la columna anterior de stock, si todavía está pendiente, corresponde al bloque previo.

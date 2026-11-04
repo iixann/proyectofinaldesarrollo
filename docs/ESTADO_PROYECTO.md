@@ -2,15 +2,14 @@
 
 ## Último bloque funcional
 
-`feat: agregar mejoras de gestion y reposicion`: implementado y verificado con base simulada; pendiente de prueba manual en navegador de estas mejoras. No se modificó la base real.
+`feat: agregar restablecimiento seguro de contrasenas`: restablecimiento administrativo, cambio obligatorio y herramienta técnica CLI implementados y verificados con base simulada; pendiente de prueba manual local.
 
-- Productos: filtros GET combinables por nombre, categoría y proveedor mediante la relación N:M.
-- Categorías: búsqueda por nombre. Proveedores: razón social, CUIT y contacto.
-- Usuarios: baja lógica/reactivación por POST, exclusivas de ADMINISTRADOR; conserva roles e historial. Un usuario inactivo no puede iniciar sesión.
-- Nuevas contraseñas: mínimo 9 caracteres, validado en HTML y PHP; hashes anteriores intactos.
-- Histórico de ventas: ID junto con fechas. Compras: ID y comprobante.
-- Reposición: consulta de productos activos con `stock_actual <= stock_minimo`, todos sus proveedores asociados vigentes y orden por stock actual. Acceso RECEPCIONISTA/DUEÑO/ADMINISTRADOR; sin escrituras ni cálculos de compra.
-- El modelo actual de stock usa únicamente `stock_actual` y `stock_minimo`. Esquema documentado actualizado; queda una eliminación manual de columna en phpMyAdmin (ver próximo objetivo).
+- Solo ADMINISTRADOR restablece contraseñas desde Usuarios, con temporal de mínimo 9 caracteres y confirmación, almacenada como hash.
+- Login temporal dirige a cambio obligatorio; onlyUsers comprueba el estado real antes de autorizar, bloqueando evasión por URL. Sesiones anteriores al reset dejan de ser utilizables.
+- Cambio de contraseña propio por POST y token de sesión; exige una clave distinta de la temporal y deja `debe_cambiar_password = 0`. Usuarios inactivos siguen inactivos.
+- `tools/reset_admin_password.php`: recuperación CLI de un ADMINISTRADOR existente por email, sin contraseña maestra ni correo. Directorio protegido para Apache y script restringido a CLI.
+- Esquema documentado: se renombra el indicador existente `requiere_cambio_password` a `debe_cambiar_password` (DEFAULT 0), sin duplicarlo. Único cambio manual de este bloque: ALTER de README; conserva valores previos.
+- Buscadores de Productos, Stock, Proveedores, Categorías, Compras y Ventas; Usuarios con baja/reactivación y Reposición siguen disponibles. Stock usa solo `stock_actual` y `stock_minimo`; Reposición aplica actual <= mínimo.
 
 Etapa visual anterior: `a0c1048` — `feat: mejorar interfaz visual del sistema`.
 
@@ -120,7 +119,7 @@ Validación local del circuito nuevo en navegador/MariaDB e impresión física. 
 
 ## Próximo objetivo
 
-Ejecutar [DEMOSTRACION.md](DEMOSTRACION.md) en el entorno local y practicar [GUIA_ESTUDIO.md](GUIA_ESTUDIO.md). Recoger correcciones del profesor. Aplicar manualmente en phpMyAdmin la eliminación de la columna anterior de stock, según el SQL entregado; es el único cambio de esquema pendiente. Probar buscadores, usuarios y Reposición en navegador. El desarrollo automático se detiene al cerrar este bloque.
+Aplicar manualmente el renombrado del indicador de contraseña y probar los flujos web/CLI en entorno local. Luego pulido final y recorrido de DEMOSTRACION.md para defensa. Si sigue pendiente, la eliminación de la columna anterior de stock pertenece al bloque previo. Desarrollo automático detenido al publicar este bloque; no se agregan más funcionalidades.
 
 ## Reglas del proyecto
 

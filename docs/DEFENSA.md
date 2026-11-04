@@ -168,3 +168,9 @@ Los buscadores usan GET, parámetros preparados y LIKE para texto; el ID de comp
 Stock usa `stock_actual` y `stock_minimo`. Reposición es una consulta de productos activos con actual <= mínimo, ordenados por stock, y GROUP_CONCAT muestra sus proveedores asociados vigentes. No calcula cuánto comprar ni modifica stock. Permiso RECEPCIONISTA mediante onlyUsers.
 
 Solo ADMINISTRADOR da de baja/reactiva usuarios por POST; se conservan ID, roles e historial. El login exige usuario activo. Nuevas contraseñas: mínimo 9 caracteres en HTML y PHP, con password_hash/password_verify; no se alteran hashes anteriores.
+
+## Restablecimiento y cambio obligatorio
+
+Un hash no permite recuperar la contraseña original; se restablece con password_hash y la temporal también queda hasheada. Solo ADMINISTRADOR puede hacerlo por POST con token, sin cambiar estado/roles. `debe_cambiar_password = 1` lleva al cambio propio obligatorio; onlyUsers consulta el usuario antes de autorizar cualquier módulo y compara una firma del hash con la sesión para invalidar accesos previos al reset. No basta ocultar el menú.
+
+El cambio valida mínimo 9 caracteres, confirmación y diferencia respecto de la temporal; bloquea la fila dentro de una transacción para evitar sobrescribir otro reset concurrente, guarda el hash y deja el indicador en 0. La CLI local valida un ADMINISTRADOR existente y reutiliza configuración/modelo: no ofrece login web, contraseña maestra ni correo. El indicador anterior se renombra, sin crear dos campos equivalentes.

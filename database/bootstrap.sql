@@ -23,3 +23,8 @@ VALUES
 
 -- Modelo de stock vigente: productos.stock_actual y productos.stock_minimo.
 -- Reposición consulta stock_actual <= stock_minimo; no requiere tablas ni datos iniciales.
+
+-- Contraseñas: usuarios.debe_cambiar_password TINYINT(1) NOT NULL DEFAULT 0.
+-- Sustituye el nombre previo requiere_cambio_password, conservando sus valores.
+-- Las claves nuevas normales usan 0; los restablecimientos web/CLI dejan 1.
+-- No se cargan contraseñas ni administradores desde este archivo.

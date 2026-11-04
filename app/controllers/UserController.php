@@ -12,10 +12,64 @@ class UserController extends Controller
     {
         SessionController::onlyUsers(['ADMINISTRADOR']);
         $usuarios = UserModel::listarUsuarios();
-        $mensajes = ['baja' => 'Usuario dado de baja.', 'reactivado' => 'Usuario reactivado correctamente.'];
+        $mensajes = ['baja' => 'Usuario dado de baja.', 'reactivado' => 'Usuario reactivado correctamente.',
+            'password' => 'Contraseña restablecida correctamente. El usuario deberá cambiarla al próximo inicio de sesión.'];
         $resultado = is_string($_GET['resultado'] ?? null) ? $_GET['resultado'] : '';
         Response::render($this->viewDir(__NAMESPACE__), 'index', [
             'usuarios' => $usuarios, 'mensaje' => $mensajes[$resultado] ?? ''
+        ]);
+    }
+
+    public function actionRestablecerPassword($id = null)
+    {
+        SessionController::onlyUsers(['ADMINISTRADOR']);
+        $this->mostrarRestablecimiento($this->usuarioParaRestablecer($id));
+    }
+
+    public function actionGuardarPassword($id = null)
+    {
+        SessionController::onlyUsers(['ADMINISTRADOR']);
+        SessionController::validarPostPassword();
+        $usuario = $this->usuarioParaRestablecer($id);
+        try {
+            $contrasena = $_POST['contrasena'] ?? '';
+            UserModel::validarContrasena($contrasena, $_POST['confirmacion'] ?? '');
+            UserModel::restablecerContrasena($usuario->id_usuario, $contrasena);
+        } catch (\DomainException $excepcion) {
+            http_response_code(422);
+            $this->mostrarRestablecimiento($usuario, [$excepcion->getMessage()]);
+            return;
+        } catch (\Throwable $excepcion) {
+            error_log('No se pudo restablecer la contraseña de usuario.');
+            http_response_code(500);
+            $this->mostrarRestablecimiento($usuario, ['No se pudo restablecer la contraseña. Intentá nuevamente.']);
+            return;
+        }
+        unset($_SESSION['csrf_password']);
+        // Si restablece su propia clave, deberá autenticar con la temporal.
+        header('Location: /proyectofinaldesarrollo/user/index?resultado=password', true, 303);
+        exit;
+    }
+
+    private function usuarioParaRestablecer($id)
+    {
+        if (!is_string($id) || !ctype_digit($id) || (float) $id < 1 || (float) $id > 4294967295) {
+            http_response_code(400);
+            exit('ID de usuario inválido.');
+        }
+        $usuario = UserModel::findId($id);
+        if (!$usuario) {
+            http_response_code(404);
+            exit('El usuario no existe.');
+        }
+        return $usuario;
+    }
+
+    private function mostrarRestablecimiento($usuario, $errores = [])
+    {
+        header('Cache-Control: no-store');
+        Response::render($this->viewDir(__NAMESPACE__), 'restablecer_password', [
+            'usuario' => $usuario, 'errores' => $errores, 'token' => SessionController::tokenPassword()
         ]);
     }
 
@@ -89,11 +143,10 @@ class UserController extends Controller
         if (!filter_var($correo, FILTER_VALIDATE_EMAIL)) {
             $errores[] = 'Ingresá un correo electrónico válido.';
         }
-        if (mb_strlen($contrasena, 'UTF-8') < 9) {
-            $errores[] = 'La contraseña debe tener al menos 9 caracteres.';
-        }
-        if (trim($contrasena) === '' || strlen($contrasena) > 72 || strpos($contrasena, "\0") !== false) {
-            $errores[] = 'Ingresá una contraseña no vacía de hasta 72 bytes, sin caracteres nulos.';
+        try {
+            UserModel::validarContrasena($contrasena);
+        } catch (\DomainException $excepcion) {
+            $errores[] = $excepcion->getMessage();
         }
         $roles = [];
         $rolesActivos = array_column(UserModel::obtenerRolesActivos(), 'id_rol');

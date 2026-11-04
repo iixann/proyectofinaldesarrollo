@@ -45,7 +45,9 @@
                                         </td>
                                         <td><form method="post" action="/proyectofinaldesarrollo/user/<?= (int) $usuario->estado === 1 ? 'baja' : 'reactivar' ?>/<?= (int) $usuario->id_usuario ?>">
                                             <button class="btn btn-sm <?= (int) $usuario->estado === 1 ? 'btn-outline-danger' : 'btn-outline-success' ?>" type="submit"><?= (int) $usuario->estado === 1 ? 'Dar de baja' : 'Dar de alta' ?></button>
-                                        </form></td>
+                                        </form>
+                                            <a class="btn btn-sm btn-outline-primary mt-2" href="/proyectofinaldesarrollo/user/restablecerPassword/<?= (int) $usuario->id_usuario ?>">Restablecer contraseña</a>
+                                        </td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>

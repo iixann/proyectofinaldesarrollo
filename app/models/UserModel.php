@@ -13,7 +13,7 @@ class UserModel extends Model
     public static function buscarPorCorreo($correo)
     {
         return DataBase::getRecord(
-            "SELECT id_usuario, nombre, apellido, email, password, estado FROM usuarios WHERE email = :correo",
+            "SELECT id_usuario, nombre, apellido, email, password, estado, debe_cambiar_password FROM usuarios WHERE email = :correo",
             ['correo' => $correo]
         );
     }
@@ -55,16 +55,66 @@ class UserModel extends Model
         return DataBase::execute('UPDATE usuarios SET estado = 1, fecha_baja = NULL WHERE id_usuario = :id', ['id' => $id]);
     }
 
-    public static function crearUsuario($nombre, $apellido, $correo, $contrasena, $roles)
+    public static function validarContrasena($contrasena, $confirmacion = null)
     {
-        if (mb_strlen($contrasena, 'UTF-8') < 9) {
+        if (!is_string($contrasena) || !mb_check_encoding($contrasena, 'UTF-8') || trim($contrasena) === ''
+            || mb_strlen($contrasena, 'UTF-8') < 9) {
             throw new \DomainException('La contraseña debe tener al menos 9 caracteres.');
         }
+        if (strlen($contrasena) > 72 || strpos($contrasena, "\0") !== false) {
+            throw new \DomainException('La contraseña debe tener hasta 72 bytes, sin caracteres nulos.');
+        }
+        if ($confirmacion !== null && (!is_string($confirmacion) || $contrasena !== $confirmacion)) {
+            throw new \DomainException('Las contraseñas no coinciden.');
+        }
+    }
+
+    public static function restablecerContrasena($id, $contrasena)
+    {
+        self::validarContrasena($contrasena);
+        $usuario = self::findId($id);
+        if (!$usuario) {
+            throw new \DomainException('El usuario no existe.');
+        }
+        if (password_verify($contrasena, $usuario->password)) {
+            throw new \DomainException('La contraseña temporal debe ser distinta de la actual.');
+        }
+        return DataBase::execute('UPDATE usuarios SET password = :password, debe_cambiar_password = 1 WHERE id_usuario = :id',
+            ['password' => password_hash($contrasena, PASSWORD_DEFAULT), 'id' => $id]);
+    }
+
+    public static function cambiarContrasenaObligatoria($id, $contrasena, $firmaActual)
+    {
+        self::validarContrasena($contrasena);
+        DataBase::iniciarTransaccion();
+        try {
+            $usuario = DataBase::getRecord('SELECT password, estado, debe_cambiar_password FROM usuarios WHERE id_usuario = :id FOR UPDATE', ['id' => $id]);
+            if (!$usuario || (int) $usuario->estado !== 1 || (int) $usuario->debe_cambiar_password !== 1
+                || !hash_equals(hash('sha256', $usuario->password), $firmaActual)) {
+                throw new \DomainException('La sesión ya no permite este cambio. Volvé a iniciar sesión.');
+            }
+            if (password_verify($contrasena, $usuario->password)) {
+                throw new \DomainException('Elegí una contraseña distinta de la temporal.');
+            }
+            $hash = password_hash($contrasena, PASSWORD_DEFAULT);
+            DataBase::execute('UPDATE usuarios SET password = :password, debe_cambiar_password = 0 WHERE id_usuario = :id',
+                ['password' => $hash, 'id' => $id]);
+            DataBase::confirmarTransaccion();
+            return hash('sha256', $hash);
+        } catch (\Throwable $excepcion) {
+            DataBase::cancelarTransaccion();
+            throw $excepcion;
+        }
+    }
+
+    public static function crearUsuario($nombre, $apellido, $correo, $contrasena, $roles)
+    {
+        self::validarContrasena($contrasena);
         $contrasenaCifrada = password_hash($contrasena, PASSWORD_DEFAULT);
         DataBase::iniciarTransaccion();
         try {
             $idUsuario = DataBase::insert(
-                "INSERT INTO usuarios (nombre, apellido, email, password, estado, requiere_cambio_password, fecha_alta, fecha_baja)
+                "INSERT INTO usuarios (nombre, apellido, email, password, estado, debe_cambiar_password, fecha_alta, fecha_baja)
                  VALUES (:nombre, :apellido, :correo, :contrasena, 1, 0, CURRENT_TIMESTAMP, NULL)",
                 ['nombre' => $nombre, 'apellido' => $apellido, 'correo' => $correo, 'contrasena' => $contrasenaCifrada]
             );

@@ -139,3 +139,13 @@ CompraController/CompraModel filtran ID exacto y comprobante parcial; VentaContr
 ReposicionController autoriza RECEPCIONISTA y pide a ReposicionModel los productos activos con `stock_actual <= stock_minimo`. DataBase prepara la consulta y Response entrega la vista reposicion/index. Se muestran EAN, categoría, proveedores asociados vigentes (GROUP_CONCAT), stock actual y mínimo; se ordena por stock ascendente. No hay cantidad de compra calculada ni escrituras. La navegación y el panel enlazan `/reposicion/index`.
 
 Para defender: explicar por qué igualdad al mínimo también aparece; cómo EXISTS evita duplicar un producto con varios proveedores; por qué un filtro GET no modifica datos; por qué una baja de usuario conserva su historial y bloquea nuevos inicios de sesión.
+
+## 14. Restablecimiento seguro
+
+UserController muestra/guarda el restablecimiento exclusivo de ADMINISTRADOR; UserModel valida mínimo 9 caracteres y confirmación y reemplaza `usuarios.password` con un hash temporal. Mantiene roles, estado e historial y deja `debe_cambiar_password = 1`; el indicador existente se renombra manualmente en lugar de duplicarlo. Vistas: user/restablecer_password y session/cambiar_password.
+
+SessionController usa password_verify, guarda el indicador y una firma del hash en la sesión y dirige a cambiarPassword. onlyUsers llama a exigirSesion antes de evaluar roles: lee el estado actual, rechaza sesiones con contraseña reemplazada y bloquea cualquier módulo si queda cambio pendiente. La pantalla/POST de cambio solo operan sobre el ID de la propia sesión; logout sigue disponible. POST y token evitan envíos cruzados. Al cambiar, una transacción bloquea/verifica la fila y la firma para no sobrescribir un reset posterior; guarda un hash distinto de la temporal, deja 0 y regenera sesión. Las claves nunca se imprimen, se repueblan en formularios ni se registran en logs.
+
+Herramienta: `/opt/lampp/bin/php tools/reset_admin_password.php`. Pide email y temporal confirmada, oculta entrada en terminal y valida rol administrador activo/vigente; reutiliza .env y UserModel/DataBase. tools está denegado en Apache y el script exige PHP_SAPI cli. No reactiva al administrador ni crea uno oculto. Las contraseñas no son recuperables: se restablecen; no hay contraseña maestra ni recuperación por correo.
+
+Para defender: ¿por qué cambia también el acceso por URL? Porque la autorización revisa el indicador antes de permitir cualquier rol. ¿Un usuario inactivo vuelve a ingresar al resetear? No. ¿Qué hace si el último administrador olvida su clave? Ejecuta la herramienta local con acceso técnico al servidor, nunca un endpoint secreto.
