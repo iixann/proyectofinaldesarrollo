@@ -8,7 +8,8 @@ Proyecto académico en PHP puro, MVC del profesor, PDO/MariaDB, Bootstrap 5 y Ja
 - Categorías, proveedores y productos: alta, edición, baja lógica y reactivación; búsquedas textuales y filtros combinables de producto por nombre/categoría/proveedor.
 - Código EAN obligatorio, único y textual; categorías y proveedores N:M del producto.
 - Stock actual y mínimo, ajustes y trazabilidad mediante movimientos. Reposición lista productos activos con `stock_actual <= stock_minimo`, con todos sus proveedores asociados vigentes; no modifica stock ni genera compras.
-- Compras con detalles históricos, incremento de stock y movimientos COMPRA.
+- Compras/pedidos con cabecera, costos históricos y estado de recepción: no modifican stock.
+- Recepción de compra o directa: aceptar incorpora mercadería y movimientos RECEPCION; rechazar conserva motivo y cantidades sin modificar stock. Sin recepción parcial ni doble recepción de compra.
 - Cajas físicas y sesiones de apertura/cierre con arqueo e histórico.
 - POS: sesión abierta, escaneo EAN, búsqueda manual, carrito y cobro combinado.
 - Venta transaccional: precios reales, detalle, pagos, descuento de stock y movimientos VENTA.
@@ -46,7 +47,7 @@ Todas bajo `/proyectofinaldesarrollo`:
 | `/admin/index` | Panel exclusivo de administrador |
 | `/user/index` | Usuarios, exclusivo de administrador |
 | `/categoria/index`, `/proveedor/index`, `/producto/index`, `/caja/index` | Administración, rol funcional DUEÑO |
-| `/compra/index`, `/stock/index`, `/stock/movimientos`, `/reposicion/index` | Recepción/stock, rol RECEPCIONISTA |
+| `/compra/index`, `/recepcion/index`, `/recepcion/directa`, `/stock/index`, `/stock/movimientos`, `/reposicion/index` | Recepción/stock, rol RECEPCIONISTA |
 | `/sesioncaja/index`, `/sesioncaja/abrir` | Apertura, cierre e histórico, rol VENDEDOR |
 | `/pos/index` | POS con sesión ABIERTA en caja activa |
 | `/venta/confirmar` | POST JSON interno protegido con sesión, rol y token |
@@ -100,3 +101,13 @@ ALTER TABLE usuarios
 ```
 
 El renombrado conserva los valores existentes; los usuarios que ya tenían 1 deberán cambiar la contraseña al ingresar. No se ejecuta SQL automáticamente. Eliminar la columna anterior de stock, si todavía está pendiente, corresponde al bloque previo.
+
+## Compra y recepción física
+
+Compra ≠ entrada de stock. Compra documenta lo solicitado/comprado; solo una recepción ACEPTADA incorpora lo físicamente recibido. Recepción permite aceptar cantidades exactas de una compra pendiente o rechazar con motivo; también registra entregas directas sin crear compras ficticias. Guarda proveedor, usuario, fecha, cantidades esperadas/recibidas e histórico de solo lectura. Reutiliza las altas rápidas existentes. Permiso RECEPCIONISTA, heredado por DUEÑO/ADMINISTRADOR.
+
+Antes de probar esta versión, aplicar **una vez, con la aplicación detenida y respaldo**, [database/recepcion_manual.sql](database/recepcion_manual.sql) desde phpMyAdmin. El primer ALTER deja las compras existentes RECEPCIONADAS porque el circuito anterior ya sumó su stock; el segundo cambia solo el default futuro a PENDIENTE. No se reconstruyen recepciones/movimientos históricos ni se recalcula stock. schema.sql describe el estado final para una base nueva; no reemplaza este SQL de actualización. Codex no ejecuta cambios en la base real.
+
+Cierre de caja definitivo: ADMINISTRADOR/DUEÑO cierran cualquier sesión ABIERTA; VENDEDOR solo propia; RECEPCIONISTA no cierra. Se conserva quién abrió y quién cerró. La operación POS continúa limitada a sesiones propias.
+
+Bloque implementado y verificado con fixtures; SQL manual y prueba de navegador pendientes. Sin commit/push hasta esa prueba.

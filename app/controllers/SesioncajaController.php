@@ -68,11 +68,11 @@ class SesioncajaController extends Controller
         $this->exigirPropietario($sesion);
         $datos = $this->leerDatos(['efectivo_contado', 'observacion_cierre']);
         try {
-            CajaSesionModel::cerrar($sesion->id_caja_sesion, $_SESSION['usuario']['id_usuario'], $datos['efectivo_contado'], $datos['observacion_cierre']);
+            CajaSesionModel::cerrar($sesion->id_caja_sesion, $_SESSION['usuario']['id_usuario'], $datos['efectivo_contado'], $datos['observacion_cierre'], $_SESSION['usuario']['roles']);
         } catch (\DomainException $excepcion) {
             if ($excepcion->getCode() === 403) {
                 http_response_code(403);
-                echo 'Solo podés cerrar la sesión de caja que abriste.';
+                echo 'No tenés permiso para cerrar esta sesión de caja.';
                 return;
             }
             http_response_code(422);
@@ -102,9 +102,9 @@ class SesioncajaController extends Controller
 
     private function exigirPropietario($sesion)
     {
-        if ((string) $sesion->id_usuario_apertura !== (string) $_SESSION['usuario']['id_usuario']) {
+        if (!CajaSesionModel::puedeCerrar($sesion->id_usuario_apertura, $_SESSION['usuario']['id_usuario'], $_SESSION['usuario']['roles'])) {
             http_response_code(403);
-            exit('Solo podés cerrar la sesión de caja que abriste.');
+            exit('No tenés permiso para cerrar esta sesión de caja.');
         }
     }
 

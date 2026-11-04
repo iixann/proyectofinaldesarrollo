@@ -67,20 +67,20 @@ Preguntas: ¿por qué escapar si ya se usan prepared statements? Son problemas d
 - Entrada/salida: producto activo, cantidad entera positiva, observación hasta 255. Comienza transacción, lee y bloquea producto con FOR UPDATE, calcula saldo, rechaza negativo/desbordamiento, actualiza saldo e inserta movimiento. Commit o rollback.
 - Una transacción hace atómicas las operaciones. FOR UPDATE impide que dos procesos calculen sobre un mismo saldo anterior al mismo tiempo; el bloqueo dura hasta terminar la transacción. InnoDB proporciona estas garantías.
 - STOCK BAJO es aviso visual cuando actual <= mínimo; no es una notificación externa ni una compra automática.
-- Defensa: cantidad siempre positiva; el tipo define suma/resta. Ajuste, COMPRA y VENTA dejan usuario, fecha y saldos.
+- Defensa: cantidad siempre positiva; el tipo define suma/resta. Ajuste, RECEPCION y VENTA dejan usuario, fecha y saldos; COMPRA se conserva solo en movimientos históricos anteriores.
 - Preguntas: ¿qué pasa si falla insertar el movimiento? Se revierte el saldo. ¿Por qué leer antes del BEGIN no alcanza? Otro proceso podría cambiarlo antes de escribir.
 
 ## 7. Compras
 
 - Problema: registrar recepción y costo histórico sin perder coherencia de stock.
-- Tablas: compras, detalle_compras, productos, proveedores, productos_proveedores y movimientos_stock.
+- Tablas: compras, detalle_compras, productos, proveedores y productos_proveedores. La entrada física usa recepciones/detalle_recepciones y movimientos_stock.
 - Controlador/modelo: CompraController/CompraModel. Vistas: compra/index, crear y ver.
 - Permiso: RECEPCIONISTA. Proveedor/productos/asociaciones activos, cantidad positiva, precio no negativo, sin producto repetido; comprobante opcional único por proveedor.
 - El formulario permite varios renglones y filtra productos al cambiar proveedor. Esa UX no sustituye la validación del modelo.
-- Una transacción bloquea y valida, guarda cabecera/detalles, suma stock y movimientos COMPRA. Precios/subtotales/total se calculan en centavos en servidor y se guardan como cadenas decimales; no se aceptan totales del formulario.
+- Una transacción bloquea y valida, guarda cabecera/detalles y deja estado_recepcion PENDIENTE sin tocar inventario. Precios/subtotales/total se calculan en centavos en servidor y se guardan como cadenas decimales; no se aceptan totales del formulario.
 - No modifica precio de venta. La compra confirmada es histórica y no se edita ni cancela.
 - Defensa: recorrer un renglón desde formulario hasta saldo/movimiento. Explicar par producto/proveedor y comprobante NULL.
-- Preguntas: ¿por qué no llamar registrarEntrada de StockModel? Abriría otra transacción; CompraModel hace sus operaciones bajo una sola. ¿Dónde queda el precio real de compra? En el detalle histórico.
+- Preguntas: ¿Por qué comprar no suma stock? Porque el pedido todavía puede no haber llegado; la entrada se registra al aceptar Recepción. ¿Dónde queda el precio real de compra? En el detalle histórico.
 
 ## 8. Cajas y sesiones
 
@@ -152,7 +152,7 @@ Para defender: ¿por qué cambia también el acceso por URL? Porque la autorizac
 
 ## 15. Operación de caja, filtros y alta rápida de Compra
 
-SesioncajaController verifica propietario antes del formulario y del POST; CajaSesionModel vuelve a compararlo bajo bloqueo. Propietario = caja_sesiones.id_usuario_apertura frente al ID autenticado, nunca un campo del formulario. El administrador/dueño conserva consulta para supervisión, pero no cierre forzado. CajaSesionModel entrega al POS solo las sesiones abiertas propias y VentaModel revalida la propiedad dentro de su transacción; manipular el ID no permite vender en otra sesión.
+SesioncajaController verifica permiso de cierre antes del formulario y del POST; CajaSesionModel aplica la misma regla bajo bloqueo. Propietario = caja_sesiones.id_usuario_apertura frente al ID autenticado, nunca un campo del formulario. DUEÑO/ADMINISTRADOR pueden cerrar cualquier sesión abierta, conservando quién abrió y quién cierra; VENDEDOR solo propia y RECEPCIONISTA no cierra. CajaSesionModel entrega al POS solo las sesiones abiertas propias y VentaModel revalida la propiedad dentro de su transacción; manipular el ID no permite vender en otra sesión.
 
 ReposicionController/Model/vista combinan nombre, EAN exacto, categoría y proveedor. Mantienen productos activos con stock_actual <= stock_minimo; EXISTS evita duplicados y GROUP_CONCAT conserva todos los proveedores asociados. CompraController/Model/index añade proveedor a los filtros históricos, sin editar compras.
 
@@ -160,4 +160,16 @@ CompraController ofrece crearProveedorRapido y crearProductoRapido, ambas POST c
 
 El proveedor se crea como maestro antes de confirmar. ProductoModel crea producto con stock 0 y asociación activa al proveedor elegido en una transacción; su UNIQUE y upsert evitan repetir el par. No se crean categorías ni se carga stock inicial desde ese modal. Luego CompraModel registra la compra con su transacción original y el costo histórico en detalle_compras, independiente de precio_venta. Si se cancela la compra, los maestros ya creados permanecen disponibles.
 
-Preguntas: ¿por qué ocultar Cerrar no alcanza? Porque puede enviarse el POST manualmente; el modelo también comprueba propietario. ¿El alta rápida registra stock? No, lo hace la compra confirmada. ¿El recepcionista ganó acceso completo a Productos? No: solo el alta contextual de Compra. ¿Se pierde una compra al abrir el modal? No se recarga; los datos quedan en el formulario.
+Preguntas: ¿por qué ocultar Cerrar no alcanza? Porque puede enviarse el POST manualmente; el modelo también comprueba propietario. ¿El alta rápida registra stock? No, lo hace la recepción aceptada. ¿El recepcionista ganó acceso completo a Productos? No: solo el alta contextual de Compra. ¿Se pierde una compra al abrir el modal? No se recarga; los datos quedan en el formulario.
+
+## 16. Recepción: del pedido al ingreso físico
+
+Problema: pedir mercadería no asegura que llegó bien. CompraModel guarda pedido y costos con estado_recepcion PENDIENTE. RecepcionController/RecepcionModel y vistas recepcion/index, compra, directa y ver registran la revisión física, con permiso RECEPCIONISTA heredado por DUEÑO/ADMINISTRADOR. POST y csrf_recepcion protegen decisiones. No se permiten edición ni recepción parcial o repetida.
+
+Recepción vinculada: bloquear compra pendiente → comprobar proveedor y detalles reales → cantidades exactas si se acepta → bloquear productos ordenados → guardar recepción y detalle → aumentar stock y movimientos RECEPCION → marcar compra RECEPCIONADA → commit. Un fallo revierte todo. Rechazar guarda cantidades y motivo y marca RECHAZADA, sin tocar existencias. El motivo puede explicar faltantes, sobrantes, daños o producto incorrecto. Se declaran todas las cantidades, incluso cero, para conservar auditoría.
+
+Directa: id_compra NULL, proveedor/productos asociados y cantidad_esperada NULL. No crea compra ni costos ficticios. Reutiliza formulario, JavaScript y altas rápidas de Compra; producto nuevo stock0. ACEPTADA exige cantidades positivas y registra stock/movimientos en una transacción; RECHAZADA exige motivo y no cambia stock. Una compra asociada usa UNIQUE(id_compra); varios NULL permiten recepciones directas independientes.
+
+Históricos: recepcion_manual.sql se aplica manualmente una vez con uso detenido. Agrega estado con default RECEPCIONADA para las compras anteriores que ya sumaron stock y luego cambia solo el default futuro a PENDIENTE. No reconstruye recepciones ni modifica saldos/movimientos previos. schema.sql describe una instalación nueva; no se importa encima de la existente.
+
+Defensa: ¿qué cambia stock? Solo aceptar recepción, además de ajustes/ventas ya existentes. ¿Qué evita duplicar entrada? Bloqueo de compra, estado final y UNIQUE. ¿Qué precio se usa al recibir? No se cambia precio: el costo pedido está en detalle_compras y recepción registra cantidades. ¿Quién cierra la caja ajena? ADMINISTRADOR/DUEÑO; se guarda su ID en cierre y se conserva la apertura. El POS sigue operando solo sesiones propias.

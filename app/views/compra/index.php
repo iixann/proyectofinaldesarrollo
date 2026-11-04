@@ -26,7 +26,7 @@
                 <p class="text-secondary text-center my-4">No hay compras registradas.</p>
             <?php else: ?>
                 <div class="table-responsive"><table class="table table-hover align-middle mb-0">
-                    <thead class="table-light"><tr><th scope="col">ID</th><th scope="col">Fecha</th><th scope="col">Proveedor</th><th scope="col">Comprobante</th><th scope="col">Usuario</th><th scope="col">Total</th><th scope="col">Acciones</th></tr></thead>
+                    <thead class="table-light"><tr><th scope="col">ID</th><th scope="col">Fecha</th><th scope="col">Proveedor</th><th scope="col">Comprobante</th><th scope="col">Usuario</th><th scope="col">Total</th><th scope="col">Estado recepción</th><th scope="col">Acciones</th></tr></thead>
                     <tbody>
                         <?php foreach ($compras as $compra): ?>
                             <tr>
@@ -36,7 +36,8 @@
                                 <td><?= htmlspecialchars($compra->numero_comprobante ?? '', ENT_QUOTES, 'UTF-8') ?></td>
                                 <td><?= htmlspecialchars($compra->nombre . ' ' . $compra->apellido, ENT_QUOTES, 'UTF-8') ?></td>
                                 <td>$ <?= htmlspecialchars((string) $compra->total, ENT_QUOTES, 'UTF-8') ?></td>
-                                <td><a class="btn btn-outline-primary btn-sm" href="/proyectofinaldesarrollo/compra/ver/<?= htmlspecialchars((string) $compra->id_compra, ENT_QUOTES, 'UTF-8') ?>">Ver</a></td>
+                                <td><span class="badge <?= $compra->estado_recepcion === 'PENDIENTE' ? 'text-bg-warning' : ($compra->estado_recepcion === 'RECEPCIONADA' ? 'text-bg-success' : 'text-bg-danger') ?>"><?= htmlspecialchars($compra->estado_recepcion, ENT_QUOTES, 'UTF-8') ?></span></td>
+                                <td><?php if ((int) $compra->estado === 1 && $compra->estado_recepcion === 'PENDIENTE'): ?><a class="btn btn-outline-success btn-sm" href="/proyectofinaldesarrollo/recepcion/compra/<?= (int) $compra->id_compra ?>">Recepcionar</a><?php endif; ?> <a class="btn btn-outline-primary btn-sm" href="/proyectofinaldesarrollo/compra/ver/<?= htmlspecialchars((string) $compra->id_compra, ENT_QUOTES, 'UTF-8') ?>">Ver</a></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>

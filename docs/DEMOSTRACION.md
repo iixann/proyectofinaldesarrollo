@@ -4,7 +4,7 @@ Versión demostrable implementada e integrada. Verificación automática con Dat
 
 ## Preparación
 
-1. Levantar Apache/MariaDB de LAMPP y verificar `.env` local, dependencias y las tablas documentadas. No ejecutar nuevamente schema/bootstrap sobre una base ya preparada.
+1. Aplicar manualmente database/recepcion_manual.sql una vez, con uso detenido y respaldo. Confirmar históricos RECEPCIONADOS y compras futuras PENDIENTES. Luego levantar/verificar Apache/MariaDB de LAMPP y verificar `.env` local, dependencias y las tablas documentadas. No ejecutar nuevamente schema/bootstrap sobre una base ya preparada.
 2. Tener un ADMINISTRADOR y usuarios con los roles que se van a demostrar. La base inicial y credenciales se administran manualmente.
 3. Disponer de una categoría y proveedor activos y un producto activo asociado al proveedor, con EAN textual único. Para el ejemplo: precio de venta 12.34, stock inicial 0. El ejemplo utiliza un producto nuevo; si se usa uno existente, anotar su stock previo y adaptar las cantidades.
 4. Tener al menos una caja activa y medios EFECTIVO y DÉBITO activos. Para impresión, configurar el ancho del papel en el navegador/controlador; el contenido del ticket tiene 72 mm.
@@ -13,7 +13,7 @@ Versión demostrable implementada e integrada. Verificación automática con Dat
 
 1. Ingresar como ADMINISTRADOR: mostrar panel, usuarios/roles y navbar. Explicar onlyUsers y la jerarquía.
 2. Mostrar categoría, proveedor y producto. El EAN conserva ceros iniciales; stock actual no se edita desde Productos. Mostrar asociación N:M con proveedor.
-3. Registrar compra del producto: 5 unidades a 5.00. Debe guardar total 25.00, aumentar stock de 0 a 5 y registrar COMPRA. No requiere un ajuste posterior.
+3. Registrar compra del producto: 5 unidades a 5.00. Guarda total 25.00 y PENDIENTE, stock sigue 0 y no hay movimiento. Ir a Recepción, declarar 5 recibidas y Aceptar: stock pasa a 5, movimiento RECEPCION y compra RECEPCIONADA. No ajustar manualmente.
 4. Como VENDEDOR o ADMINISTRADOR, abrir caja con 5000.00. Intentar segunda apertura en la misma caja: debe rechazarse.
 5. Entrar al POS. Elegir sesión si hay varias. Escanear el EAN dos veces: cantidad 2, precio 12.34, total 24.68. Mostrar búsqueda por nombre y controles de cantidad.
 6. Aplicar EFECTIVO 10.00, entregado 20.00: vuelto 10.00. Aplicar DÉBITO 14.68. Total aplicado 24.68.
@@ -35,6 +35,15 @@ Versión demostrable implementada e integrada. Verificación automática con Dat
 
 ## Verificación realizada sin base real
 
-Sintaxis PHP completa; rutas del dashboard/navbar; permisos y destino por rol; venta simple/combinada y rollback; consultas/vistas históricas y ticket con datos escapados; circuito de modelos apertura → compra → venta → cierre → reapertura con una misma DataBase simulada. DOM/fetch simulados para cobro, vuelto, bloqueo de doble envío y limpieza al confirmar.
+Sintaxis PHP completa; rutas del dashboard/navbar; permisos y destino por rol; venta simple/combinada y rollback; consultas/vistas históricas y ticket con datos escapados; circuito de modelos apertura → compra → recepción aceptada → venta → cierre → reapertura con una misma DataBase simulada. DOM/fetch simulados para cobro, vuelto, bloqueo de doble envío y limpieza al confirmar.
 
 La concurrencia real entre procesos, la conectividad local y la impresión física no quedan demostradas por fixtures. Se comprueban en el entorno local antes de la presentación. No hay cancelación/devolución ni emisión fiscal integrada.
+
+## Nuevo flujo: pruebas manuales obligatorias
+
+- Compra pendiente: verificar que no suma stock ni genera COMPRA. Recibir cantidades distintas: aceptar debe rechazarse; coincidencia exacta acepta una sola vez.
+- Otra compra: rechazar con motivo y cantidades reales (puede ser 0); stock intacto, motivo visible y segundo intento bloqueado.
+- Directa: seleccionar proveedor y varios productos, usar altas rápidas si hace falta, aceptar; stock aumenta sin crear compra. Otra directa rechazada conserva motivo sin stock.
+- Históricos anteriores al SQL: RECEPCIONADA, sin botón Recepcionar ni recepción reconstruida; saldo y movimientos anteriores intactos.
+- Caja: vendedor cierra propia y no ajena; dueño/administrador pueden cerrar ajena, mostrando apertura y cierre con usuarios distintos; recepcionista denegado. POS sigue limitado a sesiones propias.
+- Ante errores de cantidad, conservar datos de formulario; histórico de recepciones solo lectura y enlaces a compra. Verificar permisos de las altas rápidas.

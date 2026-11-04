@@ -1,15 +1,24 @@
 # Estado del proyecto
 
-## Último bloque funcional
+## Bloque actual — IMPLEMENTADO, PENDIENTE DE SQL Y PRUEBA MANUAL
+
+Compra ≠ recepción. Compra guarda pedido, detalle/costos históricos y estado PENDIENTE; no suma stock ni genera COMPRA. Recepción de mercadería acepta cantidades exactas o rechaza con motivo; permite entregas directas sin compra. Solo aceptar crea entrada de stock y movimiento RECEPCION, dentro de una única transacción con cabecera, detalle, saldos y estado. No hay recepción parcial ni segundo procesamiento de la misma compra.
+
+- RecepcionController/RecepcionModel y vistas: pendientes, revisión, directa e histórico de solo lectura. Permiso RECEPCIONISTA/DUEÑO/ADMINISTRADOR; POST y token de sesión. Altas rápidas reutilizadas, sin crear categorías ni modificar permisos de CRUD.
+- Cierre definitivo: ADMINISTRADOR/DUEÑO cualquier ABIERTA; VENDEDOR propia; RECEPCIONISTA denegado. Auditoría conserva id_usuario_apertura y registra el usuario real de cierre. POS permanece en sesiones propias.
+- SQL manual: database/recepcion_manual.sql, una vez con aplicación detenida. Existentes RECEPCIONADAS; futuras PENDIENTES. Nunca duplicar stock ni fabricar recepciones históricas.
+- Pruebas con base simulada: compra sin cambios de inventario, aceptar/rechazar, directa, cantidades, doble recepción, rollback, múltiples productos, altas rápidas, ventas y cierres. Base real intacta. NO commit ni push hasta prueba manual.
+
+## Último bloque publicado (58ccbb7)
 
 `feat: mejorar operacion de cajas compras y reposicion`: implementado y verificado con fixtures y simulación JavaScript; pendiente de recorrido manual en navegador.
 
-- El cierre normal exige `id_usuario_apertura` igual al usuario autenticado, tanto al mostrar el formulario como bajo FOR UPDATE; no hay excepción administrativa. Las consultas de supervisión se conservan.
+- La comprobación de cierre ahora aplica la regla definitiva descrita arriba: supervisores cualquier sesión abierta y vendedor solo propia; conserva controles GET/POST y FOR UPDATE.
 - POS lista y valida sesiones abiertas propias; la confirmación de venta revalida la propiedad dentro de su transacción.
 - Reposición combina nombre, EAN exacto, categoría y proveedor, manteniendo actual <= mínimo y todos los proveedores asociados sin duplicar filas.
 - Compras combina proveedor con ID/comprobante. Nueva compra ofrece altas rápidas de proveedor y producto mediante modales, POST, token de sesión y JSON interno, sin abandonar la compra.
 - Altas rápidas permitidas para RECEPCIONISTA/DUEÑO/ADMINISTRADOR; CRUD completos mantienen DUEÑO/ADMINISTRADOR. Validaciones compartidas en modelos; el producto nace con stock 0 y asociación activa al proveedor elegido.
-- La compra confirmada conserva su transacción habitual. Verificado: compra suma, venta resta, movimientos y cierre correctos; rollback del alta de producto si falla su asociación. No hay cambios de esquema en este bloque ni escrituras sobre la base real desde Codex.
+- La compra confirmada conserva su transacción habitual. El bloque actual reemplaza la entrada inmediata por recepción aceptada; venta y cierre conservan su comportamiento; rollback del alta de producto si falla su asociación. No hay cambios de esquema en este bloque ni escrituras sobre la base real desde Codex.
 
 ## Restablecimiento de contraseñas — bloque anterior
 
@@ -72,9 +81,9 @@ Pruebas manuales en navegador confirmadas como correctas. Funcionalidad: listado
 
 Pruebas manuales en navegador confirmadas como correctas. Funcionalidad: listado de productos activos, estado de stock y movimientos generales o por producto; ajustes de entrada/salida por POST con usuario de sesión, transacción y bloqueo de fila. Acceso RECEPCIONISTA/DUEÑO/ADMINISTRADOR. Productos nuevos comienzan con stock 0 y su edición ya no modifica stock actual.
 
-## Compras — TERMINADO
+## Compras / Recepción — NUEVA LÓGICA PENDIENTE DE PRUEBA MANUAL
 
-Pruebas manuales correctas: filtro de productos por proveedor y limpieza de selecciones inválidas; cabecera, detalle histórico y total calculado en servidor; incremento automático de stock y movimientos COMPRA dentro de una única transacción. Proveedores, productos y asociaciones activos. Acceso RECEPCIONISTA/DUEÑO/ADMINISTRADOR. Sin edición ni cancelación.
+Compras conserva filtros, altas rápidas, cabecera, detalle y total calculado en servidor, dentro de una transacción. Nuevas compras PENDIENTES, sin modificar stock. Recepción aceptada incorpora stock y genera RECEPCION; rechazadas guardan motivo sin entrada física. Acceso RECEPCIONISTA/DUEÑO/ADMINISTRADOR. Históricos sin edición ni cancelación.
 
 ## POS ETAPA 1 — TERMINADA
 
@@ -118,7 +127,7 @@ Ventas con filtro por fechas (hasta 100 resultados), detalle de solo lectura y t
 ## Versión demostrable — IMPLEMENTADA E INTEGRADA
 
 - Login lleva a cada rol a una pantalla permitida; navbar y dashboard enlazan módulos existentes
-- Circuito simulado apertura → compra → venta combinada → stock/movimientos → cierre → reapertura correcto
+- Circuito simulado apertura → compra → recepción aceptada → venta combinada → stock/movimientos → cierre → reapertura correcto
 - Cierre y consulta de sesión muestran distribución de ventas por medio de pago
 - 63 PHP sin errores de sintaxis; 28 pantallas renderizadas con fixtures, rutas/permisos y lógica esencial comprobados
 - Validaciones de Producto ajustadas a longitudes, DECIMAL(12,2) y rango INT del esquema
@@ -130,7 +139,7 @@ Validación local del circuito nuevo en navegador/MariaDB e impresión física. 
 
 ## Próximo objetivo
 
-Probar en navegador la propiedad de caja, filtros y altas rápidas de Compra; luego pulido final y recorrido de DEMOSTRACION.md. Si aún no se aplicaron, el renombrado del indicador de contraseña y la eliminación de la columna anterior de stock pertenecen a bloques previos; este bloque no requiere ALTER. Desarrollo automático detenido tras publicar las mejoras operativas.
+Aplicar manualmente database/recepcion_manual.sql con la aplicación detenida; probar Compras → Recepción y recepción directa, rechazos, cantidades, stock e histórico y la matriz definitiva de cierre. No hacer commit/push hasta esa prueba. Si siguen pendientes cambios de esquema de bloques previos, revisarlos por separado; este bloque agrega solo estado_recepcion y dos tablas.
 
 ## Reglas del proyecto
 

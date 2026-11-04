@@ -27,7 +27,7 @@
                                 <td><span class="badge <?= $sesion->estado === 'ABIERTA' ? 'bg-success-subtle text-success-emphasis' : 'bg-secondary-subtle text-secondary-emphasis' ?>"><?= htmlspecialchars($sesion->estado, ENT_QUOTES, 'UTF-8') ?></span></td>
                                 <td><div class="d-flex gap-2">
                                     <a class="btn btn-outline-secondary btn-sm" href="/proyectofinaldesarrollo/sesioncaja/ver/<?= htmlspecialchars((string) $sesion->id_caja_sesion, ENT_QUOTES, 'UTF-8') ?>">Ver</a>
-                                    <?php if ($sesion->estado === 'ABIERTA' && (string) $sesion->id_usuario_apertura === (string) $_SESSION['usuario']['id_usuario']): ?>
+                                    <?php if ($sesion->estado === 'ABIERTA' && \app\models\CajaSesionModel::puedeCerrar($sesion->id_usuario_apertura, $_SESSION['usuario']['id_usuario'], $_SESSION['usuario']['roles'])): ?>
                                         <a class="btn btn-outline-primary btn-sm" href="/proyectofinaldesarrollo/sesioncaja/cerrar/<?= htmlspecialchars((string) $sesion->id_caja_sesion, ENT_QUOTES, 'UTF-8') ?>">Cerrar caja</a>
                                     <?php endif; ?>
                                 </div></td>

@@ -28,3 +28,10 @@ VALUES
 -- Sustituye el nombre previo requiere_cambio_password, conservando sus valores.
 -- Las claves nuevas normales usan 0; los restablecimientos web/CLI dejan 1.
 -- No se cargan contraseñas ni administradores desde este archivo.
+
+-- Recepción: compras nuevas PENDIENTES, sin modificar stock.
+-- recepciones y detalle_recepciones no necesitan datos iniciales.
+-- Solo una recepción ACEPTADA genera movimiento RECEPCION y aumenta stock.
+-- Para bases anteriores: aplicar manualmente recepcion_manual.sql con la aplicación detenida.
+-- El primer ALTER conserva las compras anteriores como RECEPCIONADAS; el segundo fija
+-- PENDIENTE para las futuras. Nunca recepcionar ni sumar nuevamente los históricos.

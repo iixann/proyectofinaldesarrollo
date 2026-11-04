@@ -22,7 +22,7 @@
                 <div class="modal-body">
                     <p class="alert alert-danger d-none" data-error role="alert"></p>
                     <input type="hidden" name="id_proveedor">
-                    <p class="text-secondary">Se asociará al proveedor seleccionado. Stock inicial: 0; la compra confirmada registrará el ingreso.</p>
+                    <p class="text-secondary">Se asociará al proveedor seleccionado. Stock inicial: 0; la recepción aceptada registrará el ingreso.</p>
                     <?php if (!$categorias): ?><p class="alert alert-warning">No hay categorías activas disponibles. Solicitá su alta desde Categorías antes de crear un producto.</p><?php endif; ?>
                     <div class="mb-3"><label class="form-label" for="rapido_nombre_producto">Nombre del producto *</label><input class="form-control" id="rapido_nombre_producto" name="nombre_producto" maxlength="150" required></div>
                     <div class="mb-3"><label class="form-label" for="rapido_codigo_barras">Código EAN *</label><input class="form-control" id="rapido_codigo_barras" name="codigo_barras" maxlength="50" required></div>

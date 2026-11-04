@@ -112,13 +112,19 @@ class CajaSesionModel extends Model
             WHERE v.id_caja_sesion = :id AND v.estado = 1 GROUP BY m.id_medio_pago, m.nombre ORDER BY m.nombre', ['id' => $id]);
     }
 
-    public static function cerrar($id, $idUsuario, $contado, $observacion)
+    public static function puedeCerrar($idApertura, $idUsuario, array $roles)
+    {
+        return in_array('ADMINISTRADOR', $roles, true) || in_array('DUEÑO', $roles, true)
+            || (in_array('VENDEDOR', $roles, true) && (string) $idApertura === (string) $idUsuario);
+    }
+
+    public static function cerrar($id, $idUsuario, $contado, $observacion, array $roles)
     {
         DataBase::iniciarTransaccion();
         try {
             $sesion = DataBase::getRecord('SELECT * FROM caja_sesiones WHERE id_caja_sesion = :id FOR UPDATE', ['id' => $id]);
-            if ($sesion && (string) $sesion->id_usuario_apertura !== (string) $idUsuario) {
-                throw new \DomainException('Solo podés cerrar la sesión de caja que abriste.', 403);
+            if ($sesion && !self::puedeCerrar($sesion->id_usuario_apertura, $idUsuario, $roles)) {
+                throw new \DomainException('No tenés permiso para cerrar esta sesión de caja.', 403);
             }
             if (!$sesion || $sesion->estado !== 'ABIERTA') {
                 throw new \DomainException('La sesión no existe o ya está cerrada.');

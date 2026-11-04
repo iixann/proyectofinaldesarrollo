@@ -144,10 +144,12 @@ CREATE TABLE compras (
     total DECIMAL(12,2) NOT NULL DEFAULT 0,
     observacion VARCHAR(255) NULL,
     estado TINYINT(1) NOT NULL DEFAULT 1,
+    estado_recepcion ENUM('PENDIENTE', 'RECEPCIONADA', 'RECHAZADA') NOT NULL DEFAULT 'PENDIENTE',
 
     FOREIGN KEY (id_proveedor) REFERENCES proveedores(id_proveedor),
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario),
-    UNIQUE (id_proveedor, numero_comprobante)
+    UNIQUE (id_proveedor, numero_comprobante),
+    INDEX idx_compras_recepcion (estado_recepcion, estado)
 ) ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=utf8mb4_unicode_ci;
@@ -307,6 +309,41 @@ CREATE TABLE pagos_ventas (
     UNIQUE KEY uq_pagos_ventas_medio (id_venta, id_medio_pago),
 
     INDEX idx_pagos_ventas_medio (id_medio_pago)
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_unicode_ci;
+
+-- Compra no modifica stock. Solo la recepción ACEPTADA registra entrada física.
+CREATE TABLE recepciones (
+    id_recepcion INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    id_compra INT UNSIGNED NULL,
+    id_proveedor INT UNSIGNED NOT NULL,
+    id_usuario INT UNSIGNED NOT NULL,
+    fecha_recepcion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    estado ENUM('ACEPTADA', 'RECHAZADA') NOT NULL,
+    observacion VARCHAR(255) NULL,
+    motivo_rechazo VARCHAR(255) NULL,
+    UNIQUE KEY uq_recepciones_compra (id_compra),
+    FOREIGN KEY (id_compra) REFERENCES compras(id_compra),
+    FOREIGN KEY (id_proveedor) REFERENCES proveedores(id_proveedor),
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario),
+    INDEX idx_recepciones_proveedor (id_proveedor),
+    INDEX idx_recepciones_usuario (id_usuario),
+    INDEX idx_recepciones_fecha (fecha_recepcion, id_recepcion)
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE detalle_recepciones (
+    id_detalle_recepcion INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    id_recepcion INT UNSIGNED NOT NULL,
+    id_producto INT UNSIGNED NOT NULL,
+    cantidad_esperada INT UNSIGNED NULL,
+    cantidad_recibida INT UNSIGNED NOT NULL,
+    UNIQUE KEY uq_detalle_recepciones_producto (id_recepcion, id_producto),
+    FOREIGN KEY (id_recepcion) REFERENCES recepciones(id_recepcion),
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto),
+    INDEX idx_detalle_recepciones_producto (id_producto)
 ) ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=utf8mb4_unicode_ci;

@@ -2,6 +2,7 @@
     'use strict';
     const productos = JSON.parse(document.getElementById('datosProductosCompra').textContent);
     const formularioCompra = document.getElementById('formularioCompra');
+    const esRecepcion = formularioCompra.dataset.contexto === 'recepcion';
     const proveedor = document.getElementById('id_proveedor');
     const cuerpo = document.getElementById('renglonesCompra');
     const plantilla = cuerpo.rows[0].cloneNode(true);
@@ -32,6 +33,8 @@
     function actualizarDisponibilidad() {
         const disponibles = productos.some(producto => String(producto.id_proveedor) === proveedor.value);
         registrar.disabled = pendiente || !proveedor.value || !disponibles;
+        const rechazar = document.getElementById('rechazarRecepcion');
+        if (rechazar) rechazar.disabled = registrar.disabled;
         document.getElementById('avisoMaestros').classList.toggle('d-none', !!proveedor.value && disponibles);
         cuerpo.querySelectorAll('[data-nuevo-producto]').forEach(function (boton) {
             boton.disabled = pendiente || !proveedor.value;
@@ -69,7 +72,7 @@
     formularioCompra.addEventListener('submit', function (evento) {
         if (pendiente) {
             evento.preventDefault();
-            informar('Esperá a que termine el alta rápida antes de registrar la compra.', true);
+            informar(esRecepcion ? 'Esperá a que termine el alta rápida antes de registrar la recepción.' : 'Esperá a que termine el alta rápida antes de registrar la compra.', true);
         }
     });
     ['modalProveedorRapido', 'modalProductoRapido'].forEach(function (id) {
@@ -118,7 +121,7 @@
             proveedor.add(new Option(nuevo.razon_social, String(nuevo.id_proveedor)));
             proveedor.value = String(nuevo.id_proveedor);
             proveedor.dispatchEvent(new Event('change'));
-            informar('Proveedor creado y seleccionado. Se conservaron comprobante, observación, cantidades y precios; revisá los productos al cambiar de proveedor.');
+            informar(esRecepcion ? 'Proveedor creado y seleccionado. Se conservaron los datos de la recepción; revisá los productos al cambiar de proveedor.' : 'Proveedor creado y seleccionado. Se conservaron comprobante, observación, cantidades y precios; revisá los productos al cambiar de proveedor.');
         });
     });
     formularioProducto.addEventListener('submit', function (evento) {
@@ -131,7 +134,7 @@
                 filaProducto.querySelector('select').value = String(nuevo.id_producto);
                 filaProducto.querySelectorAll('input').forEach(campo => { campo.value = ''; });
             }
-            informar('Producto creado y asociado al proveedor. Completá cantidad y precio de compra; su stock inicial es 0.');
+            informar(esRecepcion ? 'Producto creado y asociado al proveedor con stock 0. Completá la cantidad físicamente recibida.' : 'Producto creado y asociado al proveedor. Completá cantidad y precio de compra; su stock inicial es 0.');
         });
     });
     actualizarDisponibilidad();

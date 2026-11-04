@@ -7,6 +7,7 @@ use \Response;
 use app\models\CompraModel;
 use app\models\ProveedorModel;
 use app\models\ProductoModel;
+use app\models\RecepcionModel;
 
 class CompraController extends Controller
 {
@@ -19,7 +20,7 @@ class CompraController extends Controller
         Response::render($this->viewDir(__NAMESPACE__), 'index', [
             'compras' => CompraModel::listarCompras($filtros['id_compra'], $filtros['numero_comprobante'], $filtros['id_proveedor']),
             'filtros' => $filtros, 'proveedores' => ProveedorModel::listarProveedores(),
-            'mensaje' => ($_GET['resultado'] ?? '') === 'registrada' ? 'Compra registrada correctamente.' : ''
+            'mensaje' => ($_GET['resultado'] ?? '') === 'registrada' ? 'Compra registrada correctamente. Pendiente de recepción; no modificó stock.' : ''
         ]);
     }
 
@@ -161,7 +162,7 @@ class CompraController extends Controller
             echo 'La compra no existe.';
             return;
         }
-        Response::render($this->viewDir(__NAMESPACE__), 'ver', ['compra' => $compra, 'detalles' => CompraModel::obtenerDetalle($id)]);
+        Response::render($this->viewDir(__NAMESPACE__), 'ver', ['compra' => $compra, 'detalles' => CompraModel::obtenerDetalle($id), 'recepcion' => RecepcionModel::buscarPorCompra($id)]);
     }
 
     private function mostrarFormulario($datos = [], $renglones = [], $errores = [])

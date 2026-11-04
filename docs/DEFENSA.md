@@ -118,7 +118,7 @@ El carrito vive temporalmente en JavaScript y se pierde al recargar. La interfaz
 
 `CompraController` usa `onlyUsers(['RECEPCIONISTA'])` y guardar exige POST. `CompraModel` valida proveedor, productos activos y asociación activa con el proveedor; rechaza productos repetidos y comprobantes duplicados por proveedor. Los comprobantes vacíos se guardan como NULL. El modelo entrega asociaciones activas al formulario para filtrar productos con JavaScript al cambiar proveedor; el backend vuelve a validar la asociación dentro de la transacción.
 
-Una sola transacción guarda cabecera, detalles, total, stock y movimientos COMPRA. Se bloquean proveedor, productos y asociaciones con FOR UPDATE; los productos se procesan por ID para reducir interbloqueos. Ante un fallo se revierte todo. No se llama a los métodos de ajuste que abren su propia transacción. Cada movimiento identifica al usuario de sesión y lleva “Compra #ID”.
+La compra documenta el pedido: su transacción guarda cabecera, detalles/costo histórico y total con estado_recepcion PENDIENTE. No actualiza stock ni crea movimientos. Recepción es un acto físico posterior y separado; solo ACEPTADA incorpora mercadería. Se conservan validaciones de proveedor/productos/asociaciones, costos y comprobantes.
 
 Precio, subtotal y total se calculan en centavos enteros y se envían como cadenas decimales con dos posiciones, sin confiar en importes calculados por el navegador ni usar float. Se controla el límite de DECIMAL(12,2). El precio de compra queda en el detalle histórico; el precio de venta no cambia. Las compras registradas solo se consultan, sin edición ni cancelación.
 
@@ -177,6 +177,12 @@ El cambio valida mínimo 9 caracteres, confirmación y diferencia respecto de la
 
 ## Propiedad de caja y altas rápidas de Compra
 
-La identidad del usuario se toma de PHP. Cerrar exige que coincida con id_usuario_apertura, incluso para administrador/dueño; se comprueba también bajo FOR UPDATE. POS lista sesiones propias y la venta valida esa misma propiedad dentro de su transacción. Supervisar no equivale a cerrar una caja ajena.
+La identidad del usuario se toma de PHP. Para VENDEDOR, cerrar exige coincidir con id_usuario_apertura. DUEÑO/ADMINISTRADOR pueden cerrar cualquier sesión ABIERTA; RECEPCIONISTA no. Se comprueba antes del formulario/POST y bajo FOR UPDATE; id_usuario_cierre guarda quién cierra sin alterar quién abrió. POS lista sesiones propias y la venta valida esa misma propiedad dentro de su transacción. El POS mantiene su regla de sesiones propias.
 
-Reposición agrega filtros GET sin cambiar actual <= mínimo; EXISTS evita duplicados por proveedor y no recorta los proveedores mostrados. Compras combina proveedor e ID/comprobante. Sus modales usan POST, token y JSON interno; RECEPCIONISTA puede crear maestros en ese contexto, sin acceso a sus CRUD completos. Las validaciones se comparten en los modelos. Producto + asociación activa se guardan juntos, con stock 0; la compra posterior registra cantidad/precio histórico, suma stock y genera COMPRA en su transacción habitual. Precio de venta y de compra siguen separados.
+Reposición agrega filtros GET sin cambiar actual <= mínimo; EXISTS evita duplicados por proveedor y no recorta los proveedores mostrados. Compras combina proveedor e ID/comprobante. Sus modales usan POST, token y JSON interno; RECEPCIONISTA puede crear maestros en ese contexto, sin acceso a sus CRUD completos. Las validaciones se comparten en los modelos. Producto + asociación activa se guardan juntos, con stock 0; la compra posterior registra cantidad/precio histórico sin stock; la recepción aceptada incorpora el ingreso físico. Precio de venta y de compra siguen separados.
+
+## Recepción de mercadería
+
+RecepcionModel bloquea la compra PENDIENTE y productos por ID, toma cantidades esperadas del detalle real y exige igualdad para aceptar. Una transacción guarda recepción/detalles, aumenta stock, crea RECEPCION y marca RECEPCIONADA. Ante cualquier fallo, rollback completo. Rechazar exige motivo, guarda cantidades y marca RECHAZADA sin cambiar stock; las compras finalizadas no pueden procesarse otra vez. UNIQUE(id_compra) refuerza el bloqueo y permite múltiples recepciones directas con NULL.
+
+La directa no inventa una compra y guarda cantidad_esperada NULL. Reutiliza formulario y altas rápidas; productos/asociaciones válidos y stock inicial 0. Solo una ACEPTADA cambia inventario. Los movimientos COMPRA antiguos se conservan. El SQL manual marca compras anteriores RECEPCIONADAS y cambia el default de futuras a PENDIENTE: evita volver a sumar stock histórico, sin fabricar recepciones ni migraciones automáticas.

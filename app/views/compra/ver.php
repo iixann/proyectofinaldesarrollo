@@ -9,6 +9,10 @@
     <main class="container py-4 py-md-5 flex-grow-1" id="contenido">
         <a class="link-primary text-decoration-none small" href="/proyectofinaldesarrollo/compra/index">Volver a Compras</a>
         <h1 class="h2 fw-bold my-4">Compra #<?= htmlspecialchars((string) $compra->id_compra, ENT_QUOTES, 'UTF-8') ?></h1>
+        <p><strong>Estado de recepción:</strong> <?= htmlspecialchars($compra->estado_recepcion, ENT_QUOTES, 'UTF-8') ?></p>
+        <?php if ((int) $compra->estado === 1 && $compra->estado_recepcion === 'PENDIENTE'): ?><p><a class="btn btn-success" href="/proyectofinaldesarrollo/recepcion/compra/<?= (int) $compra->id_compra ?>">Recepcionar mercadería</a></p>
+        <?php elseif ($recepcion): ?><p><a href="/proyectofinaldesarrollo/recepcion/ver/<?= (int) $recepcion->id_recepcion ?>">Ver recepción</a></p>
+        <?php elseif ($compra->estado_recepcion === 'RECEPCIONADA'): ?><p class="alert alert-info">Compra histórica del circuito anterior: su stock ya fue incorporado. No admite una nueva recepción ni se generó una recepción retroactiva.</p><?php endif; ?>
         <section class="card border-0 shadow-sm rounded-4 mb-4"><div class="card-body p-4">
             <dl class="row mb-0">
                 <dt class="col-sm-3">Fecha</dt><dd class="col-sm-9"><?= htmlspecialchars($compra->fecha_compra, ENT_QUOTES, 'UTF-8') ?></dd>

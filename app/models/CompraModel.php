@@ -40,7 +40,7 @@ class CompraModel extends Model
 
     public static function obtenerDetalle($id)
     {
-        return DataBase::query('SELECT d.*, p.nombre_producto FROM detalle_compras d
+        return DataBase::query('SELECT d.*, p.nombre_producto, p.codigo_barras FROM detalle_compras d
             INNER JOIN productos p ON p.id_producto = d.id_producto WHERE d.id_compra = :id ORDER BY d.id_detalle_compra', ['id' => $id]);
     }
 
@@ -132,8 +132,8 @@ class CompraModel extends Model
             if ($comprobante !== null && DataBase::getRecord('SELECT id_compra FROM compras WHERE id_proveedor = :proveedor AND numero_comprobante = :comprobante', ['proveedor' => $datos['id_proveedor'], 'comprobante' => $comprobante])) {
                 throw new \DomainException('El número de comprobante ya existe para ese proveedor.');
             }
-            foreach ($detalles as $id => &$detalle) {
-                $producto = DataBase::getRecord('SELECT id_producto, stock_actual, estado FROM productos WHERE id_producto = :id FOR UPDATE', ['id' => $id]);
+            foreach ($detalles as $id => $detalle) {
+                $producto = DataBase::getRecord('SELECT id_producto, estado FROM productos WHERE id_producto = :id FOR UPDATE', ['id' => $id]);
                 if (!$producto || (int) $producto->estado !== 1) {
                     throw new \DomainException('Uno de los productos no existe o está inactivo.');
                 }
@@ -141,15 +141,9 @@ class CompraModel extends Model
                 if (!$asociacion) {
                     throw new \DomainException('El producto no pertenece al proveedor seleccionado. Editá el producto para asociarlo primero.');
                 }
-                $detalle['anterior'] = (int) $producto->stock_actual;
-                $detalle['nuevo'] = $detalle['anterior'] + $detalle['cantidad'];
-                if ($detalle['nuevo'] < 0 || $detalle['nuevo'] > 2147483647) {
-                    throw new \DomainException('El stock resultante supera el rango permitido.');
-                }
             }
-            unset($detalle);
-            $idCompra = DataBase::insert('INSERT INTO compras (id_proveedor, id_usuario, numero_comprobante, observacion)
-                VALUES (:proveedor, :usuario, :comprobante, :observacion)', [
+            $idCompra = DataBase::insert("INSERT INTO compras (id_proveedor, id_usuario, numero_comprobante, observacion, estado_recepcion)
+                VALUES (:proveedor, :usuario, :comprobante, :observacion, 'PENDIENTE')", [
                 'proveedor' => $datos['id_proveedor'], 'usuario' => $idUsuario, 'comprobante' => $comprobante,
                 'observacion' => $datos['observacion'] === '' ? null : $datos['observacion']
             ]);
@@ -157,12 +151,6 @@ class CompraModel extends Model
                 DataBase::insert('INSERT INTO detalle_compras (id_compra, id_producto, cantidad, precio_unitario, subtotal)
                     VALUES (:compra, :producto, :cantidad, :precio, :subtotal)', [
                     'compra' => $idCompra, 'producto' => $id, 'cantidad' => $detalle['cantidad'], 'precio' => $detalle['precio'], 'subtotal' => $detalle['subtotal']
-                ]);
-                DataBase::execute('UPDATE productos SET stock_actual = :stock WHERE id_producto = :id', ['stock' => $detalle['nuevo'], 'id' => $id]);
-                DataBase::insert("INSERT INTO movimientos_stock (id_producto, id_usuario, tipo_movimiento, cantidad, stock_anterior, stock_nuevo, observacion)
-                    VALUES (:producto, :usuario, 'COMPRA', :cantidad, :anterior, :nuevo, :observacion)", [
-                    'producto' => $id, 'usuario' => $idUsuario, 'cantidad' => $detalle['cantidad'],
-                    'anterior' => $detalle['anterior'], 'nuevo' => $detalle['nuevo'], 'observacion' => 'Compra #' . $idCompra
                 ]);
             }
             DataBase::execute('UPDATE compras SET total = :total WHERE id_compra = :id', ['total' => self::importeDecimal($total), 'id' => $idCompra]);

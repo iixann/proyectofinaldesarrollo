@@ -44,6 +44,9 @@ $inicioNavegacion = \app\controllers\SessionController::destinoInicio() ?? '/pro
                         <li class="nav-item"><a class="nav-link <?= $seccionActual === 'compras' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'compras' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/compra/index">Compras</a></li>
                         <?php endif; ?>
                         <?php if ($puedeGestionarOperaciones): ?>
+                        <li class="nav-item"><a class="nav-link <?= $seccionActual === 'recepciones' ? 'active text-primary fw-semibold' : '' ?>" href="/proyectofinaldesarrollo/recepcion/index">Recepción</a></li>
+                        <?php endif; ?>
+                        <?php if ($puedeGestionarOperaciones): ?>
                         <li class="nav-item"><a class="nav-link <?= $seccionActual === 'stock' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'stock' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/stock/index">Stock</a></li>
                         <?php endif; ?>
                         <?php if ($puedeGestionarOperaciones): ?>

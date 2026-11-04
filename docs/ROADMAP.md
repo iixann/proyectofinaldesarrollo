@@ -29,13 +29,13 @@ Cerrar y probar cada módulo antes de iniciar el siguiente.
 - Productos nuevos con stock 0; cambios manuales mediante movimientos
 - Pruebas manuales correctas
 
-El aviso de stock bajo es visual; Compras permite registrar la reposición.
+El aviso de stock bajo es visual; Compra registra el pedido y Recepción aceptada incorpora la mercadería.
 
 ## ETAPA 4 - COMPLETA
 
 - Compras con cabecera y múltiples productos asociados al proveedor
 - Detalle histórico de cantidades y precios de compra
-- Actualización automática de stock y movimientos COMPRA
+- Compra/pedido sin efecto de stock; nueva recepción física descrita abajo
 - Una sola transacción y rollback completo ante fallos
 - Pruebas manuales correctas
 
@@ -64,7 +64,7 @@ Devoluciones solamente si siguen dentro del alcance final. Confirmar su inclusi�
 
 ## ETAPA 7 - INTEGRACIÓN AUTOMÁTICA VERIFICADA; VALIDACIÓN LOCAL PENDIENTE
 
-Circuito de modelos apertura/compra/venta/cierre, dinero, stock, permisos, rollback, rutas y vistas verificados con fixtures. Completar recorrido en navegador/MariaDB e impresión física siguiendo DEMOSTRACION.md; no se probaron escrituras sobre la base real desde Codex.
+Circuito de modelos apertura/compra/recepción/venta/cierre, dinero, stock, permisos, rollback, rutas y vistas verificados con fixtures. Completar recorrido en navegador/MariaDB e impresión física siguiendo DEMOSTRACION.md; no se probaron escrituras sobre la base real desde Codex.
 
 ## ETAPA 8 - PRESENTACIÓN APLICADA AL CIRCUITO ACTUAL
 
@@ -82,7 +82,11 @@ Stock usa solo `stock_actual` y `stock_minimo`. Reposición lista productos acti
 
 ## Mejoras operativas de cajas, Compras y Reposición — IMPLEMENTADAS
 
-Cierre exclusivo del usuario que abrió y POS en sesiones propias, conservando supervisión. Filtros combinables en Reposición y proveedor en Compras. Alta rápida de proveedor/producto dentro de Nueva compra, con asociación activa automática, stock inicial 0 y validaciones compartidas; el CRUD completo mantiene sus permisos. Verificado con fixtures/JavaScript; prueba manual pendiente. Sin cambios nuevos de esquema. Próximo paso: pulido final, sin agregar funcionalidades automáticamente.
+Cierre definitivo de supervisores en cualquier sesión abierta y vendedor solo propia; POS en sesiones propias. Filtros combinables en Reposición y proveedor en Compras. Alta rápida de proveedor/producto dentro de Nueva compra, con asociación activa automática, stock inicial 0 y validaciones compartidas; el CRUD completo mantiene sus permisos. Verificado con fixtures/JavaScript; prueba manual pendiente. Sin cambios nuevos de esquema. Próximo paso: pulido final, sin agregar funcionalidades automáticamente.
+
+## Compra ≠ Recepción — IMPLEMENTADO; SQL / PRUEBA MANUAL PENDIENTES
+
+Compra deja pedido/detalle PENDIENTE sin inventario. Recepción vinculada o directa: ACEPTADA suma stock y RECEPCION, RECHAZADA guarda auditoría sin stock. Cantidades exactas para aceptar compras; sin parcial/doble recepción. Transacción y rollback completos, altas rápidas reutilizadas e histórico de solo lectura. Estado específico en compras y dos tablas nuevas; aplicar manualmente recepcion_manual.sql preservando históricos RECEPCIONADOS. Cierre ADMINISTRADOR/DUEÑO cualquiera abierta; vendedor propia; recepcionista denegado. No commit/push hasta prueba de navegador.
 
 ## Criterio de avance
 
