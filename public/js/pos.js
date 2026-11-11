@@ -96,9 +96,50 @@ function iniciarPos() {
     let ultimaBusquedaNombre = 0;
     let sesionDisponible = true;
     let confirmando = false;
+    let seleccionada = null;
+    let ultimaAgregada = null;
+    let temporizadorResaltado;
     const confirmarBoton = document.getElementById('confirmarVenta');
-    const filasPago = Array.from(document.querySelectorAll('#filasPago tr[data-medio]'));
+    const filasPago = Array.from(document.querySelectorAll('#filasPago [data-medio]'));
     const estadoPagos = document.getElementById('estadoPagos');
+    const botonesMedio = Array.from(document.querySelectorAll('[data-elegir-medio]'));
+    let medioSeleccionado = null;
+    function elegirMedio(fila, enfocar = true) {
+        if (!fila || confirmando || !sesionDisponible) return;
+        medioSeleccionado = fila;
+        filasPago.forEach(medio => { medio.hidden = medio !== fila; });
+        botonesMedio.forEach(boton => {
+            const activo = boton.dataset.elegirMedio === fila.dataset.medio;
+            boton.classList.toggle('active', activo);
+            boton.setAttribute('aria-expanded', activo ? 'true' : 'false');
+        });
+        if (enfocar) (fila.querySelector('[data-entregado]') || fila.querySelector('[data-monto]')).focus();
+    }
+    botonesMedio.forEach(boton => boton.addEventListener('click', () => {
+        elegirMedio(filasPago.find(fila => fila.dataset.medio === boton.dataset.elegirMedio));
+    }));
+    elegirMedio(filasPago.find(fila => fila.dataset.efectivo === '1') || filasPago[0], false);
+    function dibujarResumenPagos() {
+        const lista = document.getElementById('resumenPagos');
+        lista.replaceChildren();
+        filasPago.forEach(fila => {
+            try {
+                const monto = precioCentavosPos(fila.querySelector('[data-monto]').value || '0');
+                if (monto <= 0) return;
+                const item = document.createElement('li');
+                const editar = boton(fila.dataset.nombre, 'Editar pago ' + fila.dataset.nombre,
+                    () => elegirMedio(fila), 'btn-link');
+                editar.disabled = confirmando || !sesionDisponible;
+                const importe = document.createElement('strong');
+                importe.textContent = formatoDineroPos(monto);
+                item.appendChild(editar);
+                item.appendChild(importe);
+                lista.appendChild(item);
+            } catch (error) { /* El validador de cobro muestra el importe inválido. */ }
+        });
+        lista.hidden = lista.children.length === 0;
+    }
+
     function informar(texto, error = false) {
         mensaje.textContent = texto;
         mensaje.className = 'alert ' + (error ? 'alert-warning' : 'alert-info');
@@ -133,6 +174,19 @@ function iniciarPos() {
         } catch (error) { informar(error.message, true); }
         dibujarCarrito();
     }
+    function seleccionarLinea(id) {
+        seleccionada = String(id);
+        Array.from(cuerpo.children).forEach(fila => {
+            fila.classList.toggle('pos-seleccionada', fila.dataset.producto === seleccionada);
+        });
+    }
+    function quitarLinea(id) {
+        if (confirmando) return;
+        carrito.eliminar(id);
+        if (String(id) === seleccionada) seleccionada = null;
+        dibujarCarrito();
+        if (sesionDisponible) codigo.focus();
+    }
     function dibujarCarrito() {
         cuerpo.replaceChildren();
         const lineas = carrito.lineas();
@@ -140,13 +194,19 @@ function iniciarPos() {
         document.getElementById('tablaCarrito').hidden = !lineas.length;
         lineas.forEach(function (linea) {
             const fila = document.createElement('tr');
+            fila.dataset.producto = String(linea.id_producto);
+            fila.classList.toggle('pos-seleccionada', fila.dataset.producto === seleccionada);
+            fila.classList.toggle('pos-reciente', fila.dataset.producto === ultimaAgregada);
+            fila.addEventListener('click', () => seleccionarLinea(linea.id_producto));
             const producto = celda(fila, linea.nombre_producto);
             const ean = document.createElement('small');
             ean.className = 'd-block text-secondary';
             ean.textContent = 'EAN: ' + linea.codigo_barras;
             producto.appendChild(ean);
-            const controles = celda(fila, '');
-            controles.className = 'd-flex align-items-center gap-2';
+            const celdaCantidad = celda(fila, '');
+            const controles = document.createElement('div');
+            controles.className = 'pos-cantidad';
+            celdaCantidad.appendChild(controles);
             controles.appendChild(boton('−', 'Disminuir ' + linea.nombre_producto, () => cambiar(linea.id_producto, Math.max(1, linea.cantidad - 1))));
             const cantidad = document.createElement('input');
             cantidad.type = 'number';
@@ -163,13 +223,13 @@ function iniciarPos() {
             celda(fila, formatoDineroPos(linea.precio_centavos));
             celda(fila, formatoDineroPos(linea.subtotal));
             celda(fila, '').appendChild(boton('Eliminar', 'Eliminar ' + linea.nombre_producto, function () {
-                if (confirmando) return;
-                carrito.eliminar(linea.id_producto);
-                dibujarCarrito();
+                quitarLinea(linea.id_producto);
             }, 'btn-outline-danger'));
             cuerpo.appendChild(fila);
         });
         document.getElementById('totalCarrito').textContent = formatoDineroPos(carrito.totalCentavos());
+        const unidades = lineas.reduce((suma, linea) => suma + linea.cantidad, 0);
+        document.getElementById('cantidadArticulos').textContent = unidades + (unidades === 1 ? ' artículo' : ' artículos');
         bloquearSelector();
     }
     function agregar(producto, codigoConsultado = null) {
@@ -177,6 +237,13 @@ function iniciarPos() {
             if (confirmando) throw new Error('Esperá la confirmación de la venta.');
             if (!sesionDisponible) throw new Error('La sesión ya no está disponible. Vaciá el carrito y elegí otra sesión.');
             carrito.agregar(producto);
+            seleccionada = String(producto.id_producto);
+            ultimaAgregada = seleccionada;
+            clearTimeout(temporizadorResaltado);
+            temporizadorResaltado = setTimeout(() => {
+                ultimaAgregada = null;
+                Array.from(cuerpo.children).forEach(fila => fila.classList.remove('pos-reciente'));
+            }, 1600);
             dibujarCarrito();
             informar(producto.nombre_producto + ' agregado al carrito.');
             if (codigoConsultado === null || codigo.value.trim() === codigoConsultado) codigo.value = '';
@@ -247,6 +314,7 @@ function iniciarPos() {
         }));
     }
     function actualizarCobro() {
+        dibujarResumenPagos();
         confirmarBoton.disabled = true;
         document.getElementById('totalPagado').textContent = '$ 0,00';
         filasPago.forEach(fila => {
@@ -315,7 +383,7 @@ function iniciarPos() {
             confirmando = false;
             terminal.querySelectorAll('input, button').forEach(elemento => { elemento.disabled = !sesionDisponible; });
             document.getElementById('vaciarCarrito').disabled = false;
-            confirmarBoton.textContent = 'Confirmar venta';
+            confirmarBoton.textContent = 'COBRAR';
             dibujarCarrito();
             if (sesionDisponible) codigo.focus();
         }
@@ -335,6 +403,41 @@ function iniciarPos() {
         dibujarCarrito();
         informar(sesionDisponible ? 'Carrito vacío.' : 'Carrito vacío. Elegí una sesión abierta o volvé a Sesiones de caja.');
         if (sesionDisponible) codigo.focus();
+    });
+    // Los atajos no eliminan líneas mientras se escribe en un campo.
+    document.addEventListener('keydown', function (evento) {
+        if (confirmando || !sesionDisponible || evento.ctrlKey || evento.altKey || evento.metaKey) return;
+        const escribiendo = evento.target.closest('input, textarea, select, [contenteditable="true"]');
+        if (evento.key === 'F2') {
+            evento.preventDefault();
+            codigo.focus();
+        } else if (evento.key === 'F3') {
+            evento.preventDefault();
+            document.getElementById('nombre').focus();
+        } else if (['F4', 'F5', 'F6', 'F7'].includes(evento.key)) {
+            evento.preventDefault();
+            const nombres = {F4: ['EFECTIVO'], F5: ['DÉBITO'], F6: ['CRÉDITO'], F7: ['TRANSFERENCIA', 'MERCADO PAGO']};
+            const disponibles = filasPago.filter(fila => nombres[evento.key].includes(fila.dataset.nombre));
+            const siguiente = evento.key === 'F7' && disponibles.length > 1
+                ? disponibles[(disponibles.indexOf(medioSeleccionado) + 1) % disponibles.length]
+                : disponibles[0];
+            elegirMedio(siguiente);
+        } else if (evento.key === 'F8') {
+            evento.preventDefault();
+            if (!confirmarBoton.disabled) confirmarBoton.click();
+            else if (carrito.lineas().length) {
+                elegirMedio(medioSeleccionado || filasPago[0], false);
+                medioSeleccionado?.querySelector('[data-monto]').focus();
+            }
+            else codigo.focus();
+        } else if (evento.key === 'Escape') {
+            evento.preventDefault();
+            seccionResultados.hidden = true;
+            codigo.focus();
+        } else if (evento.key === 'Delete' && !escribiendo && seleccionada !== null) {
+            evento.preventDefault();
+            quitarLinea(seleccionada);
+        }
     });
     dibujarCarrito();
 }
