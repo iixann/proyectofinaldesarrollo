@@ -6,7 +6,7 @@
     <?php $versionEstiloPos = substr(hash_file('sha256', APP_PATH . '../public/css/pos.css'), 0, 12); ?>
     <link rel="stylesheet" href="/proyectofinaldesarrollo/css/pos.css?v=<?= htmlspecialchars($versionEstiloPos, ENT_QUOTES, 'UTF-8') ?>">
 </head>
-<body class="d-flex flex-column min-vh-100">
+<body class="d-flex flex-column min-vh-100 pos-body">
     <?php $seccionActual = 'consulta_pos'; require APP_PATH . 'views/inc/navbar.php'; ?>
     <main class="container-fluid pos-pantalla py-3 flex-grow-1" id="contenido">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3 pos-titulo">
@@ -37,28 +37,30 @@
                 <p class="alert alert-info">Seleccioná una sesión abierta para habilitar la búsqueda y el carrito.</p>
             <?php else: ?>
                 <div id="terminalPos" data-sesion="<?= htmlspecialchars((string) $seleccionada->id_caja_sesion, ENT_QUOTES, 'UTF-8') ?>" data-token="<?= htmlspecialchars($tokenVenta, ENT_QUOTES, 'UTF-8') ?>">
-                    <header class="pos-cabecera mb-3"><span class="badge text-bg-success">Sesión abierta</span> <strong><?= htmlspecialchars($seleccionada->caja, ENT_QUOTES, 'UTF-8') ?></strong> · Sesión #<?= htmlspecialchars((string) $seleccionada->id_caja_sesion, ENT_QUOTES, 'UTF-8') ?> · Vendedor: <?= htmlspecialchars($seleccionada->nombre . ' ' . $seleccionada->apellido, ENT_QUOTES, 'UTF-8') ?></header>
+                    <header class="pos-cabecera mb-2"><span class="badge text-bg-success">Sesión abierta</span> <strong><?= htmlspecialchars($seleccionada->caja, ENT_QUOTES, 'UTF-8') ?></strong> · Sesión #<?= htmlspecialchars((string) $seleccionada->id_caja_sesion, ENT_QUOTES, 'UTF-8') ?> · Vendedor: <?= htmlspecialchars($seleccionada->nombre . ' ' . $seleccionada->apellido, ENT_QUOTES, 'UTF-8') ?></header>
                     <div class="pos-distribucion">
                         <div class="pos-productos">
-                            <section class="card border-0 shadow-sm rounded-4 mb-3"><div class="card-body p-3">
-                                <form action="/proyectofinaldesarrollo/pos/buscar" method="get" id="buscarEan" class="mb-2">
-                                    <label class="form-label fw-semibold" for="codigo">Escanear Código EAN</label>
-                                    <div class="input-group input-group-lg">
-                                        <input class="form-control" type="text" id="codigo" name="codigo" placeholder="Escanear EAN y presionar Enter" maxlength="50" autocomplete="off" required autofocus>
+                            <section class="pos-busquedas" aria-label="Agregar productos">
+                                <form action="/proyectofinaldesarrollo/pos/buscar" method="get" id="buscarEan">
+                                    <label class="form-label small mb-1" for="codigo">EAN <kbd>F2</kbd></label>
+                                    <div class="input-group input-group-sm">
+                                        <input class="form-control" type="text" id="codigo" name="codigo" placeholder="Escanear + Enter" maxlength="50" autocomplete="off" required autofocus>
                                         <button class="btn btn-primary" type="submit">Agregar</button>
                                     </div>
-                                    <p class="text-secondary small mt-2 mb-0">EAN exacto + Enter para agregar. Para buscar por nombre, usá el campo de abajo.</p>
                                 </form>
                                 <form action="/proyectofinaldesarrollo/pos/buscar" method="get" id="buscarNombre">
-                                    <label class="form-label" for="nombre">Búsqueda manual por nombre *</label>
-                                    <div class="input-group">
-                                        <input class="form-control" type="text" id="nombre" name="nombre" placeholder="Buscar producto por nombre" maxlength="150" autocomplete="off" required>
+                                    <label class="form-label small mb-1" for="nombre">Buscar por nombre <kbd>F3</kbd></label>
+                                    <div class="input-group input-group-sm">
+                                        <input class="form-control" type="text" id="nombre" name="nombre" placeholder="Nombre del producto" maxlength="150" autocomplete="off" required>
                                         <button class="btn btn-outline-primary" type="submit">Buscar</button>
                                     </div>
                                 </form>
-                            </div></section>
-                            <a id="verUltimaVenta" class="btn btn-outline-primary mb-3" hidden>Ver venta / imprimir ticket</a>
-                            <p id="mensajePos" role="status" aria-live="polite" class="alert alert-info">Escaneá un producto o buscá por nombre.</p>
+                            </section>
+                            <p id="avisoCambioPagos" class="small text-warning-emphasis mb-1" role="status" hidden>El total cambió. Revisá los medios de pago.</p>
+                            <div class="pos-feedback">
+                                <p id="mensajePos" role="status" aria-live="polite" class="alert alert-info">Escaneá un producto o buscá por nombre.</p>
+                                <a id="verUltimaVenta" class="btn btn-outline-primary btn-sm" target="_blank" rel="noopener" hidden>Ticket / Imprimir · F10</a>
+                            </div>
                             <section class="card border-0 shadow-sm rounded-4" id="resultadosBusqueda" hidden><div class="card-body p-3">
                                 <h2 class="h5">Resultados</h2>
                                 <div class="table-responsive" tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p><table class="table table-hover align-middle mb-0">
@@ -67,25 +69,33 @@
                                 </table></div>
                             </div></section>
 
-                            <section class="card border-0 shadow-sm rounded-4"><div class="card-body p-3">
-                                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-                                    <h2 class="h4 mb-0">Productos de la venta</h2>
+                            <section class="card border-0 shadow-sm rounded-4 pos-ticket"><div class="card-body p-3">
+                                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                                    <h2 class="h6 mb-0">Armado de venta</h2>
                                     <button class="btn btn-outline-secondary btn-sm" type="button" id="vaciarCarrito">Vaciar carrito</button>
                                 </div>
                                 <p class="text-secondary text-center py-4" id="carritoVacio">Carrito vacío</p>
                                 <div class="table-responsive" id="tablaCarrito" hidden tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p><table class="table align-middle">
-                                    <thead class="table-light"><tr><th scope="col">Producto</th><th scope="col">Cantidad</th><th scope="col">Precio</th><th scope="col">Subtotal</th><th scope="col">Acción</th></tr></thead>
+                                    <thead class="table-light"><tr><th scope="col">Producto</th><th scope="col">Cant.</th><th scope="col">Precio unitario</th><th scope="col">Subtotal</th><th scope="col"><span class="visually-hidden">Acciones</span></th></tr></thead>
                                     <tbody id="lineasCarrito"></tbody>
                                 </table></div>
+                                <div class="pos-total-venta">
+                                    <span id="cantidadArticulos">0 artículos</span>
+                                    <div class="pos-subtotal"><span>SUBTOTAL</span><strong id="totalCarrito">$ 0,00</strong></div>
+                                    <button class="btn btn-primary btn-lg" type="button" id="abrirCobro" disabled>COBRAR <small>F8</small></button>
+                                </div>
                             </div></section>
                         </div>
-                        <aside class="pos-cobro"><section class="card border-0 shadow-sm rounded-4"><div class="card-body p-3">
-                                <div class="pos-total mb-2">
-                                    <p class="text-secondary fw-semibold mb-1">TOTAL</p>
-                                    <p class="display-6 fw-bold text-primary" id="totalCarrito">$ 0,00</p><p id="cantidadArticulos" class="mb-0">0 artículos</p>
-                                </div>
-                                <section class="border-top pt-2" aria-labelledby="tituloCobro">
-                                    <h3 class="visually-hidden" id="tituloCobro">Cobro</h3>
+                    </div>
+                    <div class="modal" id="cobroPos" tabindex="-1" aria-labelledby="tituloCobro" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+                            <div class="modal-header py-2">
+                                <h2 class="modal-title fs-5" id="tituloCobro">Cobro</h2>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" id="volverVenta">← Volver a la venta <small>Esc</small></button>
+                            </div>
+                            <div class="modal-body">
+                                <p id="mensajeCobro" class="alert alert-warning small py-2" role="alert" hidden></p>
+                                <div class="pos-total mb-3"><div><span>TOTAL</span><strong id="totalCobro">$ 0,00</strong></div><span id="articulosCobro">0 artículos</span></div>
                                     <div class="pos-opciones-pago mb-2" role="group" aria-label="Elegir medio de pago">
                                         <?php foreach ($mediosPago as $medio): ?>
                                             <button type="button" class="btn btn-sm btn-outline-primary" data-elegir-medio="<?= htmlspecialchars((string) $medio->id_medio_pago, ENT_QUOTES, 'UTF-8') ?>" aria-controls="pago-<?= htmlspecialchars((string) $medio->id_medio_pago, ENT_QUOTES, 'UTF-8') ?>" aria-expanded="false"><?= htmlspecialchars($medio->nombre, ENT_QUOTES, 'UTF-8') ?></button>
@@ -96,7 +106,11 @@
                                             <?php foreach ($mediosPago as $medio): ?>
                                                 <div class="pos-medio" hidden id="pago-<?= htmlspecialchars((string) $medio->id_medio_pago, ENT_QUOTES, 'UTF-8') ?>" data-nombre="<?= htmlspecialchars($medio->nombre, ENT_QUOTES, 'UTF-8') ?>" data-medio="<?= htmlspecialchars((string) $medio->id_medio_pago, ENT_QUOTES, 'UTF-8') ?>" data-efectivo="<?= $medio->nombre === 'EFECTIVO' ? '1' : '0' ?>">
                                                     <h4 class="h6 fw-bold"><?= htmlspecialchars($medio->nombre, ENT_QUOTES, 'UTF-8') ?></h4>
-                                                    <label class="form-label small">Monto aplicado<input class="form-control form-control-sm" type="number" min="0" max="9999999999.99" step="0.01" data-monto aria-label="Monto aplicado <?= htmlspecialchars($medio->nombre, ENT_QUOTES, 'UTF-8') ?>"></label>
+                                                    <?php if ($medio->nombre === 'EFECTIVO'): ?>
+                                                        <input type="hidden" data-monto value="0.00">
+                                                    <?php else: ?>
+                                                        <label class="form-label small">Monto aplicado<input class="form-control form-control-sm" type="number" min="0" max="9999999999.99" step="0.01" data-monto aria-label="Monto aplicado <?= htmlspecialchars($medio->nombre, ENT_QUOTES, 'UTF-8') ?>"></label>
+                                                    <?php endif; ?>
                                                     <div class="pos-detalle-pago">
                                                         <?php if ($medio->nombre === 'EFECTIVO'): ?>
                                                             <label class="form-label small">Entrega cliente
@@ -112,15 +126,15 @@
                                             <?php endforeach; ?>
                                     </div>
                                     <ul class="pos-resumen-pagos" id="resumenPagos" aria-label="Pagos aplicados"></ul>
-                                    <p class="mb-1">Total aplicado: <strong id="totalPagado">$ 0,00</strong></p>
+                                    <div class="pos-balance"><span>APLICADO <strong id="totalPagado">$ 0,00</strong></span><span>FALTA <strong id="faltaPagar">$ 0,00</strong></span></div>
                                     <p class="small" id="estadoPagos" role="status">Agregá productos para iniciar el cobro.</p>
-                                    <button class="btn btn-primary btn-lg w-100" type="button" id="confirmarVenta" disabled>COBRAR</button>
-                                    <details class="text-secondary small mt-2"><summary>Antes de cobrar</summary><p class="mb-0">Al confirmar se registra la venta y se descuenta stock. Si cambiaron precios o existencias, revisá los productos antes de reintentar. El carrito se pierde al recargar.</p></details>
-                                </section>
-                            </div></section>
-                        </aside>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-primary btn-lg w-100" type="button" id="confirmarVenta" disabled>CONFIRMAR VENTA · F8</button>
+                            </div>
+                        </div></div>
                     </div>
-                    <p class="pos-atajos small text-secondary mt-3">F2 EAN · F3 Buscar por nombre · F4 Efectivo · F5 Débito · F6 Crédito · F7 Transferencia / Mercado Pago · F8 Cobrar · Supr Quitar línea · Esc EAN</p>
+                    <p class="pos-atajos small text-secondary mt-3">F2 EAN · F3 Nombre · F4 Efectivo · F5 Débito · F6 Crédito · F7 Transferencia / MP · F8 Cobro / Confirmar · F9 Consultar · F10 Ticket · Supr Quitar · Esc Volver / EAN</p>
                 </div>
             <?php endif; ?>
         <?php endif; ?>

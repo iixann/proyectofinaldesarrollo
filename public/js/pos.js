@@ -58,12 +58,24 @@ function decimalPos(centavos) {
 }
 
 function resumirPagosPos(entradas, total) {
+    // El efectivo se deriva de la entrega, descontando primero los otros medios.
+    const otrosAplicados = entradas.filter(entrada => !entrada.efectivo).reduce((suma, entrada) => {
+        const nuevo = suma + precioCentavosPos(entrada.monto.trim() || '0');
+        if (!Number.isSafeInteger(nuevo) || nuevo > 999999999999) throw new Error('Los pagos superan el máximo permitido.');
+        return nuevo;
+    }, 0);
+    const saldoEfectivo = Math.max(total - otrosAplicados, 0);
     let aplicado = 0;
     const pagos = [];
     const usados = new Set();
     for (const entrada of entradas) {
-        if (entrada.monto.trim() === '') continue;
-        const monto = precioCentavosPos(entrada.monto.trim());
+        let entregado = 0;
+        if (entrada.efectivo) {
+            try { entregado = precioCentavosPos(entrada.entregado.trim() || '0'); }
+            catch (error) { throw new Error('Ingresá una entrega válida, con hasta dos decimales.'); }
+        }
+        const monto = entrada.efectivo ? Math.min(entregado, saldoEfectivo)
+            : precioCentavosPos(entrada.monto.trim() || '0');
         if (monto === 0) continue;
         if (usados.has(entrada.id_medio_pago)) throw new Error('No repitas un medio de pago.');
         usados.add(entrada.id_medio_pago);
@@ -71,9 +83,8 @@ function resumirPagosPos(entradas, total) {
         if (!Number.isSafeInteger(aplicado) || aplicado > 999999999999) throw new Error('Los pagos superan el máximo permitido.');
         const pago = {id_medio_pago: entrada.id_medio_pago, monto: decimalPos(monto), referencia: entrada.referencia || ''};
         if (entrada.efectivo) {
-            const entregado = precioCentavosPos(entrada.entregado.trim());
-            if (entregado < monto) throw new Error('El efectivo entregado no alcanza para el monto aplicado.');
             pago.monto_entregado = decimalPos(entregado);
+            pago.vuelto = decimalPos(entregado - monto);
         }
         pagos.push(pago);
     }
@@ -96,16 +107,75 @@ function iniciarPos() {
     let ultimaBusquedaNombre = 0;
     let sesionDisponible = true;
     let confirmando = false;
+    let ultimaVenta = null;
+    const ticketBoton = document.getElementById('verUltimaVenta');
+    function abrirTicketUltimaVenta() {
+        if (ultimaVenta === null) {
+            informar('No hay una venta reciente para imprimir.');
+            return;
+        }
+        window.open(ticketBoton.href, '_blank', 'noopener');
+    }
+    ticketBoton.addEventListener('click', evento => {
+        evento.preventDefault();
+        abrirTicketUltimaVenta();
+    });
     let seleccionada = null;
     let ultimaAgregada = null;
     let temporizadorResaltado;
     const confirmarBoton = document.getElementById('confirmarVenta');
+    const abrirCobroBoton = document.getElementById('abrirCobro');
+    const cobroElemento = document.getElementById('cobroPos');
+    const cobroModal = new bootstrap.Modal(cobroElemento, {backdrop: 'static', keyboard: false});
+    let cobroAbierto = false;
+    let totalConPagos = null;
+    let avisoPagos = false;
+    function enfocarMedio() {
+        const entrada = medioSeleccionado?.querySelector('[data-entregado]') || medioSeleccionado?.querySelector('[data-monto]');
+        entrada?.focus();
+        entrada?.select();
+    }
+    function abrirCobro(fila = null) {
+        if (confirmando || pendientes > 0 || !sesionDisponible || !carrito.lineas().length) return;
+        document.getElementById('mensajeCobro').hidden = true;
+        elegirMedio(fila || medioSeleccionado || filasPago[0], false);
+        cobroModal.show();
+        enfocarMedio();
+    }
+    function volverVenta() {
+        if (!confirmando) cobroModal.hide();
+    }
+    cobroElemento.addEventListener('shown.bs.modal', () => {
+        cobroAbierto = true;
+        enfocarMedio();
+    });
+    cobroElemento.addEventListener('hide.bs.modal', evento => {
+        if (confirmando) evento.preventDefault();
+    });
+    cobroElemento.addEventListener('hidden.bs.modal', () => {
+        cobroAbierto = false;
+        if (sesionDisponible) codigo.focus();
+    });
+    abrirCobroBoton.addEventListener('click', () => abrirCobro());
+    document.getElementById('volverVenta').addEventListener('click', volverVenta);
     const filasPago = Array.from(document.querySelectorAll('#filasPago [data-medio]'));
     const estadoPagos = document.getElementById('estadoPagos');
     const botonesMedio = Array.from(document.querySelectorAll('[data-elegir-medio]'));
     let medioSeleccionado = null;
-    function elegirMedio(fila, enfocar = true) {
+    function elegirMedio(fila, enfocar = true, proponer = true) {
         if (!fila || confirmando || !sesionDisponible) return;
+        if (proponer && fila.dataset.efectivo !== '1') {
+            const entrada = fila.querySelector('[data-monto]');
+            // Una selección nueva completa el saldo; editar un pago conserva su importe.
+            if (entrada.value === '' || entrada.value === '0' || entrada.value === '0.00') {
+                try {
+                    const aplicado = filasPago.reduce((suma, medio) => suma + precioCentavosPos(medio.querySelector('[data-monto]').value || '0'), 0);
+                    const falta = Math.max(0, carrito.totalCentavos() - aplicado);
+                    if (falta > 0) entrada.value = decimalPos(falta);
+                } catch (error) { /* No ocultar un importe inválido ya escrito. */ }
+            }
+            totalConPagos = carrito.totalCentavos();
+        }
         medioSeleccionado = fila;
         filasPago.forEach(medio => { medio.hidden = medio !== fila; });
         botonesMedio.forEach(boton => {
@@ -113,12 +183,13 @@ function iniciarPos() {
             boton.classList.toggle('active', activo);
             boton.setAttribute('aria-expanded', activo ? 'true' : 'false');
         });
-        if (enfocar) (fila.querySelector('[data-entregado]') || fila.querySelector('[data-monto]')).focus();
+        actualizarCobro();
+        if (enfocar) enfocarMedio();
     }
     botonesMedio.forEach(boton => boton.addEventListener('click', () => {
         elegirMedio(filasPago.find(fila => fila.dataset.medio === boton.dataset.elegirMedio));
     }));
-    elegirMedio(filasPago.find(fila => fila.dataset.efectivo === '1') || filasPago[0], false);
+    medioSeleccionado = filasPago.find(fila => fila.dataset.efectivo === '1') || filasPago[0];
     function dibujarResumenPagos() {
         const lista = document.getElementById('resumenPagos');
         lista.replaceChildren();
@@ -134,6 +205,13 @@ function iniciarPos() {
                 importe.textContent = formatoDineroPos(monto);
                 item.appendChild(editar);
                 item.appendChild(importe);
+                const quitar = boton('×', 'Quitar pago ' + fila.dataset.nombre, () => {
+                    fila.querySelectorAll('input').forEach(input => { input.value = ''; });
+                    actualizarCobro();
+                    enfocarMedio();
+                }, 'btn-link text-danger');
+                quitar.disabled = confirmando || !sesionDisponible;
+                item.appendChild(quitar);
                 lista.appendChild(item);
             } catch (error) { /* El validador de cobro muestra el importe inválido. */ }
         });
@@ -143,6 +221,11 @@ function iniciarPos() {
     function informar(texto, error = false) {
         mensaje.textContent = texto;
         mensaje.className = 'alert ' + (error ? 'alert-warning' : 'alert-info');
+        if (error && cobroAbierto) {
+            const aviso = document.getElementById('mensajeCobro');
+            aviso.textContent = texto;
+            aviso.hidden = false;
+        }
     }
     function bloquearSelector() {
         const bloqueado = confirmando || pendientes > 0 || carrito.lineas().length > 0;
@@ -188,6 +271,10 @@ function iniciarPos() {
         if (sesionDisponible) codigo.focus();
     }
     function dibujarCarrito() {
+        if (totalConPagos !== null && totalConPagos !== carrito.totalCentavos()) {
+            limpiarPagos();
+            avisoPagos = carrito.lineas().length > 0;
+        }
         cuerpo.replaceChildren();
         const lineas = carrito.lineas();
         document.getElementById('carritoVacio').hidden = lineas.length > 0;
@@ -222,14 +309,17 @@ function iniciarPos() {
             controles.appendChild(boton('+', 'Aumentar ' + linea.nombre_producto, () => cambiar(linea.id_producto, linea.cantidad + 1)));
             celda(fila, formatoDineroPos(linea.precio_centavos));
             celda(fila, formatoDineroPos(linea.subtotal));
-            celda(fila, '').appendChild(boton('Eliminar', 'Eliminar ' + linea.nombre_producto, function () {
+            celda(fila, '').appendChild(boton('×', 'Eliminar ' + linea.nombre_producto, function () {
                 quitarLinea(linea.id_producto);
             }, 'btn-outline-danger'));
             cuerpo.appendChild(fila);
         });
         document.getElementById('totalCarrito').textContent = formatoDineroPos(carrito.totalCentavos());
         const unidades = lineas.reduce((suma, linea) => suma + linea.cantidad, 0);
-        document.getElementById('cantidadArticulos').textContent = unidades + (unidades === 1 ? ' artículo' : ' artículos');
+        const articulos = unidades + (unidades === 1 ? ' artículo' : ' artículos');
+        document.getElementById('cantidadArticulos').textContent = articulos;
+        document.getElementById('articulosCobro').textContent = articulos;
+        document.getElementById('totalCobro').textContent = formatoDineroPos(carrito.totalCentavos());
         bloquearSelector();
     }
     function agregar(producto, codigoConsultado = null) {
@@ -314,42 +404,62 @@ function iniciarPos() {
         }));
     }
     function actualizarCobro() {
-        dibujarResumenPagos();
+        abrirCobroBoton.disabled = confirmando || pendientes > 0 || !sesionDisponible || !carrito.lineas().length;
         confirmarBoton.disabled = true;
-        document.getElementById('totalPagado').textContent = '$ 0,00';
-        filasPago.forEach(fila => {
-            const vuelto = fila.querySelector('[data-vuelto]');
-            if (vuelto) {
-                vuelto.textContent = 'Vuelto: $ 0,00';
-                try {
-                    const monto = precioCentavosPos(fila.querySelector('[data-monto]').value || '0');
-                    const entregado = precioCentavosPos(fila.querySelector('[data-entregado]').value || '0');
-                    if (entregado >= monto) vuelto.textContent = 'Vuelto: ' + formatoDineroPos(entregado - monto);
-                } catch (error) { vuelto.textContent = 'Revisá los importes de efectivo.'; }
-            }
-        });
+        document.getElementById('avisoCambioPagos').hidden = !avisoPagos;
+        const faltaElemento = document.getElementById('faltaPagar');
+        const efectivo = filasPago.find(fila => fila.dataset.efectivo === '1');
         try {
             const resumen = resumirPagosPos(entradasPago(), carrito.totalCentavos());
+            if (efectivo) {
+                const pago = resumen.pagos.find(pago => String(pago.id_medio_pago) === efectivo.dataset.medio);
+                efectivo.querySelector('[data-monto]').value = pago?.monto || '0.00';
+                const entregado = precioCentavosPos(efectivo.querySelector('[data-entregado]').value.trim() || '0');
+                const vuelto = entregado - precioCentavosPos(pago?.monto || '0');
+                const vueltoElemento = efectivo.querySelector('[data-vuelto]');
+                vueltoElemento.textContent = 'Vuelto: ' + formatoDineroPos(vuelto);
+                vueltoElemento.classList.toggle('pos-vuelto-destacado', vuelto > 0);
+            }
             document.getElementById('totalPagado').textContent = formatoDineroPos(resumen.aplicado);
-            if (!carrito.lineas().length) { estadoPagos.textContent = 'Agregá productos para iniciar el cobro.'; return; }
-            if (resumen.diferencia > 0) estadoPagos.textContent = 'Falta aplicar: ' + formatoDineroPos(resumen.diferencia);
-            else if (resumen.diferencia < 0) estadoPagos.textContent = 'Los pagos exceden el total en ' + formatoDineroPos(-resumen.diferencia) + '. Ajustá el monto aplicado; el vuelto se calcula sobre el entregado.';
+            faltaElemento.textContent = resumen.diferencia >= 0 ? formatoDineroPos(resumen.diferencia) : 'Exceso: ' + formatoDineroPos(-resumen.diferencia);
+            faltaElemento.classList.toggle('pos-falta-destacada', resumen.diferencia > 0);
+            if (!carrito.lineas().length) estadoPagos.textContent = 'Agregá productos para iniciar el cobro.';
+            else if (resumen.diferencia > 0) estadoPagos.textContent = 'Falta pagar: ' + formatoDineroPos(resumen.diferencia);
+            else if (resumen.diferencia < 0) estadoPagos.textContent = 'Los pagos exceden el total en ' + formatoDineroPos(-resumen.diferencia) + '. Revisá los importes.';
             else estadoPagos.textContent = 'El total está cubierto.';
-            confirmarBoton.disabled = confirmando || pendientes > 0 || !sesionDisponible || !resumen.pagos.length || resumen.diferencia !== 0;
-        } catch (error) { estadoPagos.textContent = error.message; }
+            confirmarBoton.disabled = confirmando || pendientes > 0 || !sesionDisponible || !carrito.lineas().length || !resumen.pagos.length || resumen.diferencia !== 0;
+        } catch (error) {
+            if (efectivo) {
+                efectivo.querySelector('[data-monto]').value = '0.00';
+                efectivo.querySelector('[data-vuelto]').textContent = 'Vuelto: —';
+                efectivo.querySelector('[data-vuelto]').classList.remove('pos-vuelto-destacado');
+            }
+            document.getElementById('totalPagado').textContent = 'Revisar importes';
+            faltaElemento.textContent = 'Revisar importes';
+            faltaElemento.classList.remove('pos-falta-destacada');
+            estadoPagos.textContent = error.message;
+        }
+        dibujarResumenPagos();
     }
     function limpiarPagos() {
         filasPago.forEach(fila => fila.querySelectorAll('input').forEach(input => { input.value = ''; }));
+        totalConPagos = null;
+        avisoPagos = false;
     }
-    filasPago.forEach(fila => fila.addEventListener('input', actualizarCobro));
+    filasPago.forEach(fila => fila.addEventListener('input', () => {
+        totalConPagos = carrito.totalCentavos();
+        avisoPagos = false;
+        actualizarCobro();
+    }));
     confirmarBoton.addEventListener('click', async function () {
-        if (confirmando || pendientes > 0 || !sesionDisponible || !carrito.lineas().length) return;
+        if (!cobroAbierto || confirmando || pendientes > 0 || !sesionDisponible || !carrito.lineas().length) return;
         let resumen;
         try {
             resumen = resumirPagosPos(entradasPago(), carrito.totalCentavos());
             if (!resumen.pagos.length || resumen.diferencia !== 0) throw new Error('Los pagos deben cubrir exactamente el total.');
         } catch (error) { informar(error.message, true); return; }
         confirmando = true;
+        cobroElemento.setAttribute('aria-busy', 'true');
         bloquearSelector();
         terminal.querySelectorAll('input, button').forEach(elemento => { elemento.disabled = true; });
         confirmarBoton.textContent = 'Registrando venta…';
@@ -373,9 +483,9 @@ function iniciarPos() {
             resultados.replaceChildren();
             seccionResultados.hidden = true;
             codigo.value = '';
-            const enlaceVenta = document.getElementById('verUltimaVenta');
-            enlaceVenta.href = '/proyectofinaldesarrollo/venta/ver/' + datos.id_venta;
-            enlaceVenta.hidden = false;
+            ultimaVenta = datos.id_venta;
+            ticketBoton.href = '/proyectofinaldesarrollo/venta/ticket/' + encodeURIComponent(String(ultimaVenta)) + '?imprimir=1';
+            ticketBoton.hidden = false;
             informar('Venta #' + datos.id_venta + ' registrada correctamente. Total: $ ' + datos.total);
         } catch (error) {
             informar(error.message || 'No se recibió confirmación de la venta. No se reenvió automáticamente.', true);
@@ -383,9 +493,11 @@ function iniciarPos() {
             confirmando = false;
             terminal.querySelectorAll('input, button').forEach(elemento => { elemento.disabled = !sesionDisponible; });
             document.getElementById('vaciarCarrito').disabled = false;
-            confirmarBoton.textContent = 'COBRAR';
+            cobroElemento.removeAttribute('aria-busy');
+            confirmarBoton.textContent = 'CONFIRMAR VENTA · F8';
             dibujarCarrito();
-            if (sesionDisponible) codigo.focus();
+            if (!carrito.lineas().length || !sesionDisponible) volverVenta();
+            else enfocarMedio();
         }
     });
     document.getElementById('buscarEan').addEventListener('submit', function (evento) {
@@ -406,13 +518,21 @@ function iniciarPos() {
     });
     // Los atajos no eliminan líneas mientras se escribe en un campo.
     document.addEventListener('keydown', function (evento) {
+        if (evento.key === 'F10' && !evento.ctrlKey && !evento.altKey && !evento.metaKey) {
+            evento.preventDefault();
+            if (!evento.repeat && !confirmando) abrirTicketUltimaVenta();
+            return;
+        }
         if (confirmando || !sesionDisponible || evento.ctrlKey || evento.altKey || evento.metaKey) return;
         const escribiendo = evento.target.closest('input, textarea, select, [contenteditable="true"]');
+        if (evento.repeat && /^F[4-8]$/.test(evento.key)) { evento.preventDefault(); return; }
         if (evento.key === 'F2') {
             evento.preventDefault();
+            if (cobroAbierto) volverVenta();
             codigo.focus();
         } else if (evento.key === 'F3') {
             evento.preventDefault();
+            if (cobroAbierto) volverVenta();
             document.getElementById('nombre').focus();
         } else if (['F4', 'F5', 'F6', 'F7'].includes(evento.key)) {
             evento.preventDefault();
@@ -421,25 +541,24 @@ function iniciarPos() {
             const siguiente = evento.key === 'F7' && disponibles.length > 1
                 ? disponibles[(disponibles.indexOf(medioSeleccionado) + 1) % disponibles.length]
                 : disponibles[0];
-            elegirMedio(siguiente);
+            if (cobroAbierto) elegirMedio(siguiente);
+            else if (siguiente) abrirCobro(siguiente);
         } else if (evento.key === 'F8') {
             evento.preventDefault();
-            if (!confirmarBoton.disabled) confirmarBoton.click();
-            else if (carrito.lineas().length) {
-                elegirMedio(medioSeleccionado || filasPago[0], false);
-                medioSeleccionado?.querySelector('[data-monto]').focus();
-            }
-            else codigo.focus();
+            if (!cobroAbierto) abrirCobro();
+            else if (!confirmarBoton.disabled) confirmarBoton.click();
+            else enfocarMedio();
         } else if (evento.key === 'Escape') {
             evento.preventDefault();
-            seccionResultados.hidden = true;
-            codigo.focus();
-        } else if (evento.key === 'Delete' && !escribiendo && seleccionada !== null) {
+            if (cobroAbierto) volverVenta();
+            else { seccionResultados.hidden = true; codigo.focus(); }
+        } else if (evento.key === 'Delete' && !cobroAbierto && !escribiendo && seleccionada !== null) {
             evento.preventDefault();
             quitarLinea(seleccionada);
         }
     });
     dibujarCarrito();
+    codigo.focus();
 }
 
 iniciarPos();

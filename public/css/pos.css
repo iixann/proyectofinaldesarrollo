@@ -1,80 +1,116 @@
-/* Estilos exclusivos de la terminal: no alteran las pantallas administrativas. */
+/* Terminal de caja: armado amplio y cobro concentrado en su propio diálogo. */
 .pos-pantalla { max-width: 1920px; }
-.pos-distribucion { display: grid; grid-template-columns: minmax(0, 1fr) minmax(340px, 390px); gap: 1rem; align-items: start; }
-.pos-distribucion > * { min-width: 0; }
-.pos-cabecera { padding: .75rem 1rem; border-left: 4px solid #6D1A36; background: #fff; border-radius: .5rem; }
-.pos-selector .card-body { padding-top: .5rem !important; padding-bottom: .5rem !important; }
-.pos-selector label { margin-bottom: .25rem; }
-.pos-selector #avisoSesion { font-size: .75rem; }
-#terminalPos #codigo { font-size: 1.35rem; min-height: 3.25rem; }
-.pos-cobro { position: sticky; top: 1rem; }
-.pos-total { background: #6D1A36; color: #fff; padding: 1rem; border-radius: .65rem; font-variant-numeric: tabular-nums; }
-.pos-total .text-primary, .pos-total .text-secondary { color: #fff !important; }
-#terminalPos #totalCarrito { font-size: clamp(2.3rem, 3.5vw, 3.5rem); line-height: 1.1; letter-spacing: -.04em; margin-bottom: .5rem; }
-.pos-medios { margin-bottom: .5rem; }
-.pos-medio { padding: .65rem; border: 1px solid #d9dce1; border-radius: .5rem; display: grid; grid-template-columns: 1fr 1fr; gap: .35rem .65rem; }
-.pos-medio h4 { display: none; }
-.pos-medio[hidden] { display: none; }
-#filasPago .form-control { min-width: 0; width: 100%; font-variant-numeric: tabular-nums; }
-#filasPago label { margin-bottom: 0; }
-.pos-detalle-pago { min-width: 0; align-self: end; }
-.pos-vuelto { color: #17643b; font-size: 1.35rem; grid-column: 1 / -1; font-variant-numeric: tabular-nums; }
-.pos-medio:focus-within { border-color: #6D1A36; box-shadow: 0 0 0 2px #6d1a3615; }
-#confirmarVenta { min-height: 3.5rem; font-size: 1.4rem; font-weight: 700; letter-spacing: .05em; }
-#tablaCarrito { min-height: 15rem; }
-#lineasCarrito td { padding: .65rem .5rem; }
-#lineasCarrito td:first-child { min-width: 10rem; width: 45%; font-weight: 600; }
-#lineasCarrito td:first-child small { font-weight: 400; }
+.pos-distribucion, .pos-productos, .pos-ticket, .pos-ticket > .card-body { min-width: 0; min-height: 0; }
+.pos-cabecera { padding: .35rem .75rem; background: #fff; border-left: 3px solid #6d1a36; border-radius: .4rem; font-size: .8rem; }
+.pos-selector summary { font-size: .75rem !important; padding: .2rem .75rem !important; }
+.pos-selector .card-body { padding: .5rem .75rem !important; }
+.pos-selector label, #avisoSesion { font-size: .75rem; margin-bottom: .2rem; }
+.pos-busquedas { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; padding: .5rem .75rem; background: #fff; border-radius: .5rem; }
+.pos-busquedas kbd { font-size: .65rem; background: #eef0f3; color: #64748b; }
+#terminalPos .pos-busquedas .form-control, #terminalPos .pos-busquedas .btn { min-height: 2.1rem; font-size: .9rem; }
+.pos-feedback { display: flex; align-items: center; gap: .5rem; margin: .35rem 0; }
+#mensajePos { flex: 1; padding: .3rem .75rem; margin: 0; font-size: .8rem; }
+#verUltimaVenta { flex-shrink: 0; font-size: .75rem; min-height: 1.9rem; }
+.pos-ticket > .card-body { display: flex; flex-direction: column; }
+#carritoVacio { margin: auto; }
+#tablaCarrito { overflow: auto; border: 0; border-radius: 0; }
+#tablaCarrito thead { position: sticky; top: 0; z-index: 1; }
+#lineasCarrito td { padding: .35rem .5rem; }
+#lineasCarrito td:first-child { width: 50%; font-weight: 600; }
+#lineasCarrito td:first-child small { font-size: .7rem; font-weight: 400; }
 #lineasCarrito td:nth-child(3), #lineasCarrito td:nth-child(4) { white-space: nowrap; font-variant-numeric: tabular-nums; }
-#lineasCarrito td:nth-child(4) { font-weight: 700; }
-.pos-cantidad { display: flex; align-items: center; gap: .25rem; min-width: 9rem; }
-.pos-cantidad input { text-align: center; }
+#lineasCarrito td:nth-child(4) { font-weight: 750; }
+#lineasCarrito td:last-child { width: 2rem; }
+#lineasCarrito .btn { min-height: 1.9rem; padding: .15rem .5rem; }
+.pos-cantidad { display: flex; align-items: center; gap: .25rem; min-width: 8rem; }
+.pos-cantidad input { text-align: center; min-height: 1.9rem; }
 #lineasCarrito tr { cursor: pointer; }
 #lineasCarrito tr.pos-seleccionada > td { background-color: #6d1a3610; box-shadow: inset 0 -1px #6d1a3640; }
 #lineasCarrito tr.pos-reciente > td { animation: pos-agregado 1.5s ease-out; }
 @keyframes pos-agregado { from { background-color: #d1e7dd; } }
 @media (prefers-reduced-motion: reduce) { #lineasCarrito tr.pos-reciente > td { animation: none; background-color: #d1e7dd; } }
-#resultadosBusqueda { margin-bottom: 1rem; }
-#resultadosBusqueda .table-responsive { max-height: 15rem; }
-#resultadosBusqueda td { padding: .5rem; }
-#mensajePos { margin-bottom: .75rem; padding: .6rem .85rem; }
-.pos-atajos { border-top: 1px solid #ddd; padding-top: .5rem; }
+.pos-total-venta { display: flex; align-items: center; gap: 1.5rem; border-top: 2px solid #e5d1d8; padding-top: .65rem; margin-top: auto; flex-shrink: 0; }
+#cantidadArticulos { color: #64748b; font-size: .9rem; }
+.pos-subtotal { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
+.pos-subtotal > span { font-size: .75rem; letter-spacing: .06em; }
+#terminalPos #totalCarrito { font-size: clamp(1.8rem, 3vw, 2.7rem); line-height: 1.2; color: #6d1a36; font-variant-numeric: tabular-nums; }
+#abrirCobro { min-width: 11rem; font-weight: 750; }
+#abrirCobro small { opacity: .75; font-size: .8rem; }
+#resultadosBusqueda { margin: 0 0 .35rem; flex-shrink: 0; }
+#resultadosBusqueda .card-body { padding: .5rem .75rem !important; }
+#resultadosBusqueda h2 { font-size: .85rem; margin-bottom: .25rem; }
+#resultadosBusqueda .table-responsive { max-height: 8rem; }
+#resultadosBusqueda td { padding: .3rem .5rem; font-size: .8rem; }
+.pos-atajos { font-size: .7rem; margin: .3rem 0 0 !important; }
+/* Cobro: un medio editable y un resumen compacto de los importes cargados. */
+#cobroPos .modal-dialog { max-width: 650px; }
+#cobroPos .modal-content { border: 0; border-radius: .8rem; max-height: calc(100dvh - 2rem); }
+#cobroPos .modal-body { padding: 1rem; }
+#cobroPos .modal-footer { padding: .65rem 1rem; }
+.pos-total { display: flex; align-items: center; justify-content: space-between; gap: 1rem; background: #6d1a36; color: #fff; border-radius: .5rem; padding: .65rem 1rem; font-variant-numeric: tabular-nums; }
+.pos-total div > span { display: block; font-size: .75rem; }
+#totalCobro { font-size: 2.4rem; line-height: 1.2; }
+#articulosCobro { font-size: .85rem; }
+.pos-opciones-pago { display: flex; flex-wrap: wrap; gap: .35rem; }
+.pos-opciones-pago .btn { flex: 1 1 auto; font-size: .75rem; padding: .3rem .5rem; }
+.pos-medio { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem .75rem; padding: .65rem; border: 1px solid #d9dce1; border-radius: .5rem; }
+.pos-medio[hidden], .pos-resumen-pagos[hidden] { display: none; }
+.pos-medio h4 { display: none; }
+#filasPago label { margin-bottom: 0; }
+#filasPago .form-control { width: 100%; min-width: 0; font-variant-numeric: tabular-nums; }
+.pos-detalle-pago { min-width: 0; align-self: end; }
+.pos-vuelto { grid-column: 1 / -1; font-size: 1.8rem; color: #17643b; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.pos-medio[data-efectivo="1"] .pos-detalle-pago { grid-column: 1 / -1; }
+.pos-medio[data-efectivo="1"] [data-entregado] { font-size: 1.4rem; min-height: 3rem; }
+.pos-vuelto-destacado { padding: .35rem .6rem; background: #e4f3e9; border-radius: .35rem; }
+.pos-balance .pos-falta-destacada { color: #a42c20; font-size: 1.65rem; }
+.pos-medio:focus-within { border-color: #6d1a36; box-shadow: 0 0 0 2px #6d1a3615; }
+.pos-resumen-pagos { list-style: none; padding: 0; margin: .5rem 0; display: grid; grid-template-columns: 1fr 1fr; gap: .15rem 1rem; font-size: .8rem; }
+.pos-resumen-pagos li { display: flex; align-items: center; gap: .35rem; min-width: 0; }
+.pos-resumen-pagos .btn { min-height: 1.5rem !important; padding: .1rem 0; font-size: inherit; }
+.pos-resumen-pagos strong { margin-left: auto; white-space: nowrap; }
+.pos-balance { display: flex; justify-content: space-between; gap: .5rem; border-top: 1px solid #ddd; padding-top: .5rem; font-size: .8rem; }
+.pos-balance strong { display: block; font-size: 1.35rem; font-variant-numeric: tabular-nums; }
+#estadoPagos { font-size: .8rem; margin: .35rem 0 0; }
+#confirmarVenta { font-size: 1.15rem; font-weight: 750; min-height: 3rem; }
+@media (min-width: 992px) {
+    .pos-body:has(#terminalPos) { height: 100dvh; min-height: 0 !important; overflow: hidden; }
+    .pos-body:has(#terminalPos) > header { flex-shrink: 0; }
+    .pos-body:has(#terminalPos) .navbar { padding-top: .35rem !important; padding-bottom: .35rem !important; }
+    .pos-body:has(#terminalPos) > footer { padding-top: .2rem !important; padding-bottom: .2rem !important; flex-shrink: 0; font-size: .65rem; }
+    .pos-body:has(#terminalPos) > footer > div { padding-top: .2rem !important; }
+    .pos-body:has(#terminalPos) #atajosGlobales { padding-bottom: .2rem !important; font-size: .7rem; flex-shrink: 0; }
+    .pos-body:has(#terminalPos) #abrirConsultaRapida { font-size: .7rem; }
+    .pos-pantalla:has(#terminalPos) { display: flex; flex-direction: column; min-height: 0; padding-top: .35rem !important; padding-bottom: .35rem !important; }
+    .pos-pantalla:has(#terminalPos) .pos-titulo { display: none !important; }
+    #terminalPos, .pos-distribucion, .pos-productos, .pos-ticket { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+    .pos-ticket > .card-body { flex: 1; padding: .65rem .85rem !important; }
+    #tablaCarrito { flex: 1; }
+    #tablaCarrito[hidden] { display: none; }
+    .pos-selector[open] .card-body { max-height: 8rem; overflow: auto; }
+    .pos-busquedas form { display: flex; align-items: center; gap: .5rem; min-width: 0; }
+    .pos-busquedas label { white-space: nowrap; margin: 0 !important; }
+    .pos-busquedas .input-group { min-width: 0; }
+}
+@media (min-width: 1200px) {
+    .pos-body:has(#terminalPos) .navbar > .container { max-width: none; padding-inline: .85rem; }
+    .pos-body:has(#terminalPos) .navbar-brand { font-size: .9rem; margin-right: .75rem; }
+    .pos-body:has(#terminalPos) .navbar .nav-link { font-size: .78rem; padding: .3rem .35rem; }
+    .pos-body:has(#terminalPos) .navbar .btn { font-size: .75rem; }
+}
 @media (max-width: 991.98px) {
-    .pos-distribucion { grid-template-columns: minmax(0, 1fr); }
-    .pos-cobro { position: static; }
-    #terminalPos #totalCarrito { font-size: clamp(2.5rem, 8vw, 4rem); }
-    #tablaCarrito { min-height: 0; }
+    .pos-ticket { margin-top: .5rem; }
+    #tablaCarrito { max-height: 50dvh; }
+    .pos-ticket > .card-body { min-height: 45dvh; }
+    .pos-total-venta { position: sticky; bottom: 0; background: #fff; flex-wrap: wrap; gap: .5rem; }
+    .pos-subtotal { gap: .5rem; }
 }
 @media (max-width: 575.98px) {
-    .pos-pantalla { padding-left: .65rem; padding-right: .65rem; }
-    .pos-cabecera { font-size: .85rem; }
-    #terminalPos #codigo { font-size: 1rem; }
-}
-.pos-vuelto { overflow-wrap: anywhere; }
-@media (min-width: 992px) {
-    .pos-cobro > .card > .card-body { padding: .75rem !important; }
-    .pos-total { padding: .75rem; }
-}
-
-.pos-opciones-pago { display: flex; flex-wrap: wrap; gap: .3rem; }
-.pos-opciones-pago .btn { flex: 1 1 auto; font-size: .75rem; padding: .3rem .5rem; }
-.pos-resumen-pagos { list-style: none; padding: 0; margin: 0 0 .4rem; font-size: .8rem; }
-.pos-resumen-pagos li { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
-.pos-resumen-pagos .btn { min-height: 0; padding: .1rem 0; font-size: inherit; text-align: left; }
-.pos-resumen-pagos strong { white-space: nowrap; font-variant-numeric: tabular-nums; }
-@media (min-width: 992px) {
-    .pos-pantalla:has(#terminalPos) .pos-titulo { display: none !important; }
-    .pos-pantalla { padding-top: .5rem !important; }
-    .pos-cabecera { padding: .4rem .75rem; margin-bottom: .5rem !important; }
-    .pos-total { display: grid; grid-template-columns: 1fr auto; align-items: center; padding: .5rem .75rem; }
-    .pos-total > p:first-child { grid-column: 1; grid-row: 1; font-size: .8rem; margin: 0 !important; }
-    #cantidadArticulos { grid-column: 2; grid-row: 1; font-size: .85rem; }
-    #terminalPos #totalCarrito { grid-column: 1 / -1; grid-row: 2; font-size: 2.6rem; margin: 0; }
-    #estadoPagos { margin-bottom: .4rem; }
-    #tablaCarrito { min-height: 0; max-height: max(160px, calc(100dvh - 460px)); overflow-y: auto; }
-    #tablaCarrito thead { position: sticky; top: 0; z-index: 1; }
-    #resultadosBusqueda .table-responsive { max-height: 9rem; }
-    .pos-resumen-pagos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: .8rem; }
-    .pos-resumen-pagos li { flex-wrap: wrap; column-gap: .2rem; }
-    .pos-resumen-pagos[hidden] { display: none; }
+    .pos-feedback { flex-wrap: wrap; }
+    .pos-busquedas { grid-template-columns: 1fr; gap: .4rem; }
+    .pos-total-venta > button { width: 100%; }
+    .pos-subtotal { flex-direction: column; align-items: end; gap: 0; }
+    .pos-resumen-pagos { grid-template-columns: 1fr; }
+    #totalCobro { font-size: 1.9rem; }
+    #volverVenta { font-size: .75rem; }
 }

@@ -41,5 +41,8 @@
         <p class="importe"><strong>Total pagado $ <?= htmlspecialchars($totalPagado, ENT_QUOTES, 'UTF-8') ?></strong></p>
     </div>
     <p class="separador" style="text-align:center">Gracias por tu compra.</p>
+<?php if (($_GET['imprimir'] ?? null) === '1'): ?>
+<script>window.addEventListener('load', () => window.print(), {once: true});</script>
+<?php endif; ?>
 </body>
 </html>

@@ -91,6 +91,37 @@ class PosController extends Controller
         }
     }
 
+    public function actionConsultarProducto()
+    {
+        SessionController::onlyUsers(['VENDEDOR', 'RECEPCIONISTA']);
+        if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'GET') {
+            header('Allow: GET');
+            $this->json(['ok' => false, 'mensaje' => 'Método no permitido.'], 405);
+            return;
+        }
+        $ean = $_GET['ean'] ?? null;
+        if (!is_string($ean) || !mb_check_encoding($ean, 'UTF-8')
+            || trim($ean) === '' || mb_strlen(trim($ean), 'UTF-8') > 50) {
+            $this->json(['ok' => false, 'mensaje' => 'Ingresá un EAN de entre 1 y 50 caracteres.'], 400);
+            return;
+        }
+        try {
+            $producto = ProductoModel::buscarActivoPorCodigo(trim($ean));
+            if (!$producto) {
+                $this->json(['ok' => false, 'mensaje' => 'Producto no encontrado'], 404);
+                return;
+            }
+            $datos = $this->datosProducto($producto);
+            $datos['proveedores'] = array_map(static function ($proveedor) {
+                return $proveedor->razon_social;
+            }, ProductoModel::obtenerProveedoresProducto($producto->id_producto));
+            $this->json(['ok' => true, 'producto' => $datos]);
+        } catch (\Throwable $excepcion) {
+            error_log($excepcion->getMessage());
+            $this->json(['ok' => false, 'mensaje' => 'No se pudo consultar el producto. Intentá nuevamente.'], 500);
+        }
+    }
+
     private function idSesionValido($id)
     {
         return is_string($id) && ctype_digit($id) && (float) $id >= 1 && (float) $id <= 4294967295;
