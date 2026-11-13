@@ -53,6 +53,52 @@ class ProductoModel extends Model
             WHERE p.estado = 1 AND p.codigo_barras = :codigo', ['codigo' => $codigo]);
     }
 
+    public static function consultarCodigoParaProveedor($codigo, $idProveedor)
+    {
+        $codigo = self::validarCodigo($codigo);
+        return DataBase::getRecord('SELECT p.id_producto, p.nombre_producto, p.codigo_barras, p.estado,
+            COALESCE(pp.estado, 0) AS asociado FROM productos p
+            LEFT JOIN productos_proveedores pp ON pp.id_producto = p.id_producto AND pp.id_proveedor = :proveedor
+            WHERE p.codigo_barras = :codigo', ['proveedor' => $idProveedor, 'codigo' => $codigo]);
+    }
+
+    public static function asociarProveedorExistente($idProducto, $idProveedor, $codigo)
+    {
+        foreach ([$idProducto, $idProveedor] as $id) {
+            if (!is_string($id) || !ctype_digit($id) || (float) $id < 1 || (float) $id > 4294967295) {
+                throw new \DomainException('Seleccioná un producto y un proveedor válidos.');
+            }
+        }
+        $codigo = self::validarCodigo($codigo);
+        DataBase::iniciarTransaccion();
+        try {
+            // Mismo orden de bloqueo que Compra: proveedor y luego producto.
+            $proveedor = DataBase::getRecord('SELECT id_proveedor, estado FROM proveedores WHERE id_proveedor = :id FOR UPDATE', ['id' => $idProveedor]);
+            if (!$proveedor || (int) $proveedor->estado !== 1) {
+                throw new \DomainException('El proveedor no existe o está inactivo.');
+            }
+            $producto = DataBase::getRecord('SELECT id_producto, nombre_producto, codigo_barras, estado FROM productos WHERE id_producto = :id FOR UPDATE', ['id' => $idProducto]);
+            if (!$producto || (string) $producto->codigo_barras !== $codigo) {
+                throw new \DomainException('El producto no existe o el EAN cambió. Volvé a consultar el código.');
+            }
+            if ((int) $producto->estado !== 1) {
+                throw new \DomainException('Este producto existe pero está inactivo. Reactivalo desde Productos antes de utilizarlo.');
+            }
+            $asociacion = DataBase::getRecord('SELECT id_producto_proveedor, estado FROM productos_proveedores
+                WHERE id_producto = :producto AND id_proveedor = :proveedor FOR UPDATE', ['producto' => $idProducto, 'proveedor' => $idProveedor]);
+            $yaAsociado = $asociacion && (int) $asociacion->estado === 1;
+            if (!$yaAsociado) {
+                // Respeta el par único y recupera una relación dada de baja, sin tocar el producto.
+                self::asignarProveedores($idProducto, [$idProveedor]);
+            }
+            DataBase::confirmarTransaccion();
+            return ['producto' => $producto, 'ya_asociado' => $yaAsociado];
+        } catch (\Throwable $excepcion) {
+            DataBase::cancelarTransaccion();
+            throw $excepcion;
+        }
+    }
+
     public static function buscarActivosPorNombre($nombre)
     {
         // Tratar % y _ ingresados como texto, no como comodines adicionales.

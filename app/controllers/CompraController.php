@@ -93,11 +93,11 @@ class CompraController extends Controller
         SessionController::onlyUsers(['RECEPCIONISTA']);
         if (!$this->validarPostCompra(true)) return;
         try {
-            $idProveedor = $_POST['id_proveedor'] ?? '';
-            $proveedor = is_string($idProveedor) && ctype_digit($idProveedor) && (float) $idProveedor >= 1 && (float) $idProveedor <= 4294967295
-                ? ProveedorModel::findId($idProveedor) : false;
-            if (!$proveedor || (int) $proveedor->estado !== 1) {
-                $this->json(['ok' => false, 'mensaje' => 'Seleccioná un proveedor activo antes de crear el producto.'], 422);
+            $idProveedor = $this->proveedorRapido();
+            $existente = ProductoModel::consultarCodigoParaProveedor($_POST['codigo_barras'] ?? null, $idProveedor);
+            if ($existente) {
+                $this->json(['ok' => false, 'existe' => true, 'producto' => $this->datosProductoExistente($existente, $idProveedor),
+                    'mensaje' => 'Este Código EAN ya pertenece a un producto existente.'], 409);
                 return;
             }
             [$datos, $errores] = ProductoModel::validarDatos($_POST);
@@ -107,6 +107,9 @@ class CompraController extends Controller
             }
             // El modelo crea producto + asociación en su transacción habitual; stock inicial 0.
             $id = ProductoModel::crearProducto($datos, [$idProveedor]);
+        } catch (\DomainException $excepcion) {
+            $this->json(['ok' => false, 'mensaje' => $excepcion->getMessage()], 422);
+            return;
         } catch (\Throwable $excepcion) {
             $duplicado = (string) $excepcion->getCode() === '23000';
             $this->json(['ok' => false, 'mensaje' => $duplicado ? 'Ya existe ese Código EAN o nombre en la categoría seleccionada.' : 'No se pudo crear el producto. Intentá nuevamente.'], $duplicado ? 422 : 500);
@@ -114,6 +117,60 @@ class CompraController extends Controller
         }
         $this->json(['ok' => true, 'producto' => ['id_producto' => (int) $id, 'nombre_producto' => $datos['nombre_producto'],
             'id_proveedor' => (int) $idProveedor]], 201);
+    }
+
+    public function actionConsultarProductoRapido()
+    {
+        SessionController::onlyUsers(['RECEPCIONISTA']);
+        if (!$this->validarPostCompra(true)) return;
+        try {
+            $idProveedor = $this->proveedorRapido();
+            $producto = ProductoModel::consultarCodigoParaProveedor($_POST['codigo_barras'] ?? null, $idProveedor);
+            $this->json(['ok' => true, 'existe' => (bool) $producto,
+                'producto' => $producto ? $this->datosProductoExistente($producto, $idProveedor) : null]);
+        } catch (\DomainException $excepcion) {
+            $this->json(['ok' => false, 'mensaje' => $excepcion->getMessage()], 422);
+        } catch (\Throwable $excepcion) {
+            error_log($excepcion->getMessage());
+            $this->json(['ok' => false, 'mensaje' => 'No se pudo consultar el EAN. Intentá nuevamente.'], 500);
+        }
+    }
+
+    public function actionAsociarProductoRapido()
+    {
+        SessionController::onlyUsers(['RECEPCIONISTA']);
+        if (!$this->validarPostCompra(true)) return;
+        try {
+            $idProveedor = $this->proveedorRapido();
+            $resultado = ProductoModel::asociarProveedorExistente($_POST['id_producto'] ?? null, $idProveedor, $_POST['codigo_barras'] ?? null);
+            $producto = $resultado['producto'];
+            $this->json(['ok' => true, 'ya_asociado' => (bool) $resultado['ya_asociado'],
+                'producto' => ['id_producto' => (int) $producto->id_producto, 'nombre_producto' => $producto->nombre_producto,
+                    'id_proveedor' => (int) $idProveedor]]);
+        } catch (\DomainException $excepcion) {
+            $this->json(['ok' => false, 'mensaje' => $excepcion->getMessage()], 422);
+        } catch (\Throwable $excepcion) {
+            error_log($excepcion->getMessage());
+            $this->json(['ok' => false, 'mensaje' => 'No se pudo asociar el producto. Intentá nuevamente.'], 500);
+        }
+    }
+
+    private function proveedorRapido()
+    {
+        $id = $_POST['id_proveedor'] ?? null;
+        $proveedor = is_string($id) && ctype_digit($id) && (float) $id >= 1 && (float) $id <= 4294967295
+            ? ProveedorModel::findId($id) : false;
+        if (!$proveedor || (int) $proveedor->estado !== 1) {
+            throw new \DomainException('Seleccioná un proveedor activo antes de continuar.');
+        }
+        return $id;
+    }
+
+    private function datosProductoExistente($producto, $idProveedor)
+    {
+        return ['id_producto' => (int) $producto->id_producto, 'nombre_producto' => $producto->nombre_producto,
+            'codigo_barras' => (string) $producto->codigo_barras, 'activo' => (int) $producto->estado === 1,
+            'asociado' => (int) $producto->asociado === 1, 'id_proveedor' => (int) $idProveedor];
     }
 
     private function validarPostCompra($json = false)

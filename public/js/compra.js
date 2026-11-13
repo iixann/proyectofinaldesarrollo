@@ -13,6 +13,64 @@
     let siguienteRenglon = cuerpo.rows.length;
     let pendiente = false;
     let filaProducto = null;
+    const botonProducto = formularioProducto.querySelector('button[type="submit"]');
+    const permiteCrearProducto = !botonProducto.disabled;
+    const comprobarEan = document.getElementById('consultarEanCompra');
+    const panelExistente = document.getElementById('productoExistenteCompra');
+    const datosNuevo = formularioProducto.querySelector('[data-datos-nuevo-producto]');
+    let productoExistente = null;
+
+    function actualizarAltaProducto() {
+        if (esRecepcion) return;
+        const asociable = productoExistente && productoExistente.activo && !productoExistente.asociado;
+        botonProducto.textContent = productoExistente ? 'Asociar producto' : 'Crear producto';
+        botonProducto.disabled = pendiente || (productoExistente ? !asociable : !permiteCrearProducto);
+        comprobarEan.disabled = pendiente;
+        formularioProducto.elements.codigo_barras.readOnly = pendiente;
+    }
+    function limpiarProductoExistente() {
+        if (esRecepcion) return;
+        productoExistente = null;
+        panelExistente.hidden = true;
+        datosNuevo.hidden = false;
+        datosNuevo.disabled = false;
+        actualizarAltaProducto();
+    }
+    function incorporarProducto(producto) {
+        if (!productos.some(item => String(item.id_producto) === String(producto.id_producto)
+            && String(item.id_proveedor) === String(producto.id_proveedor))) productos.push(producto);
+        cuerpo.querySelectorAll('select').forEach(actualizarProductos);
+    }
+    function mostrarProductoExistente(producto) {
+        productoExistente = producto;
+        datosNuevo.hidden = true;
+        datosNuevo.disabled = true;
+        panelExistente.hidden = false;
+        panelExistente.querySelector('[data-existente-nombre]').textContent = producto.nombre_producto;
+        panelExistente.querySelector('[data-existente-ean]').textContent = producto.codigo_barras;
+        panelExistente.querySelector('[data-existente-mensaje]').textContent = !producto.activo
+            ? 'El producto está inactivo. Debe reactivarse desde Productos antes de poder utilizarlo.'
+            : producto.asociado
+                ? 'Este producto ya está asociado al proveedor seleccionado. Seleccionalo desde la lista de productos.'
+                : 'Todavía no está asociado al proveedor seleccionado. ¿Desea asociarlo? Se conservarán todos los datos y el stock del producto.';
+        if (producto.activo && producto.asociado) incorporarProducto(producto);
+        actualizarAltaProducto();
+    }
+    if (!esRecepcion) {
+        formularioProducto.elements.codigo_barras.addEventListener('input', limpiarProductoExistente);
+        function consultarEan() {
+            if (pendiente || !formularioProducto.elements.codigo_barras.value.trim()) return;
+            enviarAlta(formularioProducto, resultado => {
+                if (resultado.existe) mostrarProductoExistente(resultado.producto);
+                else limpiarProductoExistente();
+            }, {action: '/proyectofinaldesarrollo/compra/consultarProductoRapido', cerrar: false});
+        }
+        comprobarEan.addEventListener('click', consultarEan);
+        formularioProducto.elements.codigo_barras.addEventListener('change', consultarEan);
+        formularioProducto.elements.codigo_barras.addEventListener('keydown', evento => {
+            if (evento.key === 'Enter') { evento.preventDefault(); consultarEan(); }
+        });
+    }
 
     // Solo presentación: no agrega importes al POST ni interviene en el guardado.
     function mostrarTotalEstimado() {
@@ -93,6 +151,10 @@
         }
         if (evento.target.matches('[data-nuevo-producto]') && proveedor.value && !pendiente) {
             filaProducto = evento.target.closest('tr');
+            if (!esRecepcion) {
+                formularioProducto.reset();
+                limpiarProductoExistente();
+            }
             formularioProducto.elements.id_proveedor.value = proveedor.value;
             formularioProducto.querySelector('[data-error]').classList.add('d-none');
             bootstrap.Modal.getOrCreateInstance(document.getElementById('modalProductoRapido')).show();
@@ -110,7 +172,7 @@
         });
     });
 
-    async function enviarAlta(formulario, alGuardar) {
+    async function enviarAlta(formulario, alGuardar, opciones = {}) {
         if (pendiente) return;
         pendiente = true;
         const boton = formulario.querySelector('button[type="submit"]');
@@ -119,15 +181,22 @@
         boton.disabled = true;
         proveedor.disabled = true;
         actualizarDisponibilidad();
+        actualizarAltaProducto();
         let guardado = false;
         try {
             const datos = new FormData(formulario);
             datos.set('csrf_compra', formularioCompra.elements.csrf_compra.value);
-            const respuesta = await fetch(formulario.action, { method: 'POST', body: datos, headers: { Accept: 'application/json' } });
+            if (opciones.idProducto) datos.set('id_producto', String(opciones.idProducto));
+            const respuesta = await fetch(opciones.action || formulario.action, { method: 'POST', body: datos, headers: { Accept: 'application/json' } });
+            if (respuesta.redirected) throw new Error('La sesión venció. Conservá los datos y volvé a ingresar.');
             const resultado = await respuesta.json();
+            if (!respuesta.ok && resultado.existe && formulario === formularioProducto && !esRecepcion) {
+                mostrarProductoExistente(resultado.producto);
+                return;
+            }
             if (!respuesta.ok || !resultado.ok) throw new Error(resultado.mensaje || 'No se pudo completar el alta.');
             alGuardar(resultado);
-            guardado = true;
+            guardado = opciones.cerrar !== false;
         } catch (excepcion) {
             error.textContent = excepcion instanceof SyntaxError ? 'La sesión puede haber vencido. Conservá los datos y volvé a ingresar.' : excepcion.message;
             error.classList.remove('d-none');
@@ -136,6 +205,7 @@
             boton.disabled = false;
             proveedor.disabled = false;
             actualizarDisponibilidad();
+            actualizarAltaProducto();
         }
         if (guardado) {
             bootstrap.Modal.getOrCreateInstance(formulario.closest('.modal')).hide();
@@ -155,16 +225,20 @@
     });
     formularioProducto.addEventListener('submit', function (evento) {
         evento.preventDefault();
+        const asociar = !esRecepcion && productoExistente !== null;
+        if (asociar && (!productoExistente.activo || productoExistente.asociado)) return;
+        const opciones = asociar ? {action: '/proyectofinaldesarrollo/compra/asociarProductoRapido', idProducto: productoExistente.id_producto} : {};
         enviarAlta(formularioProducto, function (resultado) {
             const nuevo = resultado.producto;
-            productos.push(nuevo);
-            cuerpo.querySelectorAll('select').forEach(actualizarProductos);
+            incorporarProducto(nuevo);
             if (filaProducto && filaProducto.isConnected && String(nuevo.id_proveedor) === proveedor.value) {
                 filaProducto.querySelector('select').value = String(nuevo.id_producto);
-                filaProducto.querySelectorAll('input').forEach(campo => { campo.value = ''; });
+                if (!asociar) filaProducto.querySelectorAll('input').forEach(campo => { campo.value = ''; });
             }
-            informar(esRecepcion ? 'Producto creado y asociado al proveedor con stock 0. Completá la cantidad físicamente recibida.' : 'Producto creado y asociado al proveedor. Completá cantidad y precio de compra; su stock inicial es 0.');
-        });
+            informar(asociar ? (resultado.ya_asociado ? 'El producto ya estaba asociado; quedó disponible y seleccionado en la compra.' : 'Producto existente asociado al proveedor y seleccionado. Completá cantidad y precio de compra; sus datos y stock no se modificaron.')
+                : esRecepcion ? 'Producto creado y asociado al proveedor con stock 0. Completá la cantidad físicamente recibida.' : 'Producto creado y asociado al proveedor. Completá cantidad y precio de compra; su stock inicial es 0.');
+            limpiarProductoExistente();
+        }, opciones);
     });
     actualizarDisponibilidad();
 }());
