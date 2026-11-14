@@ -6,6 +6,7 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
     <?php $seccionActual = 'usuarios'; require APP_PATH . 'views/inc/navbar.php'; ?>
+    <!-- Formulario de alta de usuarios con los errores del controlador. -->
     <main class="container py-4 py-md-5 flex-grow-1" id="contenido">
         <div class="d-flex flex-wrap gap-3 mb-4">
             <a class="link-primary text-decoration-none small" href="/proyectofinaldesarrollo/user/index"><i class="fa-solid fa-arrow-left me-2" aria-hidden="true"></i>Volver al listado de usuarios</a>
@@ -27,6 +28,7 @@
                                 </ul>
                             </div>
                         <?php endif; ?>
+                        <!-- Envía los campos por POST a user/guardar. -->
                         <form method="post" action="/proyectofinaldesarrollo/user/guardar">
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">

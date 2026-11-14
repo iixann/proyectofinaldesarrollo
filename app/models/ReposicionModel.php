@@ -5,13 +5,16 @@ namespace app\models;
 use \Model;
 use \DataBase;
 
+// Consulta productos que necesitan reposición y sus proveedores.
 class ReposicionModel extends Model
 {
     protected $tabla = 'productos';
     protected $clavePrimaria = 'id_producto';
 
+    // Devuelve productos con stock menor o igual al mínimo y sus proveedores para reponer.
     public static function listarProductos($filtros = [])
     {
+        // Busca productos con stock menor o igual al mínimo y reúne sus proveedores asociados.
         $sql = "SELECT p.id_producto, p.nombre_producto, p.codigo_barras,
             c.nombre_categoria, p.stock_actual, p.stock_minimo,
             (SELECT GROUP_CONCAT(pr.razon_social ORDER BY pr.razon_social SEPARATOR ', ')

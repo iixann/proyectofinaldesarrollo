@@ -6,6 +6,7 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
     <?php $seccionActual = 'sesiones'; require APP_PATH . 'views/inc/navbar.php'; ?>
+    <!-- Compara el efectivo esperado con el contado al cerrar la caja. -->
     <main class="container py-4 py-md-5 flex-grow-1" id="contenido">
         <h1 class="h2 fw-bold mb-4">Cerrar caja</h1>
         <div class="row"><div class="col-lg-8"><section class="card border-0 shadow-sm rounded-4"><div class="card-body p-4">
@@ -29,6 +30,7 @@
             <?php if ($errores): ?><div class="alert alert-danger" role="alert"><ul class="mb-0">
                 <?php foreach ($errores as $error): ?><li><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></li><?php endforeach; ?>
             </ul></div><?php endif; ?>
+            <!-- Envía los campos por POST a sesioncaja/guardarCierre. -->
             <form method="post" action="/proyectofinaldesarrollo/sesioncaja/guardarCierre/<?= htmlspecialchars((string) $sesion->id_caja_sesion, ENT_QUOTES, 'UTF-8') ?>">
                 <div class="mb-3">
                     <label class="form-label" for="efectivo_contado">Efectivo contado *</label>

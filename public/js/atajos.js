@@ -1,6 +1,8 @@
+// Conecta la consulta rápida y los atajos globales de navegación.
 (() => {
     'use strict';
     const elemento = document.getElementById('consultaRapida');
+    // Activa los atajos solo si la vista incluye el modal y Bootstrap.
     if (!elemento || !window.bootstrap) return;
     const modal = new bootstrap.Modal(elemento);
     const formulario = document.getElementById('formConsultaRapida');
@@ -13,9 +15,12 @@
     let secuencia = 0;
     let reanudarCobro = false;
 
+    // Abre la consulta rápida y conserva el foco para regresar.
     function abrir() {
+        // Mientras la consulta está abierta, evita que los atajos actúen en el POS.
         if (abierto) { ean.focus(); ean.select(); return; }
         const cobro = document.getElementById('cobroPos');
+        // Oculta el cobro antes de abrir la consulta y permite retomarlo después.
         if (cobro?.classList.contains('show')) {
             if (cobro.getAttribute('aria-busy') === 'true') return;
             reanudarCobro = true;
@@ -32,12 +37,15 @@
         modal.show();
     }
     elemento.addEventListener('shown.bs.modal', () => ean.focus());
+    // Cancela la consulta pendiente e invalida su respuesta al cerrar.
     elemento.addEventListener('hide.bs.modal', () => {
         ++secuencia;
         consulta?.abort();
     });
+    // Recupera el cobro o el campo de trabajo al terminar de cerrar.
     elemento.addEventListener('hidden.bs.modal', () => {
         abierto = false;
+        // Al cerrar la consulta, vuelve al cobro que estaba abierto.
         if (reanudarCobro) {
             reanudarCobro = false;
             bootstrap.Modal.getInstance(document.getElementById('cobroPos')).show();
@@ -54,12 +62,14 @@
         const tecla = evento.key.toLowerCase();
         const f9 = evento.key === 'F9' && !evento.altKey && !evento.ctrlKey
             && !evento.metaKey && !evento.shiftKey && document.querySelector('.pos-pantalla');
+        // Alt+Q o F9 en el POS abre la consulta rápida.
         if ((alt && tecla === 'q') || f9) {
             evento.preventDefault();
             evento.stopImmediatePropagation();
             if (!evento.repeat) abrir();
             return;
         }
+        // Mientras la consulta está abierta, evita que los atajos actúen en el POS.
         if (abierto) {
             evento.stopPropagation();
             if (evento.key === 'Escape') { evento.preventDefault(); modal.hide(); }
@@ -75,6 +85,7 @@
         }
     }, true);
 
+    // Consulta el EAN en PosController y muestra el resultado en el modal.
     formulario.addEventListener('submit', async evento => {
         evento.preventDefault();
         const codigo = ean.value.trim();
@@ -86,6 +97,7 @@
         ean.value = '';
         ean.focus();
         try {
+            // Pasa el EAN por GET al controlador de consulta de productos.
             const respuesta = await fetch(formulario.action + '?' + new URLSearchParams({ean: codigo}), {
                 headers: {Accept: 'application/json'}, signal: consulta.signal
             });
@@ -94,6 +106,7 @@
                 throw new Error(respuesta.status === 403 ? 'Acceso denegado.' : 'No se pudo consultar el producto.');
             }
             const datos = await respuesta.json();
+            // Ignora respuestas viejas o recibidas después de cerrar el modal.
             if (actual !== secuencia || !abierto) return;
             if (!respuesta.ok || !datos.ok) throw new Error(datos.mensaje || 'No se pudo consultar el producto.');
             const producto = datos.producto;

@@ -6,6 +6,7 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
 
+    <!-- Formulario para reemplazar la contraseña temporal al ingresar. -->
     <main class="container py-4 py-md-5 flex-grow-1" id="contenido">
         <h1 class="h2 fw-bold mb-4">Cambiar contraseña</h1>
         <p class="alert alert-warning">Debés cambiar tu contraseña antes de continuar.</p>
@@ -13,6 +14,7 @@
             <?php if ($errores): ?><div class="alert alert-danger" role="alert"><ul class="mb-0">
                 <?php foreach ($errores as $error): ?><li><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></li><?php endforeach; ?>
             </ul></div><?php endif; ?>
+            <!-- Envía los campos por POST a session/guardarPassword. -->
             <form method="post" action="/proyectofinaldesarrollo/session/guardarPassword">
                 <input type="hidden" name="csrf_password" value="<?= htmlspecialchars($token, ENT_QUOTES, 'UTF-8') ?>">
                 <div class="mb-3">

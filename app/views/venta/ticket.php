@@ -19,12 +19,14 @@
         @media print { body { margin: 0; width: 72mm; max-width: none; } .no-imprimir { display: none; } tr { break-inside: avoid; } }
     </style>
 </head>
+<!-- Comprobante imprimible con los productos y pagos de la venta. -->
 <body>
     <nav class="no-imprimir"><button type="button" onclick="window.print()">Imprimir ticket</button> <a href="/proyectofinaldesarrollo/venta/ver/<?= (int) $venta->id_venta ?>">Volver a la venta</a></nav>
     <header><h1>Identidad Singular</h1><p>Vinería</p><h2>Ticket de venta #<?= (int) $venta->id_venta ?></h2></header>
     <p>Fecha: <?= htmlspecialchars($venta->fecha_venta, ENT_QUOTES, 'UTF-8') ?></p>
     <p>Caja: <?= htmlspecialchars($venta->caja, ENT_QUOTES, 'UTF-8') ?> · Sesión #<?= (int) $venta->id_caja_sesion ?></p>
     <p>Vendedor: <?= htmlspecialchars($venta->nombre . ' ' . $venta->apellido, ENT_QUOTES, 'UTF-8') ?></p>
+    <!-- Listado generado con los registros recibidos del controlador. -->
     <table class="separador"><thead><tr><th style="width:56%;text-align:left">Producto / Cant. × precio</th><th class="importe">Subtotal</th></tr></thead><tbody>
         <?php foreach ($detalles as $detalle): ?><tr>
             <td><?= htmlspecialchars($detalle->nombre_producto, ENT_QUOTES, 'UTF-8') ?><br><?= (int) $detalle->cantidad ?> × $ <?= htmlspecialchars((string) $detalle->precio_unitario, ENT_QUOTES, 'UTF-8') ?></td>
@@ -42,6 +44,7 @@
     </div>
     <p class="separador" style="text-align:center">Gracias por tu compra.</p>
 <?php if (($_GET['imprimir'] ?? null) === '1'): ?>
+<!-- Abre la impresión al cargar el ticket cuando se solicitó imprimir. -->
 <script>window.addEventListener('load', () => window.print(), {once: true});</script>
 <?php endif; ?>
 </body>

@@ -1,4 +1,5 @@
 <?php
+// Muestra enlaces según los roles; los controladores validan el acceso.
 $esAdministrador = \app\controllers\SessionController::esAdministrador();
 $puedeAdministrarMaestros = \app\controllers\SessionController::sesionValida()
     && ($esAdministrador || in_array('DUEÑO', $_SESSION['usuario']['roles'], true));

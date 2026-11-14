@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Proyecto Final Desarrollo</title>
 </head>
+<!-- Página de presentación del proyecto. -->
 <body>
     <h1>Proyecto Final Desarrollo</h1>
     <p>MVC funcionando correctamente.</p>

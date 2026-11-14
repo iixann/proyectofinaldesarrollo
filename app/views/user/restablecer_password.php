@@ -6,6 +6,7 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
     <?php $seccionActual = 'usuarios'; require APP_PATH . 'views/inc/navbar.php'; ?>
+    <!-- Envía la clave temporal del usuario al controlador de administración. -->
     <main class="container py-4 py-md-5 flex-grow-1" id="contenido">
         <h1 class="h2 fw-bold mb-4">Restablecer contraseña</h1>
         <p>Usuario: <strong><?= htmlspecialchars($usuario->nombre . ' ' . $usuario->apellido, ENT_QUOTES, 'UTF-8') ?></strong> (<?= htmlspecialchars($usuario->email, ENT_QUOTES, 'UTF-8') ?>)</p>
@@ -14,6 +15,7 @@
             <?php if ($errores): ?><div class="alert alert-danger" role="alert"><ul class="mb-0">
                 <?php foreach ($errores as $error): ?><li><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></li><?php endforeach; ?>
             </ul></div><?php endif; ?>
+            <!-- Envía los campos por POST a user/guardarPassword. -->
             <form method="post" action="/proyectofinaldesarrollo/user/guardarPassword/<?= (int) $usuario->id_usuario ?>">
                 <input type="hidden" name="csrf_password" value="<?= htmlspecialchars($token, ENT_QUOTES, 'UTF-8') ?>">
                 <div class="mb-3">

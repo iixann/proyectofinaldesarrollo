@@ -7,6 +7,7 @@
 <body class="d-flex flex-column min-vh-100">
     <?php $seccionActual = 'inicio'; require APP_PATH . "views/inc/navbar.php"; ?>
 
+    <!-- Muestra los módulos disponibles según los roles de la sesión. -->
     <main class="container py-4 py-md-5 flex-grow-1" id="contenido">
         <section class="mb-5" aria-labelledby="bienvenida">
             <p class="text-primary fw-semibold small mb-2"><i class="fa-solid fa-house me-2" aria-hidden="true"></i>INICIO</p>

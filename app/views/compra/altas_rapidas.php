@@ -1,6 +1,8 @@
+    <!-- Modales para crear proveedores y crear o asociar productos desde Compra. -->
     <div class="modal fade" id="modalProveedorRapido" tabindex="-1" aria-labelledby="tituloProveedorRapido" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-sm-down"><div class="modal-content">
             <div class="modal-header"><h2 class="modal-title fs-5" id="tituloProveedorRapido">Nuevo proveedor</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+            <!-- Envía los campos por POST a compra/crearProveedorRapido. -->
             <form id="formularioProveedorRapido" method="post" action="/proyectofinaldesarrollo/compra/crearProveedorRapido">
                 <div class="modal-body">
                     <p class="alert alert-danger d-none" data-error role="alert"></p>
@@ -15,6 +17,7 @@
             </form>
         </div></div>
     </div>
+    <!-- Modal para crear un producto o asociar uno existente al proveedor. -->
     <div class="modal fade" id="modalProductoRapido" tabindex="-1" aria-labelledby="tituloProductoRapido" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-sm-down"><div class="modal-content">
             <div class="modal-header"><h2 class="modal-title fs-5" id="tituloProductoRapido">Nuevo producto</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>

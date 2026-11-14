@@ -1,5 +1,6 @@
 'use strict';
 
+// Convierte un precio válido a centavos enteros.
 function precioCentavosPos(precio) {
     const partes = /^(\d{1,10})(?:\.(\d{1,2}))?$/.exec(String(precio));
     if (!partes) throw new Error('El precio del producto no es válido.');
@@ -9,11 +10,14 @@ function precioCentavosPos(precio) {
 // Carrito temporal: solo la confirmación del servidor registra la venta y cambia stock.
 function crearCarritoPos() {
     const productos = new Map();
+    // Suma los subtotales del carrito en centavos.
     function total() {
         return Array.from(productos.values()).reduce((suma, linea) => suma + linea.subtotal, 0);
     }
+    // Valida cantidad y stock antes de guardar la línea en memoria.
     function guardar(linea) {
         if (!Number.isInteger(linea.cantidad) || linea.cantidad < 1) throw new Error('La cantidad mínima es 1.');
+        // Impide agregar más unidades que el stock disponible.
         if (linea.cantidad > linea.stock_disponible) throw new Error('Stock disponible: ' + linea.stock_disponible + '. No se puede agregar más.');
         linea.subtotal = linea.cantidad * linea.precio_centavos;
         const anterior = productos.get(String(linea.id_producto));
@@ -22,8 +26,10 @@ function crearCarritoPos() {
         productos.set(String(linea.id_producto), linea);
     }
     return {
+        // Agrega el producto al carrito y actualiza su selección.
         agregar(producto) {
             const stock = Number(producto.stock_actual);
+            // Rechaza productos sin stock disponible.
             if (!Number.isInteger(stock) || stock <= 0) throw new Error('SIN STOCK: no se puede agregar este producto.');
             const actual = productos.get(String(producto.id_producto));
             guardar({
@@ -36,27 +42,34 @@ function crearCarritoPos() {
                 cantidad: actual ? actual.cantidad + 1 : 1
             });
         },
+        // Actualiza la cantidad de una línea mediante la validación del carrito.
         cambiarCantidad(id, cantidad) {
             const linea = productos.get(String(id));
             if (!linea) return;
             guardar({...linea, cantidad: Number(cantidad)});
         },
+        // Quita del carrito el producto indicado.
         eliminar(id) { productos.delete(String(id)); },
+        // Elimina todas las líneas del carrito temporal.
         vaciar() { productos.clear(); },
+        // Devuelve copias de las líneas para consultar o enviar la venta.
         lineas() { return Array.from(productos.values(), linea => ({...linea})); },
         totalCentavos: total
     };
 }
 
+// Muestra los centavos como pesos con formato argentino.
 function formatoDineroPos(centavos) {
     const enteros = String(Math.floor(centavos / 100)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     return '$ ' + enteros + ',' + String(centavos % 100).padStart(2, '0');
 }
 
+// Convierte los centavos al decimal que espera el servidor.
 function decimalPos(centavos) {
     return String(Math.floor(centavos / 100)) + '.' + String(centavos % 100).padStart(2, '0');
 }
 
+// Calcula los pagos aplicados, el vuelto y el saldo pendiente.
 function resumirPagosPos(entradas, total) {
     // El efectivo se deriva de la entrega, descontando primero los otros medios.
     const otrosAplicados = entradas.filter(entrada => !entrada.efectivo).reduce((suma, entrada) => {
@@ -91,6 +104,7 @@ function resumirPagosPos(entradas, total) {
     return {pagos, aplicado, diferencia: total - aplicado};
 }
 
+// Conecta el carrito, el cobro y los eventos de la pantalla POS.
 function iniciarPos() {
     const terminal = document.getElementById('terminalPos');
     if (!terminal) return;
@@ -109,6 +123,7 @@ function iniciarPos() {
     let confirmando = false;
     let ultimaVenta = null;
     const ticketBoton = document.getElementById('verUltimaVenta');
+    // Abre el ticket de la última venta confirmada.
     function abrirTicketUltimaVenta() {
         if (ultimaVenta === null) {
             informar('No hay una venta reciente para imprimir.');
@@ -130,11 +145,13 @@ function iniciarPos() {
     let cobroAbierto = false;
     let totalConPagos = null;
     let avisoPagos = false;
+    // Lleva el foco al importe del medio de pago seleccionado.
     function enfocarMedio() {
         const entrada = medioSeleccionado?.querySelector('[data-entregado]') || medioSeleccionado?.querySelector('[data-monto]');
         entrada?.focus();
         entrada?.select();
     }
+    // Abre el modal de cobro si el carrito y la caja están disponibles.
     function abrirCobro(fila = null) {
         if (confirmando || pendientes > 0 || !sesionDisponible || !carrito.lineas().length) return;
         document.getElementById('mensajeCobro').hidden = true;
@@ -142,6 +159,7 @@ function iniciarPos() {
         cobroModal.show();
         enfocarMedio();
     }
+    // Cierra el cobro y devuelve el foco a la carga de productos.
     function volverVenta() {
         if (!confirmando) cobroModal.hide();
     }
@@ -162,6 +180,7 @@ function iniciarPos() {
     const estadoPagos = document.getElementById('estadoPagos');
     const botonesMedio = Array.from(document.querySelectorAll('[data-elegir-medio]'));
     let medioSeleccionado = null;
+    // Selecciona el medio de pago y propone el importe restante.
     function elegirMedio(fila, enfocar = true, proponer = true) {
         if (!fila || confirmando || !sesionDisponible) return;
         if (proponer && fila.dataset.efectivo !== '1') {
@@ -190,6 +209,7 @@ function iniciarPos() {
         elegirMedio(filasPago.find(fila => fila.dataset.medio === boton.dataset.elegirMedio));
     }));
     medioSeleccionado = filasPago.find(fila => fila.dataset.efectivo === '1') || filasPago[0];
+    // Muestra los pagos cargados y permite quitar cada uno.
     function dibujarResumenPagos() {
         const lista = document.getElementById('resumenPagos');
         lista.replaceChildren();
@@ -218,6 +238,7 @@ function iniciarPos() {
         lista.hidden = lista.children.length === 0;
     }
 
+    // Muestra un mensaje de resultado o error en la pantalla.
     function informar(texto, error = false) {
         mensaje.textContent = texto;
         mensaje.className = 'alert ' + (error ? 'alert-warning' : 'alert-info');
@@ -227,6 +248,7 @@ function iniciarPos() {
             aviso.hidden = false;
         }
     }
+    // Impide cambiar de caja con productos o consultas pendientes.
     function bloquearSelector() {
         const bloqueado = confirmando || pendientes > 0 || carrito.lineas().length > 0;
         selector.disabled = bloqueado;
@@ -234,12 +256,14 @@ function iniciarPos() {
         actualizarCobro();
         document.getElementById('avisoSesion').textContent = bloqueado ? 'Vaciá el carrito y esperá las consultas pendientes para cambiar de caja.' : 'Podés cambiar de caja mientras el carrito esté vacío.';
     }
+    // Agrega una celda con texto a la fila de la tabla.
     function celda(fila, valor) {
         const td = document.createElement('td');
         td.textContent = valor;
         fila.appendChild(td);
         return td;
     }
+    // Crea un botón y conecta la acción de su clic.
     function boton(texto, etiqueta, accion, estilo = 'btn-outline-secondary') {
         const elemento = document.createElement('button');
         elemento.type = 'button';
@@ -249,6 +273,7 @@ function iniciarPos() {
         elemento.addEventListener('click', accion);
         return elemento;
     }
+    // Pide al carrito cambiar la cantidad y actualiza la pantalla.
     function cambiar(id, cantidad) {
         try {
             if (confirmando) throw new Error('Esperá la confirmación de la venta.');
@@ -257,12 +282,14 @@ function iniciarPos() {
         } catch (error) { informar(error.message, true); }
         dibujarCarrito();
     }
+    // Marca la línea sobre la que actuarán los atajos.
     function seleccionarLinea(id) {
         seleccionada = String(id);
         Array.from(cuerpo.children).forEach(fila => {
             fila.classList.toggle('pos-seleccionada', fila.dataset.producto === seleccionada);
         });
     }
+    // Quita el producto del carrito y actualiza la pantalla.
     function quitarLinea(id) {
         if (confirmando) return;
         carrito.eliminar(id);
@@ -270,7 +297,9 @@ function iniciarPos() {
         dibujarCarrito();
         if (sesionDisponible) codigo.focus();
     }
+    // Redibuja productos, cantidades y totales del carrito.
     function dibujarCarrito() {
+        // Si cambia el total del carrito, borra los pagos para volver a cobrarlos.
         if (totalConPagos !== null && totalConPagos !== carrito.totalCentavos()) {
             limpiarPagos();
             avisoPagos = carrito.lineas().length > 0;
@@ -322,6 +351,7 @@ function iniciarPos() {
         document.getElementById('totalCobro').textContent = formatoDineroPos(carrito.totalCentavos());
         bloquearSelector();
     }
+    // Agrega el producto al carrito y actualiza su selección.
     function agregar(producto, codigoConsultado = null) {
         try {
             if (confirmando) throw new Error('Esperá la confirmación de la venta.');
@@ -340,6 +370,7 @@ function iniciarPos() {
             codigo.focus();
         } catch (error) { informar(error.message, true); }
     }
+    // Muestra los productos encontrados con su disponibilidad.
     function mostrarResultados(productos) {
         resultados.replaceChildren();
         seccionResultados.hidden = !productos.length;
@@ -360,6 +391,7 @@ function iniciarPos() {
             resultados.appendChild(fila);
         });
     }
+    // Consulta PosController y agrega por EAN o muestra coincidencias.
     async function buscar(formulario, porCodigo) {
         if (confirmando || !sesionDisponible) return;
         const busquedaNombre = porCodigo ? null : ++ultimaBusquedaNombre;
@@ -373,6 +405,7 @@ function iniciarPos() {
             if (respuesta.redirected) throw new Error('Iniciá sesión nuevamente para operar.');
             if (!(respuesta.headers.get('content-type') || '').includes('application/json')) throw new Error(respuesta.status === 403 ? 'Acceso denegado.' : 'No se pudo consultar productos.');
             const datos = await respuesta.json();
+            // Si el servidor informa que la caja ya no está disponible, bloquea la venta.
             if (datos.sesion_no_disponible) {
                 sesionDisponible = false;
                 terminal.querySelectorAll('form input, form button').forEach(elemento => { elemento.disabled = true; });
@@ -382,6 +415,7 @@ function iniciarPos() {
             if (!datos.ok) throw new Error(datos.mensaje);
             if (!sesionDisponible) return;
             if (porCodigo) {
+                // Agrega el producto al carrito y actualiza su selección.
                 agregar(datos.producto, (parametros.get('codigo') || '').trim());
             } else if (busquedaNombre === ultimaBusquedaNombre) {
                 mostrarResultados(datos.productos);
@@ -394,6 +428,7 @@ function iniciarPos() {
             bloquearSelector();
         }
     }
+    // Recoge los importes y referencias escritos en el cobro.
     function entradasPago() {
         return filasPago.map(fila => ({
             id_medio_pago: Number(fila.dataset.medio),
@@ -403,6 +438,7 @@ function iniciarPos() {
             referencia: fila.querySelector('[data-referencia]')?.value || ''
         }));
     }
+    // Recalcula saldo y vuelto; habilita confirmar si el total está cubierto.
     function actualizarCobro() {
         abrirCobroBoton.disabled = confirmando || pendientes > 0 || !sesionDisponible || !carrito.lineas().length;
         confirmarBoton.disabled = true;
@@ -441,16 +477,19 @@ function iniciarPos() {
         }
         dibujarResumenPagos();
     }
+    // Borra los importes de cobro de la venta actual.
     function limpiarPagos() {
         filasPago.forEach(fila => fila.querySelectorAll('input').forEach(input => { input.value = ''; }));
         totalConPagos = null;
         avisoPagos = false;
     }
+    // Recalcula el cobro al escribir un importe o referencia.
     filasPago.forEach(fila => fila.addEventListener('input', () => {
         totalConPagos = carrito.totalCentavos();
         avisoPagos = false;
         actualizarCobro();
     }));
+    // Envía productos y pagos a VentaController para confirmar la venta.
     confirmarBoton.addEventListener('click', async function () {
         if (!cobroAbierto || confirmando || pendientes > 0 || !sesionDisponible || !carrito.lineas().length) return;
         let resumen;
@@ -464,6 +503,7 @@ function iniciarPos() {
         terminal.querySelectorAll('input, button').forEach(elemento => { elemento.disabled = true; });
         confirmarBoton.textContent = 'Registrando venta…';
         try {
+            // Envía por POST los IDs, cantidades, pagos y token al controlador de venta.
             const respuesta = await fetch('/proyectofinaldesarrollo/venta/confirmar', {
                 method: 'POST',
                 headers: {'Accept': 'application/json', 'Content-Type': 'application/json', 'X-CSRF-Token': terminal.dataset.token},
@@ -476,8 +516,10 @@ function iniciarPos() {
             if (respuesta.redirected) throw new Error('Iniciá sesión nuevamente para confirmar.');
             if (!(respuesta.headers.get('content-type') || '').includes('application/json')) throw new Error('No se recibió confirmación de la venta. No se reenvió automáticamente.');
             const datos = await respuesta.json();
+            // Si el servidor informa que la caja ya no está disponible, bloquea la venta.
             if (datos.sesion_no_disponible) sesionDisponible = false;
             if (!datos.ok) throw new Error(datos.mensaje || 'No se pudo registrar la venta.');
+            // Limpia el carrito solo después de recibir la confirmación del servidor.
             carrito.vaciar();
             limpiarPagos();
             resultados.replaceChildren();
@@ -500,14 +542,17 @@ function iniciarPos() {
             else enfocarMedio();
         }
     });
+    // Al enviar el EAN, busca y agrega el producto al carrito.
     document.getElementById('buscarEan').addEventListener('submit', function (evento) {
         evento.preventDefault();
         buscar(evento.currentTarget, true);
     });
+    // Al enviar el nombre, muestra los productos coincidentes.
     document.getElementById('buscarNombre').addEventListener('submit', function (evento) {
         evento.preventDefault();
         buscar(evento.currentTarget, false);
     });
+    // Vacía productos y pagos cuando no hay operaciones pendientes.
     document.getElementById('vaciarCarrito').addEventListener('click', function () {
         if (confirmando || pendientes > 0) return;
         carrito.vaciar();
@@ -518,6 +563,7 @@ function iniciarPos() {
     });
     // Los atajos no eliminan líneas mientras se escribe en un campo.
     document.addEventListener('keydown', function (evento) {
+        // F10 abre el ticket de la última venta confirmada.
         if (evento.key === 'F10' && !evento.ctrlKey && !evento.altKey && !evento.metaKey) {
             evento.preventDefault();
             if (!evento.repeat && !confirmando) abrirTicketUltimaVenta();
@@ -526,14 +572,17 @@ function iniciarPos() {
         if (confirmando || !sesionDisponible || evento.ctrlKey || evento.altKey || evento.metaKey) return;
         const escribiendo = evento.target.closest('input, textarea, select, [contenteditable="true"]');
         if (evento.repeat && /^F[4-8]$/.test(evento.key)) { evento.preventDefault(); return; }
+        // F2 vuelve a cargar productos por EAN.
         if (evento.key === 'F2') {
             evento.preventDefault();
             if (cobroAbierto) volverVenta();
             codigo.focus();
+        // F3 lleva el foco a la búsqueda por nombre.
         } else if (evento.key === 'F3') {
             evento.preventDefault();
             if (cobroAbierto) volverVenta();
             document.getElementById('nombre').focus();
+        // F4 a F7 seleccionan el medio de pago correspondiente.
         } else if (['F4', 'F5', 'F6', 'F7'].includes(evento.key)) {
             evento.preventDefault();
             const nombres = {F4: ['EFECTIVO'], F5: ['DÉBITO'], F6: ['CRÉDITO'], F7: ['TRANSFERENCIA', 'MERCADO PAGO']};
@@ -543,15 +592,18 @@ function iniciarPos() {
                 : disponibles[0];
             if (cobroAbierto) elegirMedio(siguiente);
             else if (siguiente) abrirCobro(siguiente);
+        // F8 abre el cobro o confirma la venta según la etapa actual.
         } else if (evento.key === 'F8') {
             evento.preventDefault();
             if (!cobroAbierto) abrirCobro();
             else if (!confirmarBoton.disabled) confirmarBoton.click();
             else enfocarMedio();
+        // Escape vuelve del cobro a la venta u oculta los resultados.
         } else if (evento.key === 'Escape') {
             evento.preventDefault();
             if (cobroAbierto) volverVenta();
             else { seccionResultados.hidden = true; codigo.focus(); }
+        // Supr quita la línea seleccionada cuando no se está escribiendo.
         } else if (evento.key === 'Delete' && !cobroAbierto && !escribiendo && seleccionada !== null) {
             evento.preventDefault();
             quitarLinea(seleccionada);

@@ -6,6 +6,7 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
     <?php $seccionActual = 'cajas'; require APP_PATH . 'views/inc/navbar.php'; ?>
+    <!-- Formulario de alta de cajas con los errores del controlador. -->
     <main class="container py-4 py-md-5 flex-grow-1" id="contenido">
         <h1 class="h2 fw-bold mb-4">Nueva caja</h1>
         <div class="row"><div class="col-12 col-lg-8">
@@ -17,6 +18,7 @@
                         <?php endforeach; ?>
                     </ul></div>
                 <?php endif; ?>
+                <!-- Envía los campos por POST a caja/guardar. -->
                 <form method="post" action="/proyectofinaldesarrollo/caja/guardar">
                     <div class="mb-4">
                         <label class="form-label" for="nombre">Nombre de caja *</label>

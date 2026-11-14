@@ -6,6 +6,7 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
     <?php $seccionActual = 'sesiones'; require APP_PATH . 'views/inc/navbar.php'; ?>
+    <!-- Muestra el detalle de sesiones de caja enviado por el controlador. -->
     <main class="container py-4 py-md-5 flex-grow-1" id="contenido">
         <a class="link-primary text-decoration-none small" href="/proyectofinaldesarrollo/sesioncaja/index">Volver a sesiones</a>
         <h1 class="h2 fw-bold my-4">Sesión #<?= htmlspecialchars((string) $sesion->id_caja_sesion, ENT_QUOTES, 'UTF-8') ?></h1>

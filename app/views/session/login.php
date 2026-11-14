@@ -5,6 +5,7 @@
     <?php require APP_PATH . 'views/inc/head.php'; ?>
 </head>
 <body class="d-flex flex-column min-vh-100">
+    <!-- Formulario que envía las credenciales a SessionController. -->
     <main class="container flex-grow-1 d-flex align-items-center justify-content-center py-5">
         <div class="row justify-content-center w-100">
             <div class="col-12 col-md-8 col-lg-5 col-xl-4 px-0">
@@ -22,6 +23,7 @@
                             <p class="text-break">Usuario conectado: <strong><?= htmlspecialchars($_SESSION['usuario']['nombre'] . ' ' . $_SESSION['usuario']['apellido'], ENT_QUOTES, 'UTF-8') ?></strong></p>
                             <a class="btn btn-outline-primary w-100" href="/proyectofinaldesarrollo/session/logout"><i class="fa-solid fa-right-from-bracket me-2" aria-hidden="true"></i>Cerrar sesión</a>
                         <?php else: ?>
+                            <!-- Envía los campos por POST a session/ingresar. -->
                             <form method="post" action="/proyectofinaldesarrollo/session/ingresar">
                                 <div class="mb-3">
                                     <label class="form-label" for="correo">Correo electrónico *</label>

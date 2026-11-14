@@ -6,6 +6,7 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
     <?php $seccionActual = 'ventas'; require APP_PATH . 'views/inc/navbar.php'; ?>
+    <!-- Muestra el detalle de ventas enviado por el controlador. -->
     <main class="container py-4 flex-grow-1" id="contenido">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
             <div><a href="/proyectofinaldesarrollo/venta/index">Volver a Ventas</a><h1 class="h2 fw-bold mt-3">Venta #<?= (int) $venta->id_venta ?></h1></div>
@@ -19,6 +20,7 @@
         </div></section>
         <section class="card border-0 shadow-sm rounded-4 mb-4"><div class="card-body p-4">
             <h2 class="h5">Productos vendidos</h2>
+            <!-- Listado generado con los registros recibidos del controlador. -->
             <div class="table-responsive" tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p><table class="table align-middle"><thead><tr><th>Producto</th><th>Cantidad</th><th>Precio histórico</th><th>Subtotal</th></tr></thead><tbody>
                 <?php foreach ($detalles as $detalle): ?><tr>
                     <td><?= htmlspecialchars($detalle->nombre_producto, ENT_QUOTES, 'UTF-8') ?></td><td><?= (int) $detalle->cantidad ?></td>

@@ -4,6 +4,7 @@
  * Clase Iniciadora, de arranque (Bootstrapping) App
  * Esta clase se encarga de inicializar y dirigir las solicitudes de la aplicación.
  */
+// Recibe la URL desde public/index.php y despacha la solicitud al controlador.
 class App
 {
     // Propiedades para almacenar valores predeterminados del controlador, método y parámetros.

@@ -6,11 +6,13 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
     <?php $seccionActual = 'ventas'; require APP_PATH . 'views/inc/navbar.php'; ?>
+    <!-- Muestra los datos de ventas enviados por el controlador. -->
     <main class="container py-4 flex-grow-1" id="contenido">
         <div class="d-flex flex-wrap justify-content-between gap-3 mb-4">
             <h1 class="h2 fw-bold">Ventas</h1>
             <a class="btn btn-primary" href="/proyectofinaldesarrollo/pos/index">Ir al Punto de Venta</a>
         </div>
+        <!-- Envía los campos por GET a venta/index. -->
         <form method="get" action="/proyectofinaldesarrollo/venta/index" class="filtros-listado row g-3 align-items-end mb-4">
             <div class="col-sm-4"><label class="form-label" for="id_venta">Número de venta</label><input class="form-control" type="number" id="id_venta" name="id_venta" maxlength="10" min="1" max="4294967295" step="1" value="<?= htmlspecialchars((string) $filtros['id_venta'], ENT_QUOTES, 'UTF-8') ?>"></div>
             <div class="col-sm-4"><label class="form-label" for="desde">Desde</label><input class="form-control" type="date" id="desde" name="desde" value="<?= htmlspecialchars($filtros['desde'], ENT_QUOTES, 'UTF-8') ?>"></div>
@@ -21,6 +23,7 @@
         <p class="text-secondary small">Hasta 100 ventas más recientes del período seleccionado. Las ventas confirmadas son de solo lectura.</p>
         <section class="card border-0 shadow-sm rounded-4"><div class="card-body p-3 p-md-4">
             <?php if (!$ventas): ?><p class="text-secondary text-center my-4">No se encontraron ventas para los filtros seleccionados.</p><?php else: ?>
+                <!-- Listado generado con los registros recibidos del controlador. -->
                 <div class="table-responsive" tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p><table class="table table-hover align-middle mb-0">
                     <thead class="table-light"><tr><th>ID</th><th>Fecha</th><th>Caja / sesión</th><th>Vendedor</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead>
                     <tbody><?php foreach ($ventas as $venta): ?><tr>

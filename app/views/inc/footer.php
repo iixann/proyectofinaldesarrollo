@@ -1,3 +1,4 @@
+    <!-- Pie compartido y carga de los scripts de modales y atajos. -->
     <footer class="container py-4 text-secondary small">
         <div class="border-top pt-3">Identidad Singular · Sistema de Gestión de Vinería</div>
     </footer>

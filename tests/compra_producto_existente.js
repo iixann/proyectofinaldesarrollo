@@ -1,22 +1,33 @@
 /* Simulación de DOM/fetch: sin navegador, servidor ni base de datos.
  * Con Node: node tests/compra_producto_existente.js
  */
+// Prueba el alta y la asociación de productos usando DOM y red simulados.
 async function probarCompraProductoExistente(codigoCompra) {
     const checks = [];
+    // Registra la comprobación o detiene la prueba si falla.
     function check(ok, label) { if (!ok) throw new Error(label); checks.push(label); }
-    function crearEntorno(sinCategorias = false, recepcion = false) {
+    // Construye una pantalla simulada de compra o recepción para cada caso.
+    function crearEntorno(sinCategorias = false, recepcion = false, escaner = false) {
+        // Representa los elementos mínimos que usa la pantalla de compra.
         class Elemento {
+            // Inicializa los datos del objeto usado por la simulación.
             constructor(tag = 'div', attrs = {}) {
                 this.tagName = tag; this.attrs = attrs; this.children = []; this.events = {}; this.dataset = {};
                 this.value = ''; this.hidden = false; this.disabled = false; this.textContent = ''; this.isConnected = true;
                 const clases = new Set();
                 this.classList = {add: c => clases.add(c), remove: c => clases.delete(c), contains: c => clases.has(c), toggle: (c, yes) => yes ? clases.add(c) : clases.delete(c)};
             }
+            // Agrega un hijo al elemento simulado y conserva su padre.
             appendChild(el) { el.parent = this; this.children.push(el); return el; }
+            // Agrega una opción al selector simulado.
             add(el) { this.appendChild(el); }
+            // Devuelve las opciones del selector simulado.
             get options() { return this.children; }
+            // Devuelve las filas de la tabla simulada.
             get rows() { return this.children; }
+            // Reemplaza los hijos del elemento simulado.
             replaceChildren(...els) { this.children = []; els.forEach(el => this.appendChild(el)); }
+            // Comprueba los selectores que usa el JavaScript de compra.
             matches(s) {
                 if (['select', 'input', 'tr', 'fieldset'].includes(s)) return this.tagName === s;
                 if (s === '[name]') return !!this.name;
@@ -25,13 +36,23 @@ async function probarCompraProductoExistente(codigoCompra) {
                 if (campo) return this.tagName === 'input' && this.name.endsWith(campo[1]);
                 return s.startsWith('[') && s.endsWith(']') && s.slice(1, -1) in this.attrs;
             }
+            // Busca los descendientes simulados que cumplen el selector.
             querySelectorAll(s) { return this.children.flatMap(el => [el, ...el.querySelectorAll('*')]).filter(el => s === '*' || el.matches(s)); }
+            // Devuelve el primer descendiente simulado que coincide.
             querySelector(s) { return this.querySelectorAll(s)[0] || null; }
+            // Busca el elemento o antecesor que coincide con el selector.
             closest(s) { if (s === '.modal' && this.tagName === 'modal') return this; if (this.matches(s)) return this; return this.parent?.closest(s) || null; }
+            // Guarda un manejador de evento en el elemento simulado.
             addEventListener(k, f) { (this.events[k] ??= []).push(f); }
+            // Dispara el evento recibido por el elemento simulado.
             dispatchEvent(e) { this.fire(e.type, e); }
+            // Permite reutilizar el botón actual que agrega renglones desde el escáner.
+            click() { this.fire('click'); }
+            // Ejecuta los manejadores del evento con sus datos simulados.
             fire(k, e = {}) { (this.events[k] || []).forEach(f => f({target: this, currentTarget: this, preventDefault() {}, ...e})); }
+            // Copia el elemento y sus hijos para probar nuevos renglones.
             cloneNode() { const el = new Elemento(this.tagName, {...this.attrs}); el.name = this.name; el.value = this.value; this.children.forEach(child => el.appendChild(child.cloneNode())); return el; }
+            // Vacía los campos del formulario simulado.
             reset() { Object.values(this.elements || {}).forEach(el => { el.value = ''; }); }
         }
         const ids = {};
@@ -58,6 +79,8 @@ async function probarCompraProductoExistente(codigoCompra) {
         for (const marker of ['data-existente-nombre', 'data-existente-ean', 'data-existente-mensaje']) panel.appendChild(new Elemento('span', {[marker]: ''}));
         for (const id of ['registrarCompra', 'mensajeCompra', 'agregarRenglon', 'avisoMaestros']) add(id);
         if (!recepcion) add('consultarEanCompra', 'button');
+        // Solo los casos del lector cargan el evento nuevo de Compra.
+        if (escaner) add('escanearEanCompra', 'button');
         const requests = [];
         let responder = () => ({ok: true, existe: false});
         const fetch = async (url, options) => {
@@ -65,20 +88,30 @@ async function probarCompraProductoExistente(codigoCompra) {
             const payload = responder(url, options);
             return {ok: !payload.falla, redirected: !!payload.redirected, json: async () => payload};
         };
+        // Recoge campos como FormData sin depender de un navegador.
         class FormDataFixture {
+            // Inicializa los datos del objeto usado por la simulación.
             constructor(form) { this.values = {}; Object.entries(form.elements || {}).forEach(([key, el]) => { if (!el.disabled && !el.closest('fieldset')?.disabled) this.values[key] = el.value; }); }
+            // Asigna un campo al FormData simulado.
             set(k, value) { this.values[k] = value; }
         }
         const instancias = new Map();
         const bootstrap = {Modal: {getOrCreateInstance(el) { if (!instancias.has(el)) instancias.set(el, {show() { el.visible = true; }, hide() { el.visible = false; }}); return instancias.get(el); }}};
         const document = {getElementById: id => ids[id] || null};
-        new Function('document', 'bootstrap', 'fetch', 'FormData', 'Option', 'Event', codigoCompra)(document, bootstrap, fetch, FormDataFixture, function (text, value) { const el = new Elemento('option'); el.textContent = text; el.value = value; return el; }, class { constructor(type) { this.type = type; } });
+        new Function('document', 'bootstrap', 'fetch', 'FormData', 'Option', 'Event', 'window', codigoCompra)(document, bootstrap, fetch, FormDataFixture, function (text, value) { const el = new Elemento('option'); el.textContent = text; el.value = value; return el; }, class { constructor(type) { this.type = type; } }, {EanModulos: {resaltarFila(fila) { fila.resaltada = true; }}});
         return {ids, producto, boton, panel, camposNuevos, fila, selector, error, requests, modal,
+            // Simula abrir el modal desde el renglón del producto.
             open() { cuerpo.fire('click', {target: nuevo}); },
+            // Entrega el string que devolvería la cámara a la lógica real de Compra.
+            async escanear(codigo) { compra.fire('ean:detectado', {detail: {codigo}}); await flush(); },
+            // Configura la respuesta que devolverá la siguiente consulta simulada.
             response(fn) { responder = fn; },
+            // Simula consultar el EAN y espera que se procese la respuesta.
             async consultar(payload) { responder = () => payload; producto.elements.codigo_barras.value = '0000000000001'; ids.consultarEanCompra.fire('click'); await flush(); },
+            // Simula enviar el formulario y espera su respuesta.
             async enviar() { producto.fire('submit'); await flush(); }};
     }
+    // Espera las tareas asíncronas de la simulación.
     async function flush() { for (let i = 0; i < 20; i++) await Promise.resolve(); }
     const existente = {id_producto: 1, id_proveedor: 2, codigo_barras: '0000000000001', nombre_producto: 'loco un poco', activo: true, asociado: false};
     const env = crearEntorno(); env.open();
@@ -115,6 +148,26 @@ async function probarCompraProductoExistente(codigoCompra) {
     recepcion.response(() => ({ok: true, producto: {id_producto: 5, id_proveedor: 2, nombre_producto: 'Nuevo recepción'}}));
     await recepcion.enviar();
     check(recepcion.requests[0].url.endsWith('crearProductoRapido') && recepcion.selector.value === '5', 'Alta compartida de Recepción conserva su flujo anterior');
+    // El escaneo consulta, selecciona y conserva cantidades sin escribir stock.
+    const camara = crearEntorno(false, false, true);
+    camara.response(() => ({ok: true, existe: true, producto: {...existente, asociado: true}}));
+    await camara.escanear('0000000000001');
+    check(camara.selector.value === '1' && camara.fila.resaltada && camara.fila.querySelector('input').value === '4', 'Escaneo asociado selecciona la línea y conserva su cantidad');
+    check(camara.requests.length === 1 && camara.requests[0].url.endsWith('consultarProductoRapido') && camara.requests[0].body.codigo_barras === '0000000000001', 'Escaneo conserva ceros iniciales y solo consulta el endpoint actual');
+    const asociarCamara = crearEntorno(false, false, true);
+    asociarCamara.response(() => ({ok: true, existe: true, producto: existente}));
+    await asociarCamara.escanear('0000000000001');
+    check(asociarCamara.modal.visible && !asociarCamara.panel.hidden && asociarCamara.boton.textContent === 'Asociar producto', 'Escaneo de proveedor nuevo reutiliza la confirmación de asociación');
+    check(asociarCamara.requests.length === 1, 'Escanear un existente no confirma la asociación automáticamente');
+    const nuevoCamara = crearEntorno(false, false, true);
+    nuevoCamara.response(() => ({ok: true, existe: false, producto: null}));
+    await nuevoCamara.escanear('0000000000001');
+    check(nuevoCamara.modal.visible && nuevoCamara.producto.elements.codigo_barras.value === '0000000000001' && !nuevoCamara.camposNuevos.hidden, 'EAN desconocido abre el alta rápida precargada sin crear productos');
+    const directaCamara = crearEntorno(false, true, true);
+    directaCamara.response(() => ({ok: true, existe: true, producto: {...existente, asociado: true}}));
+    await directaCamara.escanear('0000000000001');
+    check(directaCamara.selector.value === '1' && directaCamara.fila.querySelector('input').value === '4', 'Recepción Directa localiza el producto sin aumentar cantidades');
+    check(directaCamara.requests.every(request => request.url.endsWith('consultarProductoRapido')), 'Escanear en Recepción Directa solo realiza consultas');
     return {resultado: 'OK', comprobaciones: checks.length, detalles: checks};
 }
 if (typeof module !== 'undefined' && typeof require === 'function') {

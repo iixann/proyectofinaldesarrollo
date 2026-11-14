@@ -6,6 +6,7 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
     <?php $seccionActual = 'productos'; require APP_PATH . 'views/inc/navbar.php'; ?>
+    <!-- Muestra los datos de productos enviados por el controlador. -->
     <main class="container py-4 py-md-5 flex-grow-1" id="contenido">
         <?php if (\app\controllers\SessionController::esAdministrador()): ?>
             <a class="link-primary text-decoration-none small" href="/proyectofinaldesarrollo/admin/index">Volver al panel principal</a>
@@ -17,6 +18,7 @@
         <?php if ($mensaje !== ''): ?>
             <div class="alert alert-success" role="status"><?= htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8') ?></div>
         <?php endif; ?>
+        <!-- Envía los campos por GET a producto/index. -->
         <form method="get" action="/proyectofinaldesarrollo/producto/index" class="filtros-listado row g-3 align-items-end mb-4">
             <div class="col-sm-4"><label class="form-label" for="nombre">Nombre del producto</label><input class="form-control" type="text" id="nombre" name="nombre" maxlength="150" value="<?= htmlspecialchars((string) $filtros['nombre'], ENT_QUOTES, 'UTF-8') ?>"></div>
             <div class="col-sm-3"><label class="form-label" for="id_categoria">Categoría</label><select class="form-select" id="id_categoria" name="id_categoria"><option value="">Todas las categorías</option>
@@ -34,6 +36,7 @@
                     <p class="text-secondary text-center my-4">No se encontraron productos. Probá otros filtros o creá un producto.</p>
                 <?php else: ?>
                     <div class="table-responsive" tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p>
+                        <!-- Listado generado con los registros recibidos del controlador. -->
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light"><tr><th scope="col">ID</th><th scope="col">Producto</th><th scope="col">Código EAN</th><th scope="col">Categoría</th><th scope="col">Precio</th><th scope="col">Stock actual</th><th scope="col">Stock mínimo</th><th scope="col">Estado</th><th scope="col">Acciones</th></tr></thead>
                             <tbody>

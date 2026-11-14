@@ -6,6 +6,7 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
     <?php $seccionActual = 'categorias'; require APP_PATH . 'views/inc/navbar.php'; ?>
+    <!-- Formulario de alta de categorías con los errores del controlador. -->
     <main class="container py-4 py-md-5 flex-grow-1" id="contenido">
         <h1 class="h2 fw-bold mb-4">Nueva categoría</h1>
         <div class="row"><div class="col-12 col-lg-8">
@@ -17,6 +18,7 @@
                         <?php endforeach; ?>
                     </ul></div>
                 <?php endif; ?>
+                <!-- Envía los campos por POST a categoria/guardar. -->
                 <form method="post" action="/proyectofinaldesarrollo/categoria/guardar">
                     <div class="mb-4">
                         <label class="form-label" for="nombre_categoria">Nombre de categoría *</label>

@@ -1,0 +1,12 @@
+/* El lector y sus botones caben en una pantalla de 360 px. */
+main .btn[data-escanear-ean] { min-height: 44px; white-space: normal; overflow-wrap: anywhere; }
+.ean-busqueda { display: flex; flex-wrap: wrap; gap: .5rem; align-items: end; }
+.ean-busqueda > .ean-campo { flex: 1 1 11rem; min-width: 0; }
+#escanerEan .modal-dialog { max-width: 34rem; }
+#escanerEan .modal-body { min-width: 0; }
+#escanerEan video { display: block; width: 100%; max-height: 50dvh; object-fit: contain; background: #111; border-radius: .5rem; }
+#escanerEan video[hidden] { display: none; }
+#escanerEan .modal-footer .btn { min-height: 44px; }
+/* Resalta la línea localizada sin modificar ninguna cantidad. */
+.ean-localizado > td { background-color: #fff3cd !important; }
+[data-ean-resumen] { overflow-wrap: anywhere; }

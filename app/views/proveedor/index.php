@@ -6,6 +6,7 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
     <?php $seccionActual = 'proveedores'; require APP_PATH . 'views/inc/navbar.php'; ?>
+    <!-- Muestra los datos de proveedores enviados por el controlador. -->
     <main class="container py-4 py-md-5 flex-grow-1" id="contenido">
         <?php if (\app\controllers\SessionController::esAdministrador()): ?>
             <a class="link-primary text-decoration-none small" href="/proyectofinaldesarrollo/admin/index">Volver al panel principal</a>
@@ -17,6 +18,7 @@
         <?php if ($mensaje !== ''): ?>
             <div class="alert alert-success" role="status"><?= htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8') ?></div>
         <?php endif; ?>
+        <!-- Envía los campos por GET a proveedor/index. -->
         <form method="get" action="/proyectofinaldesarrollo/proveedor/index" class="filtros-listado row g-3 align-items-end mb-4">
             <div class="col-sm-4"><label class="form-label" for="busqueda">Razón social, CUIT o contacto</label><input class="form-control" type="text" id="busqueda" name="busqueda" maxlength="150" value="<?= htmlspecialchars((string) $busqueda, ENT_QUOTES, 'UTF-8') ?>"></div>
             <div class="col-auto"><button class="btn btn-outline-primary" type="submit">Buscar</button> <a class="btn btn-outline-secondary" href="/proyectofinaldesarrollo/proveedor/index">Limpiar</a></div>
@@ -27,6 +29,7 @@
                     <p class="text-secondary text-center my-4">No se encontraron proveedores. Probá otra búsqueda o creá un proveedor.</p>
                 <?php else: ?>
                     <div class="table-responsive" tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p>
+                        <!-- Listado generado con los registros recibidos del controlador. -->
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light"><tr><th scope="col">ID</th><th scope="col">Razón social</th><th scope="col">CUIT</th><th scope="col">Contacto</th><th scope="col">Teléfono</th><th scope="col">Email</th><th scope="col">Estado</th><th scope="col">Acciones</th></tr></thead>
                             <tbody>

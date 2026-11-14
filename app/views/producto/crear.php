@@ -6,6 +6,7 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
     <?php $seccionActual = 'productos'; require APP_PATH . 'views/inc/navbar.php'; ?>
+    <!-- Formulario de alta de productos con los errores del controlador. -->
     <main class="container py-4 py-md-5 flex-grow-1" id="contenido">
         <h1 class="h2 fw-bold mb-4">Nuevo producto</h1>
         <div class="row"><div class="col-12 col-lg-8">
@@ -17,6 +18,7 @@
                         <?php endforeach; ?>
                     </ul></div>
                 <?php endif; ?>
+                <!-- Envía los campos por POST a producto/guardar. -->
                 <form method="post" action="/proyectofinaldesarrollo/producto/guardar">
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
@@ -39,6 +41,8 @@
                         <div class="col-md-6">
                             <label class="form-label" for="codigo_barras">Código EAN *</label>
                             <input class="form-control" type="text" id="codigo_barras" name="codigo_barras" maxlength="50" value="<?= htmlspecialchars($datosProducto['codigo_barras'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required>
+                            <!-- Completa el EAN sin enviar el formulario de producto. -->
+                            <button class="btn btn-outline-primary mt-2" type="button" data-escanear-ean data-ean-modo="rellenar" data-ean-objetivo="#codigo_barras">📷 Escanear EAN</button>
                         </div>
                         <div class="col-12">
                             <label class="form-label" for="descripcion">Descripción</label>
@@ -83,5 +87,7 @@
         </div></div>
     </main>
     <?php require APP_PATH . 'views/inc/footer.php'; ?>
+    <?php // Continúa en el lector compartido para este módulo de gestión. ?>
+    <?php require APP_PATH . 'views/inc/ean_scanner.php'; ?>
 </body>
 </html>

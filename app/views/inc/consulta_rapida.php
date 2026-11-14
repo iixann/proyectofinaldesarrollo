@@ -1,4 +1,5 @@
 <?php
+// Atajos disponibles y modal de consulta de productos por EAN.
 $rolesAtajos = $_SESSION['usuario']['roles'];
 $administrarAtajos = (bool) array_intersect(['ADMINISTRADOR', 'DUEÑO'], $rolesAtajos);
 $cajaAtajos = $administrarAtajos || in_array('VENDEDOR', $rolesAtajos, true);
@@ -13,6 +14,7 @@ $stockAtajos = $administrarAtajos || in_array('RECEPCIONISTA', $rolesAtajos, tru
     <?php endif; ?>
     <?php if ($cajaAtajos): ?><a class="text-secondary" data-atajo="v" href="/proyectofinaldesarrollo/venta/index">Alt+V Ventas</a><?php endif; ?>
 </div>
+<!-- Modal que usa atajos.js para consultar un EAN sin salir de la pantalla. -->
 <div class="modal fade" id="consultaRapida" tabindex="-1" aria-labelledby="tituloConsultaRapida" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
         <div class="modal-header py-2">
@@ -21,6 +23,7 @@ $stockAtajos = $administrarAtajos || in_array('RECEPCIONISTA', $rolesAtajos, tru
         </div>
         <div class="modal-body">
             <p class="small text-secondary">Solo consulta · No agrega a la venta · Esc para cerrar</p>
+            <!-- Envía los campos por GET a pos/consultarProducto. -->
             <form id="formConsultaRapida" action="/proyectofinaldesarrollo/pos/consultarProducto" method="get">
                 <label class="form-label" for="eanConsultaRapida">Código EAN</label>
                 <div class="input-group">

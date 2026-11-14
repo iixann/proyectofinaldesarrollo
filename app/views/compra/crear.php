@@ -7,6 +7,7 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
     <?php $seccionActual = $esRecepcionDirecta ? 'recepciones' : 'compras'; require APP_PATH . 'views/inc/navbar.php'; ?>
+    <!-- Comparte los renglones de compra y recepción directa según el controlador. -->
     <main class="container py-4 py-md-5 flex-grow-1" id="contenido">
         <h1 class="h2 fw-bold mb-4"><?= $esRecepcionDirecta ? 'Nueva recepción directa' : 'Nueva compra' ?></h1>
         <p class="alert alert-info"><?= $esRecepcionDirecta ? 'Sin compra previa. Solo Aceptar incorpora stock; Rechazar conserva auditoría sin modificar existencias.' : 'La compra quedará PENDIENTE de recepción. No modifica stock hasta aceptar la mercadería desde Recepción.' ?></p>
@@ -40,8 +41,15 @@
                 </div>
                 <p class="alert alert-warning <?= $proveedores && $productos ? 'd-none' : '' ?>" id="avisoMaestros">Necesitás un proveedor y productos activos asociados. Podés crearlos con las altas rápidas.</p>
                 <?php if ($esRecepcionDirecta): ?><div class="mb-4"><label class="form-label" for="motivo_rechazo">Motivo de rechazo (obligatorio si rechazás)</label><textarea class="form-control" id="motivo_rechazo" name="motivo_rechazo" maxlength="255"><?= htmlspecialchars($datos['motivo_rechazo'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea></div><?php endif; ?>
+                <!-- Busca el EAN con el proveedor actual; no confirma la compra ni la recepción. -->
+                <div class="ean-busqueda mb-3">
+                    <div class="ean-campo"><label class="form-label" for="eanCompra">Buscar producto por EAN</label><input class="form-control" id="eanCompra" type="text" inputmode="numeric" maxlength="50" autocomplete="off" placeholder="EAN del producto"></div>
+                    <button class="btn btn-outline-primary" type="button" data-buscar-ean-compra>Buscar EAN</button>
+                    <button class="btn btn-outline-primary" type="button" id="escanearEanCompra" data-escanear-ean data-ean-modo="compra" data-ean-objetivo="#eanCompra">📷 Escanear EAN</button>
+                </div>
                 <h2 class="h5"><?= $esRecepcionDirecta ? 'Productos recibidos' : 'Productos de la compra' ?></h2>
                 <p class="text-secondary small"><?= $esRecepcionDirecta ? 'Los productos nuevos se asocian al proveedor elegido. Para productos existentes, las asociaciones se administran desde Productos.' : 'Usá + Nuevo producto para crear uno nuevo o asociar un producto existente mediante su EAN al proveedor elegido.' ?></p>
+                <!-- Listado generado con los registros recibidos del controlador. -->
                 <div class="table-responsive mb-3" tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p><table class="table align-middle tabla-renglones">
                     <thead><tr><th scope="col">Producto *</th><th scope="col"><?= $esRecepcionDirecta ? 'Cantidad recibida *' : 'Cantidad *' ?></th><?php if (!$esRecepcionDirecta): ?><th scope="col">Precio unitario *</th><?php endif; ?><th scope="col">Acción</th></tr></thead>
                     <tbody id="renglonesCompra">
@@ -81,7 +89,11 @@
     </main>
     <?php require APP_PATH . 'views/compra/altas_rapidas.php'; ?>
     <?php require APP_PATH . 'views/inc/footer.php'; ?>
+    <?php // Continúa en el lector compartido para este módulo de gestión. ?>
+    <?php require APP_PATH . 'views/inc/ean_scanner.php'; ?>
+    <!-- Entrega a compra.js los productos disponibles sin ejecutar su contenido. -->
     <script type="application/json" id="datosProductosCompra"><?= json_encode($productos, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) ?></script>
+    <!-- Activa renglones y altas rápidas con public/js/compra.js. -->
     <script src="/proyectofinaldesarrollo/public/js/compra.js?v=<?= substr(hash_file('sha256', __DIR__ . '/../../../public/js/compra.js'), 0, 12) ?>"></script>
 </body>
 </html>

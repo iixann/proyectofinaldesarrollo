@@ -6,12 +6,14 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
     <?php $seccionActual = 'compras'; require APP_PATH . 'views/inc/navbar.php'; ?>
+    <!-- Muestra los datos de compras enviados por el controlador. -->
     <main class="container py-4 py-md-5 flex-grow-1" id="contenido">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
             <h1 class="h2 fw-bold mb-0">Gestión de compras</h1>
             <a class="btn btn-primary" href="/proyectofinaldesarrollo/compra/crear">Nueva compra</a>
         </div>
         <?php if ($mensaje !== ''): ?><div class="alert alert-success" role="status"><?= htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
+        <!-- Envía los campos por GET a compra/index. -->
         <form method="get" action="/proyectofinaldesarrollo/compra/index" class="filtros-listado row g-3 align-items-end mb-4">
             <div class="col-sm-4"><label class="form-label" for="id_compra">Número de compra</label><input class="form-control" type="number" id="id_compra" name="id_compra" maxlength="10" min="1" max="4294967295" step="1" value="<?= htmlspecialchars((string) $filtros['id_compra'], ENT_QUOTES, 'UTF-8') ?>"></div>
             <div class="col-sm-4"><label class="form-label" for="numero_comprobante">Número de comprobante</label><input class="form-control" type="text" id="numero_comprobante" name="numero_comprobante" maxlength="50" value="<?= htmlspecialchars((string) $filtros['numero_comprobante'], ENT_QUOTES, 'UTF-8') ?>"></div>
@@ -25,6 +27,7 @@
             <?php if (!$compras): ?>
                 <p class="text-secondary text-center my-4">No se encontraron compras. Probá otros filtros o registrá una nueva.</p>
             <?php else: ?>
+                <!-- Listado generado con los registros recibidos del controlador. -->
                 <div class="table-responsive" tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p><table class="table table-hover align-middle mb-0">
                     <thead class="table-light"><tr><th scope="col">ID</th><th scope="col">Fecha</th><th scope="col">Proveedor</th><th scope="col">Comprobante</th><th scope="col">Usuario</th><th scope="col">Total</th><th scope="col">Estado recepción</th><th scope="col">Acciones</th></tr></thead>
                     <tbody>

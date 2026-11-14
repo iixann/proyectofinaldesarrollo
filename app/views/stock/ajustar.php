@@ -6,6 +6,7 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
     <?php $seccionActual = 'stock'; require APP_PATH . 'views/inc/navbar.php'; ?>
+    <!-- Envía a StockController un ajuste de entrada o salida del producto. -->
     <main class="container py-4 py-md-5 flex-grow-1" id="contenido">
         <h1 class="h2 fw-bold mb-4">Ajustar stock</h1>
         <div class="row"><div class="col-12 col-lg-8"><section class="card border-0 shadow-sm rounded-4"><div class="card-body p-4 p-md-5">
@@ -14,6 +15,7 @@
             <?php if ($errores): ?><div class="alert alert-danger" role="alert"><ul class="mb-0">
                 <?php foreach ($errores as $error): ?><li><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></li><?php endforeach; ?>
             </ul></div><?php endif; ?>
+            <!-- Envía los campos por POST a stock/guardarAjuste. -->
             <form method="post" action="/proyectofinaldesarrollo/stock/guardarAjuste/<?= htmlspecialchars((string) $producto->id_producto, ENT_QUOTES, 'UTF-8') ?>">
                 <div class="mb-3">
                     <label class="form-label" for="tipo">Tipo *</label>

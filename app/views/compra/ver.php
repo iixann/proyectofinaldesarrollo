@@ -6,6 +6,7 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
     <?php $seccionActual = 'compras'; require APP_PATH . 'views/inc/navbar.php'; ?>
+    <!-- Muestra el detalle de compras enviado por el controlador. -->
     <main class="container py-4 py-md-5 flex-grow-1" id="contenido">
         <a class="link-primary text-decoration-none small" href="/proyectofinaldesarrollo/compra/index">Volver a Compras</a>
         <h1 class="h2 fw-bold my-4">Compra #<?= htmlspecialchars((string) $compra->id_compra, ENT_QUOTES, 'UTF-8') ?></h1>
@@ -25,6 +26,7 @@
         </div></section>
         <section class="card border-0 shadow-sm rounded-4"><div class="card-body p-3 p-md-4">
             <h2 class="h5 mb-3">Detalle de la compra</h2>
+            <!-- Listado generado con los registros recibidos del controlador. -->
             <div class="table-responsive" tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p><table class="table align-middle mb-0">
                 <thead class="table-light"><tr><th scope="col">Producto</th><th scope="col">Cantidad</th><th scope="col">Precio unitario</th><th scope="col">Subtotal</th></tr></thead>
                 <tbody>

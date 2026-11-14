@@ -6,10 +6,14 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
     <?php $seccionActual = 'reposicion'; require APP_PATH . 'views/inc/navbar.php'; ?>
+    <!-- Muestra los datos de productos para reponer enviados por el controlador. -->
     <main class="container py-4 py-md-5 flex-grow-1" id="contenido">
         <h1 class="h2 fw-bold mb-3">Reposición</h1>
         <p class="text-secondary">Productos activos con stock actual menor o igual al mínimo. Esta consulta no modifica existencias ni genera compras.</p>
+        <!-- Envía los campos por GET a reposicion/index. -->
         <form method="get" action="/proyectofinaldesarrollo/reposicion/index" class="filtros-listado row g-3 align-items-end mb-4">
+            <?php // Identifica la consulta exacta que proviene del lector móvil. ?>
+            <input type="hidden" name="escaneado" value="0">
             <div class="col-sm-6 col-lg-3">
                 <label class="form-label" for="nombre">Nombre</label>
                 <input class="form-control" type="text" id="nombre" name="nombre" maxlength="150" value="<?= htmlspecialchars($filtros['nombre'], ENT_QUOTES, 'UTF-8') ?>">
@@ -17,6 +21,8 @@
             <div class="col-sm-6 col-lg-3">
                 <label class="form-label" for="codigo_barras">Código EAN</label>
                 <input class="form-control" type="text" id="codigo_barras" name="codigo_barras" maxlength="50" placeholder="Código exacto" value="<?= htmlspecialchars($filtros['codigo_barras'], ENT_QUOTES, 'UTF-8') ?>">
+                <!-- Reutiliza la búsqueda GET exacta del módulo. -->
+                <button class="btn btn-outline-primary mt-2" type="button" data-escanear-ean data-ean-modo="filtro" data-ean-objetivo="#codigo_barras">📷 Escanear producto</button>
             </div>
             <div class="col-sm-6 col-lg-3">
                 <label class="form-label" for="id_categoria">Categoría</label>
@@ -41,11 +47,14 @@
                 <a class="btn btn-outline-secondary" href="/proyectofinaldesarrollo/reposicion/index">Limpiar</a>
             </div>
         </form>
+        <?php // El controlador distingue un EAN desconocido de un producto que no requiere reposición. ?>
+        <?php if (($mensajeEscaneo ?? '') !== ''): ?><p class="alert alert-info" role="status"><?= htmlspecialchars($mensajeEscaneo, ENT_QUOTES, 'UTF-8') ?></p><?php endif; ?>
         <section class="card border-0 shadow-sm rounded-4"><div class="card-body p-3 p-md-4">
             <?php if (!$productos): ?><p class="text-secondary text-center my-4">No hay productos que requieran reposición para los filtros seleccionados.</p><?php else: ?>
+                <!-- Listado generado con los registros recibidos del controlador. -->
                 <div class="table-responsive" tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p><table class="table table-hover align-middle mb-0">
                     <thead class="table-light"><tr><th>Producto</th><th>Código EAN</th><th>Categoría</th><th>Proveedores</th><th>Stock actual</th><th>Stock mínimo</th><th>Estado de stock</th></tr></thead>
-                    <tbody><?php foreach ($productos as $producto): ?><tr>
+                    <tbody><?php foreach ($productos as $producto): ?><tr data-ean-localizado="<?= $filtros['codigo_barras'] !== '' && (string) $producto->codigo_barras === $filtros['codigo_barras'] ? '1' : '0' ?>">
                         <td><?= htmlspecialchars($producto->nombre_producto, ENT_QUOTES, 'UTF-8') ?></td>
                         <td><?= htmlspecialchars($producto->codigo_barras, ENT_QUOTES, 'UTF-8') ?></td>
                         <td><?= htmlspecialchars($producto->nombre_categoria, ENT_QUOTES, 'UTF-8') ?></td>
@@ -58,5 +67,7 @@
         </div></section>
     </main>
     <?php require APP_PATH . 'views/inc/footer.php'; ?>
+    <?php // Continúa en el lector compartido para este módulo de gestión. ?>
+    <?php require APP_PATH . 'views/inc/ean_scanner.php'; ?>
 </body>
 </html>

@@ -5,11 +5,13 @@ namespace app\models;
 use \Model;
 use \DataBase;
 
+// Consulta y guarda los datos de sesiones de caja en la base.
 class CajaSesionModel extends Model
 {
     protected $tabla = 'caja_sesiones';
     protected $clavePrimaria = 'id_caja_sesion';
 
+    // Devuelve las sesiones con la caja y el usuario de apertura.
     public static function listarSesiones()
     {
         return DataBase::query('SELECT s.*, c.nombre AS caja, u.nombre, u.apellido FROM caja_sesiones s
@@ -18,6 +20,7 @@ class CajaSesionModel extends Model
             ORDER BY s.fecha_apertura DESC, s.id_caja_sesion DESC');
     }
 
+    // Busca la sesión con los datos de caja, apertura y cierre.
     public static function buscarSesion($id)
     {
         return DataBase::getRecord('SELECT s.*, c.nombre AS caja, u.nombre, u.apellido,
@@ -28,11 +31,13 @@ class CajaSesionModel extends Model
             WHERE s.id_caja_sesion = :id', ['id' => $id]);
     }
 
+    // Devuelve las cajas habilitadas para una apertura.
     public static function cajasActivas()
     {
         return DataBase::query('SELECT id_caja, nombre FROM cajas WHERE estado = 1 ORDER BY nombre');
     }
 
+    // Devuelve las sesiones abiertas del vendedor en cajas activas.
     public static function sesionesDisponiblesPos($idUsuario)
     {
         return DataBase::query("SELECT s.id_caja_sesion, s.id_caja, c.nombre AS caja, u.nombre, u.apellido
@@ -42,6 +47,7 @@ class CajaSesionModel extends Model
             ORDER BY c.nombre, s.id_caja_sesion", ['usuario' => $idUsuario]);
     }
 
+    // Busca una sesión propia abierta en una caja activa.
     public static function sesionDisponiblePos($id, $idUsuario)
     {
         return DataBase::getRecord("SELECT s.id_caja_sesion, s.id_caja, c.nombre AS caja
@@ -50,6 +56,7 @@ class CajaSesionModel extends Model
             AND s.id_usuario_apertura = :usuario", ['id' => $id, 'usuario' => $idUsuario]);
     }
 
+    // Valida el importe y lo convierte a centavos enteros.
     public static function centavos($importe)
     {
         if (!is_string($importe) || !preg_match('/^\d{1,10}(?:\.\d{1,2})?$/D', $importe)) {
@@ -59,6 +66,7 @@ class CajaSesionModel extends Model
         return (int) $partes[0] * 100 + (int) str_pad($partes[1] ?? '', 2, '0');
     }
 
+    // Convierte centavos a un importe con dos decimales.
     public static function decimal($centavos)
     {
         $signo = $centavos < 0 ? '-' : '';
@@ -66,12 +74,16 @@ class CajaSesionModel extends Model
         return $signo . intdiv($centavos, 100) . '.' . str_pad((string) ($centavos % 100), 2, '0', STR_PAD_LEFT);
     }
 
+    // Registra la apertura si la caja está activa y no tiene sesión abierta.
     public static function abrir($idCaja, $idUsuario, $monto)
     {
         $monto = self::decimal(self::centavos($monto));
+        // Agrupa los cambios para evitar que se guarden incompletos.
         DataBase::iniciarTransaccion();
         try {
+            // Bloquea el registro hasta terminar para evitar cambios simultáneos.
             $caja = DataBase::getRecord('SELECT id_caja, estado FROM cajas WHERE id_caja = :id FOR UPDATE', ['id' => $idCaja]);
+            // Solo permite operar con una caja existente y activa.
             if (!$caja || (int) $caja->estado !== 1) {
                 throw new \DomainException('La caja no existe o está inactiva.');
             }
@@ -79,16 +91,20 @@ class CajaSesionModel extends Model
             if (DataBase::getRecord("SELECT id_caja_sesion FROM caja_sesiones WHERE id_caja = :id AND estado = 'ABIERTA' FOR UPDATE", ['id' => $idCaja])) {
                 throw new \DomainException('La caja ya tiene una sesión abierta.');
             }
+            // Guarda un registro en caja_sesiones.
             $id = DataBase::insert("INSERT INTO caja_sesiones (id_caja, id_usuario_apertura, monto_inicial, estado)
                 VALUES (:caja, :usuario, :monto, 'ABIERTA')", ['caja' => $idCaja, 'usuario' => $idUsuario, 'monto' => $monto]);
+            // Confirma todos los cambios realizados en la base.
             DataBase::confirmarTransaccion();
             return $id;
         } catch (\Throwable $excepcion) {
+            // Revierte los cambios porque la operación falló.
             DataBase::cancelarTransaccion();
             throw $excepcion;
         }
     }
 
+    // Calcula ventas, efectivo cobrado y efectivo esperado en caja.
     public static function resumen($sesion)
     {
         $ventas = DataBase::getRecord('SELECT COALESCE(SUM(total), 0) AS total FROM ventas WHERE id_caja_sesion = :id AND estado = 1', ['id' => $sesion->id_caja_sesion]);
@@ -98,12 +114,14 @@ class CajaSesionModel extends Model
         $totalVentas = self::centavos((string) $ventas->total);
         $totalEfectivo = self::centavos((string) $efectivo->total);
         $esperado = self::centavos((string) $sesion->monto_inicial) + $totalEfectivo;
+        // Impide guardar un efectivo esperado fuera del rango permitido.
         if ($esperado > 999999999999) {
             throw new \DomainException('El efectivo esperado supera el máximo permitido.');
         }
         return ['total_ventas' => self::decimal($totalVentas), 'total_efectivo' => self::decimal($totalEfectivo), 'efectivo_esperado' => self::decimal($esperado)];
     }
 
+    // Devuelve lo cobrado en la sesión agrupado por medio de pago.
     public static function totalesPorMedio($id)
     {
         return DataBase::query('SELECT m.nombre, SUM(p.monto) AS total FROM pagos_ventas p
@@ -112,20 +130,26 @@ class CajaSesionModel extends Model
             WHERE v.id_caja_sesion = :id AND v.estado = 1 GROUP BY m.id_medio_pago, m.nombre ORDER BY m.nombre', ['id' => $id]);
     }
 
+    // Indica si los roles y el usuario permiten cerrar esa sesión.
     public static function puedeCerrar($idApertura, $idUsuario, array $roles)
     {
         return in_array('ADMINISTRADOR', $roles, true) || in_array('DUEÑO', $roles, true)
             || (in_array('VENDEDOR', $roles, true) && (string) $idApertura === (string) $idUsuario);
     }
 
+    // Guarda el cierre y la diferencia entre efectivo contado y esperado.
     public static function cerrar($id, $idUsuario, $contado, $observacion, array $roles)
     {
+        // Agrupa los cambios para evitar que se guarden incompletos.
         DataBase::iniciarTransaccion();
         try {
+            // Bloquea el registro hasta terminar para evitar cambios simultáneos.
             $sesion = DataBase::getRecord('SELECT * FROM caja_sesiones WHERE id_caja_sesion = :id FOR UPDATE', ['id' => $id]);
+            // Solo permite cerrar la sesión al usuario autorizado.
             if ($sesion && !self::puedeCerrar($sesion->id_usuario_apertura, $idUsuario, $roles)) {
                 throw new \DomainException('No tenés permiso para cerrar esta sesión de caja.', 403);
             }
+            // Si la sesión no está abierta, impide continuar la operación.
             if (!$sesion || $sesion->estado !== 'ABIERTA') {
                 throw new \DomainException('La sesión no existe o ya está cerrada.');
             }
@@ -135,6 +159,7 @@ class CajaSesionModel extends Model
             if (mb_strlen($observacion, 'UTF-8') > 255) {
                 throw new \DomainException('La observación debe tener hasta 255 caracteres.');
             }
+            // Actualiza los datos de caja_sesiones.
             DataBase::execute("UPDATE caja_sesiones SET id_usuario_cierre = :usuario, fecha_cierre = CURRENT_TIMESTAMP,
                 total_ventas = :total_ventas, total_efectivo = :total_efectivo, efectivo_esperado = :efectivo_esperado,
                 efectivo_contado = :contado, diferencia = :diferencia, estado = 'CERRADA', observacion_cierre = :observacion
@@ -143,8 +168,10 @@ class CajaSesionModel extends Model
                 'diferencia' => self::decimal($centavosContados - self::centavos($resumen['efectivo_esperado'])),
                 'observacion' => $observacion === '' ? null : $observacion, 'id' => $id
             ]));
+            // Confirma todos los cambios realizados en la base.
             DataBase::confirmarTransaccion();
         } catch (\Throwable $excepcion) {
+            // Revierte los cambios porque la operación falló.
             DataBase::cancelarTransaccion();
             throw $excepcion;
         }

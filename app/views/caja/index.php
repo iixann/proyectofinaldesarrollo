@@ -6,6 +6,7 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
     <?php $seccionActual = 'cajas'; require APP_PATH . 'views/inc/navbar.php'; ?>
+    <!-- Muestra los datos de cajas enviados por el controlador. -->
     <main class="container py-4 py-md-5 flex-grow-1" id="contenido">
         <?php if (\app\controllers\SessionController::esAdministrador()): ?>
             <a class="link-primary text-decoration-none small" href="/proyectofinaldesarrollo/admin/index">Volver al panel principal</a>
@@ -23,6 +24,7 @@
                     <p class="text-secondary text-center my-4">No hay cajas registradas.</p>
                 <?php else: ?>
                     <div class="table-responsive" tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p>
+                        <!-- Listado generado con los registros recibidos del controlador. -->
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light"><tr><th scope="col">ID</th><th scope="col">Nombre</th><th scope="col">Descripción</th><th scope="col">Estado</th><th scope="col">Fecha de alta</th><th scope="col">Acciones</th></tr></thead>
                             <tbody>
@@ -36,6 +38,7 @@
                                         <td><div class="acciones-tabla d-flex flex-wrap gap-2">
                                             <a class="btn btn-outline-primary btn-sm" href="/proyectofinaldesarrollo/caja/editar/<?= htmlspecialchars((string) $caja->id_caja, ENT_QUOTES, 'UTF-8') ?>">Editar</a>
                                             <?php if ((int) $caja->estado === 1): ?>
+                                                <!-- Envía los campos por POST a caja/baja. -->
                                                 <form method="post" action="/proyectofinaldesarrollo/caja/baja/<?= htmlspecialchars((string) $caja->id_caja, ENT_QUOTES, 'UTF-8') ?>">
                                                     <button class="btn btn-outline-danger btn-sm" type="submit">Dar de baja</button>
                                                 </form>

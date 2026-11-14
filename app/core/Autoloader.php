@@ -1,14 +1,18 @@
 <?php
 
+// Carga las clases cuando la aplicación las necesita.
 class Autoloader
 {
+    // Activa la carga automática de clases de la aplicación.
     public function __construct()
     {
         $this->loadAppClasses();
     }
 
+    // Registra cómo encontrar los archivos de las clases.
     private function loadAppClasses()
     {
+        // Cuando se pide una clase, resuelve su archivo y lo carga.
         spl_autoload_register(function ($nombreClase) {
             $clasesParaCargaAutomatica = array('App', 'Controller', 'Model', 'Response', 'DataBase');
             foreach ($clasesParaCargaAutomatica as $clase) {
@@ -19,6 +23,7 @@ class Autoloader
                     } else {
                         $archivo = str_replace('\\', '/', $nombreClase) . '.php';
                     }
+                    // Carga el archivo solo si existe en la ruta calculada.
                     if (file_exists($archivo)) {
                         require_once $archivo;
                     }

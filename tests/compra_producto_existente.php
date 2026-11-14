@@ -4,16 +4,19 @@
 require dirname(__DIR__) . '/app/core/Model.php';
 require dirname(__DIR__) . '/app/core/Controller.php';
 
+// Sustituye la base real para probar sin tocar datos del comercio.
 class DataBase
 {
     private static $pdo;
     public static $escrituras = [];
     public static $consultas = [];
     public static $probarRecepcion = false;
+    // Crea o reutiliza una base SQLite aislada en memoria.
     public static function connection()
     {
         return self::$pdo ?? (self::$pdo = new PDO('sqlite::memory:', null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]));
     }
+    // Adapta el SQL de prueba a SQLite y registra la consulta ejecutada.
     private static function sentencia($sql, $parametros)
     {
         self::$consultas[] = $sql;
@@ -25,8 +28,11 @@ class DataBase
         $sentencia->execute($parametros);
         return $sentencia;
     }
+    // Devuelve un registro desde la base simulada.
     public static function getRecord($sql, $parametros = []) { return self::sentencia($sql, $parametros)->fetch(PDO::FETCH_OBJ); }
+    // Devuelve la lista de registros de la consulta de prueba.
     public static function query($sql, $parametros = []) { return self::sentencia($sql, $parametros)->fetchAll(PDO::FETCH_OBJ); }
+    // Verifica las escrituras permitidas y las ejecuta en la base de prueba.
     public static function execute($sql, $parametros = [])
     {
         $esRecepcion = self::$probarRecepcion && preg_match('/^(INSERT INTO (recepciones|detalle_recepciones|movimientos_stock)\b|UPDATE productos SET stock_actual\b)/', $sql);
@@ -36,9 +42,13 @@ class DataBase
         self::$escrituras[] = $sql;
         return self::sentencia($sql, $parametros)->rowCount();
     }
+    // Inserta en la base de prueba y devuelve el ID generado.
     public static function insert($sql, $parametros = []) { self::execute($sql, $parametros); return self::connection()->lastInsertId(); }
+    // Inicia la transacción en SQLite para comprobar guardados conjuntos.
     public static function iniciarTransaccion() { self::connection()->beginTransaction(); }
+    // Confirma los cambios de la prueba en memoria.
     public static function confirmarTransaccion() { self::connection()->commit(); }
+    // Revierte los cambios de la prueba si hay una transacción abierta.
     public static function cancelarTransaccion() { if (self::connection()->inTransaction()) self::connection()->rollBack(); }
 }
 
@@ -66,7 +76,9 @@ SQL);
 $_SESSION = ['usuario' => ['id_usuario' => 1, 'roles' => ['RECEPCIONISTA'] ], 'csrf_compra' => 'fixture-token'];
 $_SERVER['REQUEST_METHOD'] = 'POST';
 $casos = [];
+// Registra una comprobación o detiene la prueba si falla.
 function comprobar($condicion, $mensaje) { global $casos; if (!$condicion) throw new RuntimeException($mensaje); $casos[] = $mensaje; }
+// Simula un POST al controlador y devuelve su estado HTTP y JSON.
 function invocar($accion, $datos, $token = 'fixture-token')
 {
     $_POST = array_merge(['csrf_compra' => $token], $datos);
@@ -76,6 +88,7 @@ function invocar($accion, $datos, $token = 'fixture-token')
     $body = ob_get_clean();
     return [http_response_code(), json_decode($body, true, 512, JSON_THROW_ON_ERROR)];
 }
+// Indica si la operación rechaza los datos con un error de negocio.
 function falla($accion)
 {
     try { $accion(); } catch (DomainException $excepcion) { return true; }

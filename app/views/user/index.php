@@ -6,6 +6,7 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
     <?php $seccionActual = 'usuarios'; require APP_PATH . 'views/inc/navbar.php'; ?>
+    <!-- Muestra los datos de usuarios enviados por el controlador. -->
     <main class="container py-4 py-md-5 flex-grow-1" id="contenido">
         <a class="link-primary text-decoration-none small" href="/proyectofinaldesarrollo/admin/index"><i class="fa-solid fa-arrow-left me-2" aria-hidden="true"></i>Volver al panel principal</a>
         <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 my-4">
@@ -25,6 +26,7 @@
             <?php else: ?>
                 <div class="card-body p-3 p-md-4">
                     <div class="table-responsive" tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p>
+                        <!-- Listado generado con los registros recibidos del controlador. -->
                         <table class="table table-hover align-middle mb-0">
                             <caption class="visually-hidden">Usuarios, estado y roles asignados</caption>
                             <thead class="table-light"><tr><th scope="col">ID</th><th scope="col">Nombre</th><th scope="col">Apellido</th><th scope="col">Email</th><th scope="col">Estado</th><th scope="col">Roles</th><th scope="col">Acciones</th></tr></thead>

@@ -8,6 +8,7 @@
 </head>
 <body class="d-flex flex-column min-vh-100 pos-body">
     <?php $seccionActual = 'consulta_pos'; require APP_PATH . 'views/inc/navbar.php'; ?>
+    <!-- Recibe sesiones y medios de pago del controlador para operar el POS. -->
     <main class="container-fluid pos-pantalla py-3 flex-grow-1" id="contenido">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3 pos-titulo">
             <h1 class="h3 fw-bold mb-0"><i class="fa-solid fa-cash-register text-primary me-2" aria-hidden="true"></i>Punto de Venta</h1>
@@ -19,6 +20,7 @@
             <a class="btn btn-primary" href="/proyectofinaldesarrollo/sesioncaja/abrir">Abrir caja</a>
         <?php else: ?>
             <details class="card border-0 shadow-sm rounded-4 mb-2 pos-selector" <?= !$seleccionada ? 'open' : '' ?>><summary class="px-3 py-2 text-primary small fw-semibold">Seleccionar / cambiar sesión de caja</summary><div class="card-body p-3">
+                <!-- Envía los campos por GET a pos/index. -->
                 <form method="get" action="/proyectofinaldesarrollo/pos/index" class="row align-items-end g-3">
                     <div class="col-lg-9">
                         <label class="form-label fw-semibold" for="sesionPos">Caja / sesión abierta *</label>
@@ -63,6 +65,7 @@
                             </div>
                             <section class="card border-0 shadow-sm rounded-4" id="resultadosBusqueda" hidden><div class="card-body p-3">
                                 <h2 class="h5">Resultados</h2>
+                                <!-- Listado generado con los registros recibidos del controlador. -->
                                 <div class="table-responsive" tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p><table class="table table-hover align-middle mb-0">
                                     <thead class="table-light"><tr><th scope="col">Producto</th><th scope="col">Categoría</th><th scope="col">EAN</th><th scope="col">Precio</th><th scope="col">Stock</th><th scope="col">Acción</th></tr></thead>
                                     <tbody id="productosEncontrados"></tbody>
@@ -87,6 +90,7 @@
                             </div></section>
                         </div>
                     </div>
+                    <!-- Modal de cobro con medios de pago, saldo y vuelto. -->
                     <div class="modal" id="cobroPos" tabindex="-1" aria-labelledby="tituloCobro" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
                             <div class="modal-header py-2">
@@ -144,6 +148,7 @@
     // Cambiar la URL con el contenido evita mezclar una vista nueva con JS anterior en caché.
     $versionPos = substr(hash_file('sha256', APP_PATH . '../public/js/pos.js'), 0, 12);
     ?>
+    <!-- Conecta esta vista con la lógica del carrito y cobro en pos.js. -->
     <script src="/proyectofinaldesarrollo/js/pos.js?v=<?= htmlspecialchars($versionPos, ENT_QUOTES, 'UTF-8') ?>" defer></script>
 </body>
 </html>

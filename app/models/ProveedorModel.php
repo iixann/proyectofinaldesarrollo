@@ -5,11 +5,13 @@ namespace app\models;
 use \Model;
 use \DataBase;
 
+// Consulta y guarda los datos de proveedores en la base.
 class ProveedorModel extends Model
 {
     protected $tabla = 'proveedores';
     protected $clavePrimaria = 'id_proveedor';
 
+    // Devuelve los proveedores filtrados por razón social o CUIT.
     public static function listarProveedores($busqueda = '')
     {
         $sql = 'SELECT * FROM proveedores';
@@ -21,11 +23,13 @@ class ProveedorModel extends Model
         return DataBase::query($sql . ' ORDER BY id_proveedor', $parametros);
     }
 
+    // Busca un proveedor por su CUIT.
     public static function buscarPorCuit($cuit)
     {
         return DataBase::getRecord('SELECT * FROM proveedores WHERE cuit = :cuit', ['cuit' => $cuit]);
     }
 
+    // Indica si otro proveedor ya tiene ese CUIT.
     public static function cuitDuplicado($cuit, $id = null)
     {
         if ($cuit === null || $cuit === '') {
@@ -35,6 +39,7 @@ class ProveedorModel extends Model
         return $proveedor && (string) $proveedor->id_proveedor !== (string) $id;
     }
 
+    // Valida los campos recibidos y devuelve los datos junto con los errores.
     public static function validarDatos($entrada, $id = null)
     {
         $datosProveedor = [];
@@ -63,12 +68,14 @@ class ProveedorModel extends Model
         if ($datosProveedor['email'] !== '' && !filter_var($datosProveedor['email'], FILTER_VALIDATE_EMAIL)) {
             $errores[] = 'El correo electrónico no es válido.';
         }
+        // Evita guardar un CUIT que ya pertenece a otro proveedor.
         if ($datosProveedor['cuit'] !== '' && mb_check_encoding($datosProveedor['cuit'], 'UTF-8') && self::cuitDuplicado($datosProveedor['cuit'], $id)) {
             $errores[] = 'Ya existe un proveedor con ese CUIT.';
         }
         return [$datosProveedor, $errores];
     }
 
+    // Prepara los valores que se enviarán a la consulta del proveedor.
     private static function parametros($datosProveedor)
     {
         $parametros = ['razon_social' => $datosProveedor['razon_social']];
@@ -79,6 +86,7 @@ class ProveedorModel extends Model
         return $parametros;
     }
 
+    // Inserta el proveedor en la base de datos.
     public static function crearProveedor($datosProveedor)
     {
         return DataBase::insert(
@@ -88,6 +96,7 @@ class ProveedorModel extends Model
         );
     }
 
+    // Actualiza el proveedor en la base de datos.
     public static function actualizarProveedor($id, $datosProveedor)
     {
         $parametros = self::parametros($datosProveedor);
@@ -100,15 +109,20 @@ class ProveedorModel extends Model
         );
     }
 
+    // Da de baja sin eliminar el proveedor en la base de datos.
     public static function bajaProveedor($id)
     {
+        // Actualiza los datos de proveedores.
         return DataBase::execute('UPDATE proveedores SET estado = 0, fecha_baja = CURRENT_TIMESTAMP WHERE id_proveedor = :id AND estado = 1', ['id' => $id]);
     }
+    // Reactiva el proveedor en la base de datos.
     public static function reactivar($id)
     {
+        // Si el registro no existe, impide reactivarlo.
         if (!self::findId($id)) {
             throw new \DomainException('El registro no existe.');
         }
+        // Actualiza los datos de proveedores.
         return DataBase::execute('UPDATE proveedores SET estado = 1, fecha_baja = NULL WHERE id_proveedor = :id', ['id' => $id]);
     }
 

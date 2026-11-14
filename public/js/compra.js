@@ -1,5 +1,7 @@
+// Coordina los renglones y las altas rápidas de compra o recepción.
 (function () {
     'use strict';
+    // Recibe los productos que el controlador dejó en la vista.
     const productos = JSON.parse(document.getElementById('datosProductosCompra').textContent);
     const formularioCompra = document.getElementById('formularioCompra');
     const esRecepcion = formularioCompra.dataset.contexto === 'recepcion';
@@ -20,7 +22,9 @@
     const datosNuevo = formularioProducto.querySelector('[data-datos-nuevo-producto]');
     let productoExistente = null;
 
+    // Habilita crear o asociar según el EAN y la consulta pendiente.
     function actualizarAltaProducto() {
+        // La recepción conserva su flujo compartido de alta de productos.
         if (esRecepcion) return;
         const asociable = productoExistente && productoExistente.activo && !productoExistente.asociado;
         botonProducto.textContent = productoExistente ? 'Asociar producto' : 'Crear producto';
@@ -28,7 +32,9 @@
         comprobarEan.disabled = pendiente;
         formularioProducto.elements.codigo_barras.readOnly = pendiente;
     }
+    // Vuelve al formulario de producto nuevo al cambiar el EAN.
     function limpiarProductoExistente() {
+        // La recepción conserva su flujo compartido de alta de productos.
         if (esRecepcion) return;
         productoExistente = null;
         panelExistente.hidden = true;
@@ -36,11 +42,13 @@
         datosNuevo.disabled = false;
         actualizarAltaProducto();
     }
+    // Agrega la asociación disponible y actualiza los selectores.
     function incorporarProducto(producto) {
         if (!productos.some(item => String(item.id_producto) === String(producto.id_producto)
             && String(item.id_proveedor) === String(producto.id_proveedor))) productos.push(producto);
         cuerpo.querySelectorAll('select').forEach(actualizarProductos);
     }
+    // Muestra si el producto puede asociarse al proveedor elegido.
     function mostrarProductoExistente(producto) {
         productoExistente = producto;
         datosNuevo.hidden = true;
@@ -53,11 +61,14 @@
             : producto.asociado
                 ? 'Este producto ya está asociado al proveedor seleccionado. Seleccionalo desde la lista de productos.'
                 : 'Todavía no está asociado al proveedor seleccionado. ¿Desea asociarlo? Se conservarán todos los datos y el stock del producto.';
+        // Si ya está asociado y activo, lo ofrece en los renglones.
         if (producto.activo && producto.asociado) incorporarProducto(producto);
         actualizarAltaProducto();
     }
+    // La consulta y asociación de un EAN existente corresponde a Compra.
     if (!esRecepcion) {
         formularioProducto.elements.codigo_barras.addEventListener('input', limpiarProductoExistente);
+        // Consulta CompraController para saber si el EAN ya existe.
         function consultarEan() {
             if (pendiente || !formularioProducto.elements.codigo_barras.value.trim()) return;
             enviarAlta(formularioProducto, resultado => {
@@ -99,11 +110,13 @@
     }
     cuerpo.addEventListener('input', mostrarTotalEstimado);
 
+    // Muestra un mensaje de resultado o error en la pantalla.
     function informar(texto, error = false) {
         mensaje.textContent = texto;
         mensaje.className = 'alert ' + (error ? 'alert-warning' : 'alert-success');
     }
 
+    // Carga los productos del proveedor y conserva la selección válida.
     function actualizarProductos(select) {
         const anterior = select.value;
         select.replaceChildren(new Option('Seleccioná un producto', ''));
@@ -115,6 +128,7 @@
         select.value = Array.from(select.options).some(opcion => opcion.value === anterior) ? anterior : '';
     }
 
+    // Habilita registrar cuando hay proveedor y productos disponibles.
     function actualizarDisponibilidad() {
         mostrarTotalEstimado();
         const disponibles = productos.some(producto => String(producto.id_proveedor) === proveedor.value);
@@ -127,10 +141,12 @@
         });
     }
 
+    // Al cambiar proveedor, actualiza los productos de todos los renglones.
     proveedor.addEventListener('change', function () {
         cuerpo.querySelectorAll('select').forEach(actualizarProductos);
         actualizarDisponibilidad();
     });
+    // Agrega un renglón vacío con nombres de campos independientes.
     document.getElementById('agregarRenglon').addEventListener('click', function () {
         const fila = plantilla.cloneNode(true);
         fila.querySelectorAll('[name]').forEach(function (campo) {
@@ -142,7 +158,9 @@
         cuerpo.appendChild(fila);
         actualizarDisponibilidad();
     });
+    // Atiende los botones para quitar filas o abrir el alta de producto.
     cuerpo.addEventListener('click', function (evento) {
+        // Quita la fila elegida o vacía la última para conservar el formulario.
         if (evento.target.matches('[data-quitar]')) {
             const fila = evento.target.closest('tr');
             if (cuerpo.rows.length > 1) fila.remove();
@@ -151,6 +169,7 @@
         }
         if (evento.target.matches('[data-nuevo-producto]') && proveedor.value && !pendiente) {
             filaProducto = evento.target.closest('tr');
+            // La consulta y asociación de un EAN existente corresponde a Compra.
             if (!esRecepcion) {
                 formularioProducto.reset();
                 limpiarProductoExistente();
@@ -160,6 +179,7 @@
             bootstrap.Modal.getOrCreateInstance(document.getElementById('modalProductoRapido')).show();
         }
     });
+    // Evita registrar mientras sigue pendiente un alta rápida.
     formularioCompra.addEventListener('submit', function (evento) {
         if (pendiente) {
             evento.preventDefault();
@@ -167,11 +187,13 @@
         }
     });
     ['modalProveedorRapido', 'modalProductoRapido'].forEach(function (id) {
+        // Mantiene abierto el modal mientras espera la respuesta del servidor.
         document.getElementById(id).addEventListener('hide.bs.modal', function (evento) {
             if (pendiente) evento.preventDefault();
         });
     });
 
+    // Envía el formulario por POST y procesa el JSON del controlador.
     async function enviarAlta(formulario, alGuardar, opciones = {}) {
         if (pendiente) return;
         pendiente = true;
@@ -186,10 +208,14 @@
         try {
             const datos = new FormData(formulario);
             datos.set('csrf_compra', formularioCompra.elements.csrf_compra.value);
+            // La consulta escaneada usa el EAN y proveedor capturados, como strings.
+            if (opciones.codigo !== undefined) datos.set('codigo_barras', opciones.codigo);
+            if (opciones.proveedor !== undefined) datos.set('id_proveedor', opciones.proveedor);
             if (opciones.idProducto) datos.set('id_producto', String(opciones.idProducto));
             const respuesta = await fetch(opciones.action || formulario.action, { method: 'POST', body: datos, headers: { Accept: 'application/json' } });
             if (respuesta.redirected) throw new Error('La sesión venció. Conservá los datos y volvé a ingresar.');
             const resultado = await respuesta.json();
+            // Si el alta detecta un EAN existente, ofrece asociarlo desde el modal.
             if (!respuesta.ok && resultado.existe && formulario === formularioProducto && !esRecepcion) {
                 mostrarProductoExistente(resultado.producto);
                 return;
@@ -200,6 +226,8 @@
         } catch (excepcion) {
             error.textContent = excepcion instanceof SyntaxError ? 'La sesión puede haber vencido. Conservá los datos y volvé a ingresar.' : excepcion.message;
             error.classList.remove('d-none');
+            // El escaneo consulta sin abrir el alta; muestra aquí también sus errores.
+            if (opciones.codigo !== undefined) informar(error.textContent, true);
         } finally {
             pendiente = false;
             boton.disabled = false;
@@ -213,6 +241,7 @@
         }
     }
 
+    // Crea el proveedor desde el modal y lo deja seleccionado.
     formularioProveedor.addEventListener('submit', function (evento) {
         evento.preventDefault();
         enviarAlta(formularioProveedor, function (resultado) {
@@ -223,14 +252,17 @@
             informar(esRecepcion ? 'Proveedor creado y seleccionado. Se conservaron los datos de la recepción; revisá los productos al cambiar de proveedor.' : 'Proveedor creado y seleccionado. Se conservaron comprobante, observación, cantidades y precios; revisá los productos al cambiar de proveedor.');
         });
     });
+    // Crea o asocia el producto y lo selecciona en el renglón de origen.
     formularioProducto.addEventListener('submit', function (evento) {
         evento.preventDefault();
         const asociar = !esRecepcion && productoExistente !== null;
+        // Impide asociar un producto inactivo o que ya pertenece al proveedor.
         if (asociar && (!productoExistente.activo || productoExistente.asociado)) return;
         const opciones = asociar ? {action: '/proyectofinaldesarrollo/compra/asociarProductoRapido', idProducto: productoExistente.id_producto} : {};
         enviarAlta(formularioProducto, function (resultado) {
             const nuevo = resultado.producto;
             incorporarProducto(nuevo);
+            // Selecciona el producto en la fila que abrió el modal si sigue disponible.
             if (filaProducto && filaProducto.isConnected && String(nuevo.id_proveedor) === proveedor.value) {
                 filaProducto.querySelector('select').value = String(nuevo.id_producto);
                 if (!asociar) filaProducto.querySelectorAll('input').forEach(campo => { campo.value = ''; });
@@ -240,5 +272,68 @@
             limpiarProductoExistente();
         }, opciones);
     });
+    // Reutiliza una fila vacía o el botón actual para agregar un renglón.
+    function filaParaEscaneo(idProducto = null) {
+        const filas = Array.from(cuerpo.rows);
+        const existente = idProducto === null ? null : filas.find(fila => fila.querySelector('select').value === String(idProducto));
+        if (existente) return existente;
+        const vacia = filas.find(fila => fila.querySelector('select').value === '');
+        if (vacia) return vacia;
+        document.getElementById('agregarRenglon').click();
+        return cuerpo.rows[cuerpo.rows.length - 1];
+    }
+
+    // Selecciona el producto encontrado sin incrementar ni completar cantidades.
+    function seleccionarEscaneado(producto) {
+        incorporarProducto(producto);
+        const fila = filaParaEscaneo(producto.id_producto);
+        fila.querySelector('select').value = String(producto.id_producto);
+        actualizarDisponibilidad();
+        window.EanModulos.resaltarFila(fila);
+        informar('Producto localizado. Completá la cantidad' + (esRecepcion ? ' físicamente recibida.' : ' y el precio de compra.'));
+    }
+
+    // Pasa el EAN al endpoint actual; solo la confirmación del modal puede asociar.
+    function localizarEanCompra(evento) {
+        const codigo = evento.detail?.codigo;
+        if (pendiente) { informar('Esperá a que termine la operación pendiente.', true); return; }
+        if (!proveedor.value || typeof codigo !== 'string' || codigo.trim() === '' || codigo.length > 50) {
+            informar('Seleccioná un proveedor e ingresá un EAN válido.', true);
+            return;
+        }
+        const idProveedor = proveedor.value;
+        // Esta consulta no crea productos, asociaciones, compras ni movimientos.
+        enviarAlta(formularioProducto, resultado => {
+            const producto = resultado.producto;
+            if (resultado.existe && producto.activo && producto.asociado) {
+                seleccionarEscaneado(producto);
+                return;
+            }
+            if (resultado.existe && !producto.activo) {
+                informar('El producto está inactivo. Debe reactivarse desde Productos antes de utilizarlo.', true);
+                return;
+            }
+            // Recepción Directa mantiene la administración de asociaciones en Productos.
+            if (resultado.existe && esRecepcion) {
+                informar('El producto no está asociado al proveedor. Asociálo desde Productos antes de recibirlo.', true);
+                return;
+            }
+            filaProducto = filaParaEscaneo();
+            formularioProducto.reset();
+            limpiarProductoExistente();
+            formularioProducto.elements.id_proveedor.value = idProveedor;
+            formularioProducto.elements.codigo_barras.value = codigo.trim();
+            formularioProducto.querySelector('[data-error]').classList.add('d-none');
+            // El producto existente usa exactamente el panel y confirmación actuales.
+            if (resultado.existe) mostrarProductoExistente(producto);
+            informar(resultado.existe ? 'El producto existe. Confirmá su asociación al proveedor en el modal.' : 'El EAN no está registrado. Podés completar el alta rápida; no se creó ningún producto.');
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalProductoRapido')).show();
+        }, {action: '/proyectofinaldesarrollo/compra/consultarProductoRapido', codigo: codigo.trim(), proveedor: idProveedor, cerrar: false});
+    }
+
+    // Las pantallas anteriores sin lector mantienen los mismos eventos.
+    if (document.getElementById('escanearEanCompra')) {
+        formularioCompra.addEventListener('ean:detectado', localizarEanCompra);
+    }
     actualizarDisponibilidad();
 }());
