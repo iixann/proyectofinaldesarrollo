@@ -15,21 +15,18 @@ class StockController extends Controller
     public function actionIndex($parametro = null)
     {
         // Solo permite entrar a los roles autorizados.
-        SessionController::onlyUsers(['RECEPCIONISTA']);
+        SessionController::onlyUsers(['RECEPCIONISTA', 'VENDEDOR']);
         $filtros = [
             'nombre' => $this->leerFiltro('nombre'),
             'codigo_barras' => $this->leerFiltro('codigo_barras', 50),
             'id_categoria' => $this->leerFiltro('id_categoria', 10, true),
             'id_proveedor' => $this->leerFiltro('id_proveedor', 10, true)
         ];
-        // Envía los datos a la vista index.
-        Response::render($this->viewDir(__NAMESPACE__), 'index', [
-            'productos' => StockModel::listarProductosActivos($filtros),
-            'filtros' => $filtros,
-            'categorias' => CategoriaModel::listarCategorias(),
-            'proveedores' => ProveedorModel::listarProveedores(),
-            'mensaje' => ($_GET['resultado'] ?? '') === 'registrado' ? 'Movimiento registrado correctamente.' : ''
-        ]);
+        // Conserva filtros y URLs anteriores, pero muestra el catálogo con existencias.
+        $filtros['escaneado'] = ($_GET['escaneado'] ?? '') === '1' ? '1' : '0';
+        if (($_GET['resultado'] ?? '') === 'registrado') $filtros['resultado'] = 'registrado';
+        header('Location: /proyectofinaldesarrollo/producto/index?' . http_build_query($filtros), true, 302);
+        exit;
     }
 
     // Muestra el formulario de ajuste de stock del producto.
@@ -97,6 +94,51 @@ class StockController extends Controller
         // Redirige al navegador a stock/index.
         header('Location: /proyectofinaldesarrollo/stock/index?resultado=registrado', true, 303);
         exit;
+    }
+
+    // Prepara un decomiso sobre un producto activo para el personal operativo.
+    public function actionDecomiso($id = null)
+    {
+        SessionController::onlyUsers(['RECEPCIONISTA']);
+        $this->formularioDecomiso($this->buscarProducto($id, true));
+    }
+
+    // Valida el formulario y deriva la salida física al modelo transaccional.
+    public function actionGuardarDecomiso($id = null)
+    {
+        SessionController::onlyUsers(['RECEPCIONISTA']);
+        if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') { http_response_code(405); header('Allow: POST'); return; }
+        // El token evita que otra página provoque una salida de mercadería.
+        $token = $_POST['csrf_decomiso'] ?? null;
+        if (!is_string($token) || empty($_SESSION['csrf_decomiso']) || !hash_equals($_SESSION['csrf_decomiso'], $token)) {
+            http_response_code(403); echo 'Formulario inválido.'; return;
+        }
+        $producto = $this->buscarProducto($id, true);
+        $datos = ['cantidad'=>is_string($_POST['cantidad'] ?? null) ? $_POST['cantidad'] : '',
+            'motivo'=>is_string($_POST['motivo'] ?? null) ? trim($_POST['motivo']) : ''];
+        try {
+            // El modelo bloquea stock y registra usuario, fecha y motivo en movimientos_stock.
+            StockModel::registrarDecomiso($producto->id_producto, $_SESSION['usuario']['id_usuario'], $datos['cantidad'], $datos['motivo']);
+        } catch (\DomainException $excepcion) {
+            http_response_code(422);
+            $this->formularioDecomiso(StockModel::findId($id) ?: $producto, $datos, [$excepcion->getMessage()]);
+            return;
+        } catch (\Throwable $excepcion) {
+            error_log($excepcion->getMessage()); http_response_code(500);
+            $this->formularioDecomiso($producto, $datos, ['No se pudo registrar el decomiso.']); return;
+        }
+        // Consume el token exitoso para evitar reenvíos accidentales del mismo decomiso.
+        unset($_SESSION['csrf_decomiso']);
+        header('Location: /proyectofinaldesarrollo/stock/movimientos/' . $producto->id_producto, true, 303);
+        exit;
+    }
+
+    // Entrega el token y los errores a la vista de decomiso.
+    private function formularioDecomiso($producto, $datos = [], $errores = [])
+    {
+        if (empty($_SESSION['csrf_decomiso'])) $_SESSION['csrf_decomiso'] = bin2hex(random_bytes(32));
+        Response::render('stock/', 'decomiso', ['producto'=>$producto, 'datos'=>$datos,
+            'errores'=>$errores, 'token'=>$_SESSION['csrf_decomiso']]);
     }
 
     // Muestra los movimientos de stock generales o de un producto.

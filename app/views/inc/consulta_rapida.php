@@ -7,9 +7,11 @@ $stockAtajos = $administrarAtajos || in_array('RECEPCIONISTA', $rolesAtajos, tru
 ?>
 <div class="container small text-secondary pb-2" id="atajosGlobales">
     <?php if ($cajaAtajos): ?><a class="text-secondary me-2" data-atajo="p" href="/proyectofinaldesarrollo/pos/index">Alt+P POS</a><?php endif; ?>
-    <button type="button" class="btn btn-link btn-sm text-secondary p-0 me-2" id="abrirConsultaRapida">Alt+Q Consultar</button>
+    <button type="button" class="btn btn-link btn-sm text-secondary p-0 me-2" id="abrirConsultaRapida">Alt+Q / Alt+O Consultar</button>
+    <?php if ($stockAtajos || $cajaAtajos): ?>
+    <a class="text-secondary me-2" data-atajo="s" href="/proyectofinaldesarrollo/producto/index">Alt+S Productos y stock</a>
+    <?php endif; ?>
     <?php if ($stockAtajos): ?>
-    <a class="text-secondary me-2" data-atajo="s" href="/proyectofinaldesarrollo/stock/index">Alt+S Stock</a>
     <a class="text-secondary me-2" data-atajo="r" href="/proyectofinaldesarrollo/reposicion/index">Alt+R Reposición</a>
     <?php endif; ?>
     <?php if ($cajaAtajos): ?><a class="text-secondary" data-atajo="v" href="/proyectofinaldesarrollo/venta/index">Alt+V Ventas</a><?php endif; ?>

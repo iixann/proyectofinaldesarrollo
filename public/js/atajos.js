@@ -62,8 +62,8 @@
         const tecla = evento.key.toLowerCase();
         const f9 = evento.key === 'F9' && !evento.altKey && !evento.ctrlKey
             && !evento.metaKey && !evento.shiftKey && document.querySelector('.pos-pantalla');
-        // Alt+Q o F9 en el POS abre la consulta rápida.
-        if ((alt && tecla === 'q') || f9) {
+        // Alt+Q y Alt+O abren la misma consulta; F9 sigue disponible en POS.
+        if ((alt && (['q', 'o'].includes(tecla) || ['KeyQ', 'KeyO'].includes(evento.code))) || f9) {
             evento.preventDefault();
             evento.stopImmediatePropagation();
             if (!evento.repeat) abrir();

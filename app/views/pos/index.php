@@ -38,7 +38,7 @@
             <?php if (!$seleccionada): ?>
                 <p class="alert alert-info">Seleccioná una sesión abierta para habilitar la búsqueda y el carrito.</p>
             <?php else: ?>
-                <div id="terminalPos" data-sesion="<?= htmlspecialchars((string) $seleccionada->id_caja_sesion, ENT_QUOTES, 'UTF-8') ?>" data-token="<?= htmlspecialchars($tokenVenta, ENT_QUOTES, 'UTF-8') ?>">
+                <div id="terminalPos" data-usuario="<?= (int) $_SESSION['usuario']['id_usuario'] ?>" data-contexto="<?= htmlspecialchars($_SESSION['usuario']['contexto_carrito'], ENT_QUOTES, 'UTF-8') ?>" data-sesion="<?= htmlspecialchars((string) $seleccionada->id_caja_sesion, ENT_QUOTES, 'UTF-8') ?>" data-token="<?= htmlspecialchars($tokenVenta, ENT_QUOTES, 'UTF-8') ?>">
                     <header class="pos-cabecera mb-2"><span class="badge text-bg-success">Sesión abierta</span> <strong><?= htmlspecialchars($seleccionada->caja, ENT_QUOTES, 'UTF-8') ?></strong> · Sesión #<?= htmlspecialchars((string) $seleccionada->id_caja_sesion, ENT_QUOTES, 'UTF-8') ?> · Vendedor: <?= htmlspecialchars($seleccionada->nombre . ' ' . $seleccionada->apellido, ENT_QUOTES, 'UTF-8') ?></header>
                     <div class="pos-distribucion">
                         <div class="pos-productos">
@@ -143,12 +143,15 @@
             <?php endif; ?>
         <?php endif; ?>
     </main>
+    <!-- Las cajas disponibles vienen del backend; descarta borradores de cajas inválidas. -->
+    <script type="application/json" id="sesionesCarrito"><?= json_encode(array_map(static fn($s) => (string) $s->id_caja_sesion, $sesiones), JSON_HEX_TAG | JSON_THROW_ON_ERROR) ?></script>
     <?php require APP_PATH . 'views/inc/footer.php'; ?>
     <?php
     // Cambiar la URL con el contenido evita mezclar una vista nueva con JS anterior en caché.
     $versionPos = substr(hash_file('sha256', APP_PATH . '../public/js/pos.js'), 0, 12);
     ?>
     <!-- Conecta esta vista con la lógica del carrito y cobro en pos.js. -->
+    <script>CarritoTemporal.depurar(JSON.parse(document.getElementById('sesionesCarrito').textContent));</script>
     <script src="/proyectofinaldesarrollo/js/pos.js?v=<?= htmlspecialchars($versionPos, ENT_QUOTES, 'UTF-8') ?>" defer></script>
 </body>
 </html>

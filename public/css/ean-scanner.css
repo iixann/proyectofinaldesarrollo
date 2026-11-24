@@ -1,5 +1,9 @@
 /* El lector y sus botones caben en una pantalla de 360 px. */
 main .btn[data-escanear-ean] { min-height: 44px; white-space: normal; overflow-wrap: anywhere; }
+/* Desde md de Bootstrap, oculta solo la cámara y conserva el ingreso manual. */
+@media (min-width: 768px) {
+    [data-escanear-ean] { display: none !important; }
+}
 .ean-busqueda { display: flex; flex-wrap: wrap; gap: .5rem; align-items: end; }
 .ean-busqueda > .ean-campo { flex: 1 1 11rem; min-width: 0; }
 #escanerEan .modal-dialog { max-width: 34rem; }

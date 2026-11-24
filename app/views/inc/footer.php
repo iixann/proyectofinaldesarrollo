@@ -9,3 +9,8 @@
     <?php require APP_PATH . 'views/inc/consulta_rapida.php'; ?>
     <script src="/proyectofinaldesarrollo/js/atajos.js?v=<?= substr(hash_file('sha256', APP_PATH . '../public/js/atajos.js'), 0, 12) ?>" defer></script>
     <?php endif; ?>
+    <?php // Comparte la confirmación de bajas entre los listados. ?>
+    <?php require APP_PATH . 'views/inc/confirmar_baja.php'; ?>
+
+    <!-- El contexto separa borradores y limpia los de una autenticación anterior. -->
+    <script id="contextoCarrito" data-usuario="<?= (int) ($_SESSION['usuario']['id_usuario'] ?? 0) ?: '' ?>" data-contexto="<?= htmlspecialchars($_SESSION['usuario']['contexto_carrito'] ?? '', ENT_QUOTES, 'UTF-8') ?>" src="/proyectofinaldesarrollo/js/carrito-temporal.js?v=<?= substr(hash_file('sha256', 'public/js/carrito-temporal.js'), 0, 12) ?>"></script>

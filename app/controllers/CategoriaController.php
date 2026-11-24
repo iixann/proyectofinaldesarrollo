@@ -13,7 +13,7 @@ class CategoriaController extends Controller
     public function actionIndex($parametro = null)
     {
         // Solo permite entrar a los roles autorizados.
-        SessionController::onlyUsers(['DUEÑO']);
+        SessionController::onlyUsers(['DUEÑO', 'RECEPCIONISTA', 'VENDEDOR']);
         $mensajes = [
             'creada' => 'Categoría creada correctamente.',
             'actualizada' => 'Categoría actualizada correctamente.',
@@ -24,6 +24,8 @@ class CategoriaController extends Controller
         $resultado = is_string($_GET['resultado'] ?? null) ? $_GET['resultado'] : '';
         // Envía los datos a la vista index.
         Response::render($this->viewDir(__NAMESPACE__), 'index', [
+            // Recepción y vendedor consultan; solo dueño/admin mantienen categorías.
+            'puedeGestionar' => SessionController::esAdministrador() || in_array('DUEÑO', $_SESSION['usuario']['roles'], true),
             'categorias' => CategoriaModel::listarCategorias($busqueda),
             'busqueda' => $busqueda,
             'mensaje' => $mensajes[$resultado] ?? ''

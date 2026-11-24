@@ -15,8 +15,15 @@ class ProductoModel extends Model
     public static function listarProductos($filtros = [])
     {
         // Une cada producto con su categoría para mostrar el listado.
-        $sql = 'SELECT p.*, c.nombre_categoria FROM productos p INNER JOIN categorias c ON c.id_categoria = p.id_categoria WHERE 1 = 1';
+        $sql = 'SELECT p.*, c.nombre_categoria, (SELECT GROUP_CONCAT(pr.razon_social ORDER BY pr.razon_social SEPARATOR \' · \') FROM productos_proveedores pp INNER JOIN proveedores pr ON pr.id_proveedor=pp.id_proveedor WHERE pp.id_producto=p.id_producto AND pp.estado=1) AS proveedores FROM productos p INNER JOIN categorias c ON c.id_categoria = p.id_categoria WHERE 1 = 1';
         $parametros = [];
+        // La consulta móvil usa el EAN exacto como texto.
+        if (($filtros['codigo_barras'] ?? '') !== '') {
+            $sql .= ' AND p.codigo_barras = :codigo';
+            $parametros['codigo'] = $filtros['codigo_barras'];
+        }
+        // El permiso de consulta de stock solo muestra productos activos.
+        if (!empty($filtros['solo_activos'])) $sql .= ' AND p.estado=1';
         if (($filtros['nombre'] ?? '') !== '') {
             $sql .= " AND p.nombre_producto LIKE :nombre ESCAPE '!'";
             $parametros['nombre'] = self::patronBusqueda($filtros['nombre']);
@@ -70,7 +77,7 @@ class ProductoModel extends Model
     }
 
     // Valida y guarda la asociación sin cambiar los datos ni el stock del producto.
-    public static function asociarProveedorExistente($idProducto, $idProveedor, $codigo)
+    public static function asociarProveedorExistente($idProducto, $idProveedor, $codigo, $idUsuario)
     {
         foreach ([$idProducto, $idProveedor] as $id) {
             // Comprueba que el ID recibido sea válido antes de continuar.
@@ -105,6 +112,8 @@ class ProductoModel extends Model
             if (!$yaAsociado) {
                 // Respeta el par único y recupera una relación dada de baja, sin tocar el producto.
                 self::asignarProveedores($idProducto, [$idProveedor]);
+                // Identifica también las asociaciones realizadas desde Compra o Recepción.
+                AuditoriaModel::registrarProducto($idUsuario, 'ASOCIACION_PROVEEDOR', $idProducto, 'Proveedor asociado: ' . $idProveedor);
             }
             // Confirma todos los cambios realizados en la base.
             DataBase::confirmarTransaccion();
@@ -218,7 +227,7 @@ class ProductoModel extends Model
     }
 
     // Crea el producto con stock cero y devuelve su ID.
-    public static function crearProducto($datosProducto, $proveedores)
+    public static function crearProducto($datosProducto, $proveedores, $idUsuario)
     {
         // El stock se cambia desde operaciones de mercadería, no desde este formulario.
         unset($datosProducto['stock_actual']);
@@ -230,6 +239,8 @@ class ProductoModel extends Model
             $id = DataBase::insert('INSERT INTO productos (nombre_producto, codigo_barras, id_categoria, descripcion, precio_venta, stock_actual, stock_minimo)
                 VALUES (:nombre_producto, :codigo_barras, :id_categoria, :descripcion, :precio_venta, 0, :stock_minimo)', $datosProducto);
             self::asignarProveedores($id, $proveedores);
+            // Audita el alta junto con el catálogo y sus proveedores.
+            AuditoriaModel::registrarProducto($idUsuario, 'ALTA', $id, 'Producto creado con stock cero.');
             // Confirma todos los cambios realizados en la base.
             DataBase::confirmarTransaccion();
             return $id;
@@ -241,7 +252,7 @@ class ProductoModel extends Model
     }
 
     // Actualiza el producto y sus proveedores sin modificar su stock.
-    public static function actualizarProducto($id, $datosProducto, $proveedores)
+    public static function actualizarProducto($id, $datosProducto, $proveedores, $idUsuario)
     {
         // El stock se cambia desde operaciones de mercadería, no desde este formulario.
         unset($datosProducto['stock_actual']);
@@ -255,6 +266,8 @@ class ProductoModel extends Model
                 descripcion = :descripcion, precio_venta = :precio_venta,
                 stock_minimo = :stock_minimo WHERE id_producto = :id', $datosProducto);
             self::actualizarProveedores($id, $proveedores);
+            // Identifica al responsable de los datos y asociaciones guardadas.
+            AuditoriaModel::registrarProducto($idUsuario, 'EDICION', $id, 'Datos de catálogo y proveedores actualizados; stock sin cambios.');
             // Confirma todos los cambios realizados en la base.
             DataBase::confirmarTransaccion();
         } catch (\Throwable $excepcion) {
@@ -265,10 +278,9 @@ class ProductoModel extends Model
     }
 
     // Da de baja sin eliminar el producto en la base de datos.
-    public static function bajaProducto($id)
+    public static function bajaProducto($id, $idUsuario)
     {
-        // Actualiza los datos de productos.
-        return DataBase::execute('UPDATE productos SET estado = 0, fecha_baja = CURRENT_TIMESTAMP WHERE id_producto = :id AND estado = 1', ['id' => $id]);
+        self::cambiarEstadoAuditado($id, $idUsuario, false);
     }
 
     // Rechaza un código de barras vacío o con formato inválido.
@@ -280,14 +292,30 @@ class ProductoModel extends Model
         return trim($codigo);
     }
     // Reactiva el producto en la base de datos.
-    public static function reactivar($id)
+    public static function reactivar($id, $idUsuario)
     {
         // Si el registro no existe, impide reactivarlo.
         if (!self::findId($id)) {
             throw new \DomainException('El registro no existe.');
         }
-        // Actualiza los datos de productos.
-        return DataBase::execute('UPDATE productos SET estado = 1, fecha_baja = NULL WHERE id_producto = :id', ['id' => $id]);
+        self::cambiarEstadoAuditado($id, $idUsuario, true);
     }
 
+    // El estado del catálogo y su auditoría se guardan o revierten juntos.
+    private static function cambiarEstadoAuditado($id, $idUsuario, $activo)
+    {
+        DataBase::iniciarTransaccion();
+        try {
+            $producto = DataBase::getRecord('SELECT estado FROM productos WHERE id_producto=:id FOR UPDATE', ['id'=>$id]);
+            // Repetir el mismo estado no inventa otra operación de auditoría.
+            if ($producto && (bool) $producto->estado !== $activo) {
+                DataBase::execute('UPDATE productos SET estado=:estado, fecha_baja=' . ($activo ? 'NULL' : 'CURRENT_TIMESTAMP') . ' WHERE id_producto=:id', ['estado'=>(int) $activo,'id'=>$id]);
+                AuditoriaModel::registrarProducto($idUsuario, $activo ? 'REACTIVACION' : 'BAJA', $id, 'Cambio de estado del catálogo; stock sin cambios.');
+            }
+            DataBase::confirmarTransaccion();
+        } catch (\Throwable $excepcion) {
+            DataBase::cancelarTransaccion();
+            throw $excepcion;
+        }
+    }
 }

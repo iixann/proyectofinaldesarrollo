@@ -109,6 +109,8 @@ function iniciarPos() {
     const terminal = document.getElementById('terminalPos');
     if (!terminal) return;
     const carrito = crearCarritoPos();
+    // La clave usa la identidad autenticada y la sesión de caja enviada por PHP.
+    const persistencia = CarritoTemporal.crear(terminal.dataset.usuario, terminal.dataset.sesion, terminal.dataset.contexto);
     const selector = document.getElementById('sesionPos');
     const botonSesion = document.getElementById('elegirSesion');
     const mensaje = document.getElementById('mensajePos');
@@ -284,18 +286,32 @@ function iniciarPos() {
     }
     // Marca la línea sobre la que actuarán los atajos.
     function seleccionarLinea(id) {
+        // Ignora eventos de una fila eliminada durante el redibujado.
+        if (!carrito.lineas().some(linea => String(linea.id_producto) === String(id))) return;
         seleccionada = String(id);
         Array.from(cuerpo.children).forEach(fila => {
             fila.classList.toggle('pos-seleccionada', fila.dataset.producto === seleccionada);
+            fila.setAttribute('aria-selected', String(fila.dataset.producto === seleccionada));
         });
+        // Conserva también la selección cuando se navega sin cambiar cantidades.
+        if (sesionDisponible) persistencia.guardar(carrito.lineas(), seleccionada);
     }
     // Quita el producto del carrito y actualiza la pantalla.
-    function quitarLinea(id) {
+    function quitarLinea(id, mantenerFoco = false) {
         if (confirmando) return;
+        const lineas = carrito.lineas();
+        const indice = lineas.findIndex(linea => String(linea.id_producto) === String(id));
+        // Una selección inexistente nunca elimina otra fila.
+        if (indice < 0) return;
         carrito.eliminar(id);
-        if (String(id) === seleccionada) seleccionada = null;
+        if (String(id) === seleccionada) seleccionada = lineas[indice + 1]?.id_producto ?? lineas[indice - 1]?.id_producto ?? null;
+        if (seleccionada !== null) seleccionada = String(seleccionada);
         dibujarCarrito();
-        if (sesionDisponible) codigo.focus();
+        // Supr mantiene el foco en el carrito; el botón de quitar vuelve al EAN.
+        if (mantenerFoco) {
+            const fila = Array.from(cuerpo.children).find(fila => fila.dataset.producto === seleccionada);
+            (fila || document.getElementById('tablaCarrito')).focus({preventScroll: true});
+        } else if (sesionDisponible) codigo.focus();
     }
     // Redibuja productos, cantidades y totales del carrito.
     function dibujarCarrito() {
@@ -306,6 +322,8 @@ function iniciarPos() {
         }
         cuerpo.replaceChildren();
         const lineas = carrito.lineas();
+        // Descarta selecciones obsoletas al vaciar o restaurar el borrador.
+        if (!lineas.some(linea => String(linea.id_producto) === seleccionada)) seleccionada = null;
         document.getElementById('carritoVacio').hidden = lineas.length > 0;
         document.getElementById('tablaCarrito').hidden = !lineas.length;
         lineas.forEach(function (linea) {
@@ -313,7 +331,13 @@ function iniciarPos() {
             fila.dataset.producto = String(linea.id_producto);
             fila.classList.toggle('pos-seleccionada', fila.dataset.producto === seleccionada);
             fila.classList.toggle('pos-reciente', fila.dataset.producto === ultimaAgregada);
-            fila.addEventListener('click', () => seleccionarLinea(linea.id_producto));
+            fila.tabIndex = 0;
+            fila.setAttribute('aria-selected', String(fila.dataset.producto === seleccionada));
+            // Una celda selecciona y enfoca la fila sin robar el foco al editar cantidades.
+            fila.addEventListener('click', evento => {
+                seleccionarLinea(linea.id_producto);
+                if (!evento.target.closest('input, select, textarea, button, a, [contenteditable]')) fila.focus({preventScroll: true});
+            });
             const producto = celda(fila, linea.nombre_producto);
             const ean = document.createElement('small');
             ean.className = 'd-block text-secondary';
@@ -350,6 +374,8 @@ function iniciarPos() {
         document.getElementById('articulosCobro').textContent = articulos;
         document.getElementById('totalCobro').textContent = formatoDineroPos(carrito.totalCentavos());
         bloquearSelector();
+        // Guarda cada modificación para recuperarla al volver a esta caja.
+        if (sesionDisponible) persistencia.guardar(carrito.lineas(), seleccionada);
     }
     // Agrega el producto al carrito y actualiza su selección.
     function agregar(producto, codigoConsultado = null) {
@@ -365,6 +391,11 @@ function iniciarPos() {
                 Array.from(cuerpo.children).forEach(fila => fila.classList.remove('pos-reciente'));
             }, 1600);
             dibujarCarrito();
+            // Al agregar, libera el espacio de búsqueda y descarta respuestas anteriores.
+            ultimaBusquedaNombre++;
+            seccionResultados.hidden = true;
+            resultados.replaceChildren();
+            document.getElementById('nombre').value = '';
             informar(producto.nombre_producto + ' agregado al carrito.');
             if (codigoConsultado === null || codigo.value.trim() === codigoConsultado) codigo.value = '';
             codigo.focus();
@@ -408,6 +439,7 @@ function iniciarPos() {
             // Si el servidor informa que la caja ya no está disponible, bloquea la venta.
             if (datos.sesion_no_disponible) {
                 sesionDisponible = false;
+                persistencia.vaciar();
                 terminal.querySelectorAll('form input, form button').forEach(elemento => { elemento.disabled = true; });
                 resultados.replaceChildren();
                 seccionResultados.hidden = true;
@@ -517,10 +549,11 @@ function iniciarPos() {
             if (!(respuesta.headers.get('content-type') || '').includes('application/json')) throw new Error('No se recibió confirmación de la venta. No se reenvió automáticamente.');
             const datos = await respuesta.json();
             // Si el servidor informa que la caja ya no está disponible, bloquea la venta.
-            if (datos.sesion_no_disponible) sesionDisponible = false;
+            if (datos.sesion_no_disponible) { sesionDisponible = false; persistencia.vaciar(); }
             if (!datos.ok) throw new Error(datos.mensaje || 'No se pudo registrar la venta.');
             // Limpia el carrito solo después de recibir la confirmación del servidor.
             carrito.vaciar();
+            persistencia.vaciar();
             limpiarPagos();
             resultados.replaceChildren();
             seccionResultados.hidden = true;
@@ -570,7 +603,7 @@ function iniciarPos() {
             return;
         }
         if (confirmando || !sesionDisponible || evento.ctrlKey || evento.altKey || evento.metaKey) return;
-        const escribiendo = evento.target.closest('input, textarea, select, [contenteditable="true"]');
+        const escribiendo = evento.target instanceof Element && evento.target.closest('input, textarea, select, [contenteditable]');
         if (evento.repeat && /^F[4-8]$/.test(evento.key)) { evento.preventDefault(); return; }
         // F2 vuelve a cargar productos por EAN.
         if (evento.key === 'F2') {
@@ -604,11 +637,27 @@ function iniciarPos() {
             if (cobroAbierto) volverVenta();
             else { seccionResultados.hidden = true; codigo.focus(); }
         // Supr quita la línea seleccionada cuando no se está escribiendo.
-        } else if (evento.key === 'Delete' && !cobroAbierto && !escribiendo && seleccionada !== null) {
+        } else if (evento.key === 'Delete' && !evento.repeat && !cobroAbierto && !document.querySelector('.modal.show') && !escribiendo && seleccionada !== null) {
             evento.preventDefault();
-            quitarLinea(seleccionada);
+            quitarLinea(seleccionada, true);
         }
     });
+    // Recupera productos y cantidades; los pagos deben revisarse nuevamente.
+    const borrador = persistencia.leer();
+    if (borrador) {
+        try {
+            for (const linea of borrador.lineas) {
+                if (!Number.isSafeInteger(Number(linea.id_producto)) || Number(linea.id_producto) < 1
+                    || typeof linea.codigo_barras !== 'string' || typeof linea.nombre_producto !== 'string'
+                    || !Number.isInteger(linea.cantidad) || linea.cantidad < 1) throw new Error('Borrador inválido');
+                carrito.agregar({id_producto: linea.id_producto, codigo_barras: linea.codigo_barras, nombre_producto: linea.nombre_producto,
+                    precio_venta: linea.precio_unitario, stock_actual: linea.stock_disponible});
+                carrito.cambiarCantidad(linea.id_producto, linea.cantidad);
+            }
+            seleccionada = borrador.seleccionada;
+            informar('Carrito recuperado. Al confirmar se validan precios, stock y caja nuevamente.');
+        } catch (error) { carrito.vaciar(); persistencia.vaciar(); informar('No se pudo recuperar el borrador. Cargá nuevamente los productos.', true); }
+    }
     dibujarCarrito();
     codigo.focus();
 }

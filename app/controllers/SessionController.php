@@ -38,7 +38,7 @@ class SessionController extends Controller
             'ADMINISTRADOR' => 'admin/index',
             'DUEÑO' => 'admin/index',
             'VENDEDOR' => 'sesioncaja/index',
-            'RECEPCIONISTA' => 'stock/index'
+            'RECEPCIONISTA' => 'producto/index'
         ];
         foreach ($rutas as $rol => $ruta) {
             // El primer rol habilitado determina la página de inicio.
@@ -233,6 +233,8 @@ class SessionController extends Controller
                 session_regenerate_id(true);
                 $_SESSION['usuario'] = [
                     'id_usuario' => $usuario->id_usuario,
+                    // Una nueva autenticación no recupera borradores de la sesión anterior.
+                    'contexto_carrito' => bin2hex(random_bytes(16)),
                     'nombre' => $usuario->nombre,
                     'apellido' => $usuario->apellido,
                     'email' => $usuario->email,

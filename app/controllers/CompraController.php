@@ -15,8 +15,8 @@ class CompraController extends Controller
     // Muestra el listado de compras con los datos del modelo.
     public function actionIndex($parametro = null)
     {
-        // Solo permite entrar a los roles autorizados.
-        SessionController::onlyUsers(['RECEPCIONISTA']);
+        // Solo dueño y administrador pueden gestionar compras.
+        SessionController::onlyUsers(['DUEÑO']);
         $filtros = ['id_compra' => $this->leerFiltro('id_compra', 10, true),
             'numero_comprobante' => $this->leerFiltro('numero_comprobante', 50),
             'id_proveedor' => $this->leerFiltro('id_proveedor', 10, true)];
@@ -31,16 +31,16 @@ class CompraController extends Controller
     // Muestra el formulario para crear la compra.
     public function actionCrear()
     {
-        // Solo permite entrar a los roles autorizados.
-        SessionController::onlyUsers(['RECEPCIONISTA']);
+        // Solo dueño y administrador pueden gestionar compras.
+        SessionController::onlyUsers(['DUEÑO']);
         $this->mostrarFormulario();
     }
 
     // Recibe el formulario por POST y solicita guardar la compra.
     public function actionGuardar()
     {
-        // Solo permite entrar a los roles autorizados.
-        SessionController::onlyUsers(['RECEPCIONISTA']);
+        // Solo dueño y administrador pueden gestionar compras.
+        SessionController::onlyUsers(['DUEÑO']);
         // Detiene la acción si el método POST o el token no son válidos.
         if (!$this->validarPostCompra()) return;
         $datos = [];
@@ -84,8 +84,14 @@ class CompraController extends Controller
     // Crea un proveedor desde el modal y devuelve sus datos como JSON.
     public function actionCrearProveedorRapido()
     {
-        // Solo permite entrar a los roles autorizados.
-        SessionController::onlyUsers(['RECEPCIONISTA']);
+        // Solo dueño y administrador pueden gestionar compras.
+        SessionController::onlyUsers(['DUEÑO']);
+        $this->crearProveedorRapido();
+    }
+
+    // Reutiliza la operación validada sin exponer otra acción de Compra.
+    private function crearProveedorRapido()
+    {
         // Detiene la acción si el método POST o el token no son válidos.
         if (!$this->validarPostCompra(true)) return;
         try {
@@ -109,8 +115,14 @@ class CompraController extends Controller
     // Crea un producto o informa que el EAN ya pertenece a uno existente.
     public function actionCrearProductoRapido()
     {
-        // Solo permite entrar a los roles autorizados.
-        SessionController::onlyUsers(['RECEPCIONISTA']);
+        // Solo dueño y administrador pueden gestionar compras.
+        SessionController::onlyUsers(['DUEÑO']);
+        $this->crearProductoRapido();
+    }
+
+    // Reutiliza la operación validada sin exponer otra acción de Compra.
+    private function crearProductoRapido()
+    {
         // Detiene la acción si el método POST o el token no son válidos.
         if (!$this->validarPostCompra(true)) return;
         try {
@@ -131,7 +143,7 @@ class CompraController extends Controller
                 return;
             }
             // El modelo crea producto + asociación en su transacción habitual; stock inicial 0.
-            $id = ProductoModel::crearProducto($datos, [$idProveedor]);
+            $id = ProductoModel::crearProducto($datos, [$idProveedor], $_SESSION['usuario']['id_usuario']);
         } catch (\DomainException $excepcion) {
             $this->json(['ok' => false, 'mensaje' => $excepcion->getMessage()], 422);
             return;
@@ -147,8 +159,14 @@ class CompraController extends Controller
     // Consulta por POST si el EAN existe y está asociado al proveedor.
     public function actionConsultarProductoRapido()
     {
-        // Solo permite entrar a los roles autorizados.
-        SessionController::onlyUsers(['RECEPCIONISTA']);
+        // Solo dueño y administrador pueden gestionar compras.
+        SessionController::onlyUsers(['DUEÑO']);
+        $this->consultarProductoRapido();
+    }
+
+    // Reutiliza la operación validada sin exponer otra acción de Compra.
+    private function consultarProductoRapido()
+    {
         // Detiene la acción si el método POST o el token no son válidos.
         if (!$this->validarPostCompra(true)) return;
         try {
@@ -168,14 +186,14 @@ class CompraController extends Controller
     // Asocia el producto existente al proveedor y responde al modal.
     public function actionAsociarProductoRapido()
     {
-        // Solo permite entrar a los roles autorizados.
-        SessionController::onlyUsers(['RECEPCIONISTA']);
+        // Solo dueño y administrador pueden gestionar compras.
+        SessionController::onlyUsers(['DUEÑO']);
         // Detiene la acción si el método POST o el token no son válidos.
         if (!$this->validarPostCompra(true)) return;
         try {
             $idProveedor = $this->proveedorRapido();
             // Pasa a ProductoModel para asociar el producto al proveedor.
-            $resultado = ProductoModel::asociarProveedorExistente($_POST['id_producto'] ?? null, $idProveedor, $_POST['codigo_barras'] ?? null);
+            $resultado = ProductoModel::asociarProveedorExistente($_POST['id_producto'] ?? null, $idProveedor, $_POST['codigo_barras'] ?? null, $_SESSION['usuario']['id_usuario']);
             $producto = $resultado['producto'];
             $this->json(['ok' => true, 'ya_asociado' => (bool) $resultado['ya_asociado'],
                 'producto' => ['id_producto' => (int) $producto->id_producto, 'nombre_producto' => $producto->nombre_producto,
@@ -185,6 +203,19 @@ class CompraController extends Controller
         } catch (\Throwable $excepcion) {
             error_log($excepcion->getMessage());
             $this->json(['ok' => false, 'mensaje' => 'No se pudo asociar el producto. Intentá nuevamente.'], 500);
+        }
+    }
+
+    // Recepción Directa reutiliza altas y consulta, nunca la gestión de compras.
+    public function altaRapidaParaRecepcion($operacion)
+    {
+        SessionController::onlyUsers(['RECEPCIONISTA']);
+        // La lista cerrada impide reutilizar guardado de compras o asociaciones.
+        switch ($operacion) {
+            case 'proveedor': $this->crearProveedorRapido(); break;
+            case 'producto': $this->crearProductoRapido(); break;
+            case 'consulta': $this->consultarProductoRapido(); break;
+            default: throw new \LogicException('Operación interna no admitida.');
         }
     }
 
@@ -248,8 +279,8 @@ class CompraController extends Controller
     // Busca la compra y carga su vista de detalle.
     public function actionVer($id = null)
     {
-        // Solo permite entrar a los roles autorizados.
-        SessionController::onlyUsers(['RECEPCIONISTA']);
+        // Solo dueño y administrador pueden gestionar compras.
+        SessionController::onlyUsers(['DUEÑO']);
         // Comprueba que el ID recibido sea válido antes de continuar.
         if (!is_string($id) || !ctype_digit($id) || (float) $id < 1 || (float) $id > 4294967295) {
             http_response_code(400);

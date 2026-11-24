@@ -4,6 +4,11 @@ if (PHP_SAPI !== 'cli') { http_response_code(403); exit('Solo terminal'); }
 chdir(dirname(__DIR__));
 define('APP_PATH', 'app/');
 require APP_PATH . 'core/Controller.php';
+require APP_PATH . 'core/Model.php';
+// El badge visual usa un conteo ficticio y nunca consulta la base real.
+class DataBase { public static function getRecord($sql, $parametros = []) { return (object) ['total'=>1]; } }
+require APP_PATH . 'models/ReposicionModel.php';
+require APP_PATH . 'models/RecepcionModel.php';
 require APP_PATH . 'controllers/SessionController.php';
 $_SESSION = ['usuario' => ['id_usuario' => 1, 'roles' => ['ADMINISTRADOR'], 'nombre' => 'Prueba', 'apellido' => 'Visual']];
 $rutas = ['producto' => 'producto/crear', 'compra' => 'compra/crear', 'directa' => 'recepcion/directa',

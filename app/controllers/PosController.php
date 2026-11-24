@@ -16,7 +16,11 @@ class PosController extends Controller
     {
         // Solo permite entrar a los roles autorizados.
         SessionController::onlyUsers(['VENDEDOR']);
+        // Evita reutilizar una terminal de otra autenticación desde la caché.
+        header('Cache-Control: no-store');
         // Pasa a CajaSesionModel para obtener las sesiones abiertas del vendedor.
+        // Identifica el borrador sin usar el ID de cookie como dato del navegador.
+        if (empty($_SESSION['usuario']['contexto_carrito'])) $_SESSION['usuario']['contexto_carrito'] = bin2hex(random_bytes(16));
         $sesiones = CajaSesionModel::sesionesDisponiblesPos($_SESSION['usuario']['id_usuario']);
         $seleccionada = null;
         $mensaje = '';

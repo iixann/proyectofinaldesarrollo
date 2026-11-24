@@ -58,7 +58,8 @@ class Vistas(BaseHTTPRequestHandler):
 class Bidi:
     # Abre una conexión WebSocket local contra el Firefox de prueba.
     def __init__(self):
-        self.socket = socket.create_connection(('127.0.0.1', 9223), timeout=30)
+        # Un perfil nuevo puede tardar en arrancar en equipos con poca RAM.
+        self.socket = socket.create_connection(('127.0.0.1', 9223), timeout=120)
         clave = base64.b64encode(os.urandom(16)).decode()
         self.socket.sendall(f'GET /session HTTP/1.1\r\nHost: 127.0.0.1:9223\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: {clave}\r\nSec-WebSocket-Version: 13\r\n\r\n'.encode())
         cabecera = b''
@@ -111,7 +112,8 @@ class Bidi:
 def ejecutar():
     servidor = ThreadingHTTPServer(('127.0.0.1', 8766), Vistas)
     threading.Thread(target=servidor.serve_forever, daemon=True).start()
-    with tempfile.TemporaryDirectory(prefix='ean-firefox-', dir=ROOT / 'tests') as perfil:
+    # El perfil y las capturas de prueba quedan fuera del código del proyecto.
+    with tempfile.TemporaryDirectory(prefix='ean-firefox-', dir='/tmp') as perfil:
         log = open('/tmp/ean-firefox.log', 'w')
         binario = '/snap/firefox/current/usr/lib/firefox/firefox' if Path('/snap/firefox/current/usr/lib/firefox/firefox').is_file() else 'firefox'
         firefox = subprocess.Popen([binario, '--headless', '--no-remote', '--profile', perfil, '--remote-debugging-port', '9223'], stdout=log, stderr=log)

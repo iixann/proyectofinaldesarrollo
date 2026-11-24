@@ -20,15 +20,34 @@ class CajaSesionModel extends Model
             ORDER BY s.fecha_apertura DESC, s.id_caja_sesion DESC');
     }
 
+    // Al vendedor solo le informa disponibilidad y el ID de su propia sesión.
+    public static function disponibilidadOperativa($idUsuario)
+    {
+        return DataBase::query("SELECT c.id_caja, c.nombre,
+            CASE WHEN s.id_caja_sesion IS NULL THEN 'DISPONIBLE'
+                WHEN s.id_usuario_apertura=:usuario THEN 'PROPIA' ELSE 'OCUPADA' END AS disponibilidad,
+            CASE WHEN s.id_usuario_apertura=:propietario THEN s.id_caja_sesion ELSE NULL END AS mi_sesion
+            FROM cajas c LEFT JOIN caja_sesiones s ON s.id_caja=c.id_caja AND s.estado='ABIERTA'
+            WHERE c.estado=1 ORDER BY c.nombre", ['usuario'=>$idUsuario, 'propietario'=>$idUsuario]);
+    }
+
+    // Ofrece únicamente cajas libres; el bloqueo al abrir vuelve a comprobarlo.
+    public static function cajasDisponibles()
+    {
+        return DataBase::query("SELECT c.id_caja,c.nombre FROM cajas c WHERE c.estado=1
+            AND NOT EXISTS (SELECT 1 FROM caja_sesiones s WHERE s.id_caja=c.id_caja AND s.estado='ABIERTA') ORDER BY c.nombre");
+    }
+
     // Busca la sesión con los datos de caja, apertura y cierre.
-    public static function buscarSesion($id)
+    public static function buscarSesion($id, $idUsuario = null)
     {
         return DataBase::getRecord('SELECT s.*, c.nombre AS caja, u.nombre, u.apellido,
             uc.nombre AS nombre_cierre, uc.apellido AS apellido_cierre FROM caja_sesiones s
             INNER JOIN cajas c ON c.id_caja = s.id_caja
             INNER JOIN usuarios u ON u.id_usuario = s.id_usuario_apertura
             LEFT JOIN usuarios uc ON uc.id_usuario = s.id_usuario_cierre
-            WHERE s.id_caja_sesion = :id', ['id' => $id]);
+            WHERE s.id_caja_sesion = :id' . ($idUsuario !== null ? ' AND s.id_usuario_apertura=:usuario' : ''),
+            $idUsuario !== null ? ['id'=>$id,'usuario'=>$idUsuario] : ['id'=>$id]);
     }
 
     // Devuelve las cajas habilitadas para una apertura.

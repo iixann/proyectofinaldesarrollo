@@ -20,7 +20,7 @@
             <div class="col-sm-4"><button class="btn btn-outline-primary" type="submit">Buscar</button> <a class="btn btn-outline-secondary" href="/proyectofinaldesarrollo/venta/index">Limpiar</a></div>
         </form>
         <?php if ($error !== ''): ?><p class="alert alert-warning" role="alert"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></p><?php endif; ?>
-        <p class="text-secondary small">Hasta 100 ventas más recientes del período seleccionado. Las ventas confirmadas son de solo lectura.</p>
+        <p class="text-secondary small">Hasta 100 ventas más recientes del período seleccionado. La venta original se conserva; solo se rectifica con caja ABIERTA.</p>
         <section class="card border-0 shadow-sm rounded-4"><div class="card-body p-3 p-md-4">
             <?php if (!$ventas): ?><p class="text-secondary text-center my-4">No se encontraron ventas para los filtros seleccionados.</p><?php else: ?>
                 <!-- Listado generado con los registros recibidos del controlador. -->
@@ -32,7 +32,7 @@
                         <td><?= htmlspecialchars($venta->caja . ' / #' . $venta->id_caja_sesion, ENT_QUOTES, 'UTF-8') ?></td>
                         <td><?= htmlspecialchars($venta->nombre . ' ' . $venta->apellido, ENT_QUOTES, 'UTF-8') ?></td>
                         <td>$ <?= htmlspecialchars((string) $venta->total, ENT_QUOTES, 'UTF-8') ?></td>
-                        <td><span class="badge <?= (int) $venta->estado === 1 ? 'bg-success-subtle text-success-emphasis' : 'bg-secondary-subtle text-secondary-emphasis' ?>"><?= (int) $venta->estado === 1 ? 'CONFIRMADA' : 'INACTIVA' ?></span></td>
+                        <td><span class="badge <?= (int) $venta->estado === 1 ? 'bg-success-subtle text-success-emphasis' : 'bg-secondary-subtle text-secondary-emphasis' ?>"><?= $venta->estado_rectificacion === 'RECTIFICADA' ? 'RECTIFICADA' : ((int) $venta->estado === 1 ? 'CONFIRMADA' : 'INACTIVA') ?></span></td>
                         <td><div class="acciones-tabla d-flex flex-wrap gap-2"><a class="btn btn-outline-primary btn-sm" href="/proyectofinaldesarrollo/venta/ver/<?= (int) $venta->id_venta ?>">Ver</a> <a class="btn btn-outline-secondary btn-sm" href="/proyectofinaldesarrollo/venta/ticket/<?= (int) $venta->id_venta ?>">Ticket</a></div></td>
                     </tr><?php endforeach; ?></tbody>
                 </table></div>

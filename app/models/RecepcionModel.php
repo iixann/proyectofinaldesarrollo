@@ -20,6 +20,16 @@ class RecepcionModel extends Model
             WHERE c.estado = 1 AND c.estado_recepcion = 'PENDIENTE' ORDER BY c.fecha_compra, c.id_compra");
     }
 
+    // Cuenta exactamente las compras activas del listado de pendientes.
+    public static function contarPendientes()
+    {
+        $fila = DataBase::getRecord("SELECT COUNT(*) AS total FROM compras c
+            INNER JOIN proveedores p ON p.id_proveedor = c.id_proveedor
+            INNER JOIN usuarios u ON u.id_usuario = c.id_usuario
+            WHERE c.estado = 1 AND c.estado_recepcion = 'PENDIENTE'");
+        return (int) $fila->total;
+    }
+
     // Devuelve las recepciones con su proveedor y usuario responsable.
     public static function listarRecepciones()
     {

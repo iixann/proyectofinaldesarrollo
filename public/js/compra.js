@@ -293,7 +293,7 @@
         informar('Producto localizado. Completá la cantidad' + (esRecepcion ? ' físicamente recibida.' : ' y el precio de compra.'));
     }
 
-    // Pasa el EAN al endpoint actual; solo la confirmación del modal puede asociar.
+    // Consulta el EAN en el módulo actual; solo Compra puede ofrecer asociación.
     function localizarEanCompra(evento) {
         const codigo = evento.detail?.codigo;
         if (pendiente) { informar('Esperá a que termine la operación pendiente.', true); return; }
@@ -328,7 +328,7 @@
             if (resultado.existe) mostrarProductoExistente(producto);
             informar(resultado.existe ? 'El producto existe. Confirmá su asociación al proveedor en el modal.' : 'El EAN no está registrado. Podés completar el alta rápida; no se creó ningún producto.');
             bootstrap.Modal.getOrCreateInstance(document.getElementById('modalProductoRapido')).show();
-        }, {action: '/proyectofinaldesarrollo/compra/consultarProductoRapido', codigo: codigo.trim(), proveedor: idProveedor, cerrar: false});
+        }, {action: formularioProducto.action.replace(/crearProductoRapido$/, 'consultarProductoRapido'), codigo: codigo.trim(), proveedor: idProveedor, cerrar: false});
     }
 
     // Las pantallas anteriores sin lector mantienen los mismos eventos.

@@ -16,7 +16,12 @@ class SesioncajaController extends Controller
         SessionController::onlyUsers(['VENDEDOR']);
         $mensajes = ['abierta' => 'Caja abierta correctamente.', 'cerrada' => 'Caja cerrada correctamente.'];
         $resultado = is_string($_GET['resultado'] ?? null) ? $_GET['resultado'] : '';
-        // Envía los datos a la vista index.
+        // La vista operativa recibe solo disponibilidad, nunca sesiones de terceros.
+        if (!$this->esSupervisor()) {
+            Response::render('caja_sesion/', 'operativa', ['cajas'=>CajaSesionModel::disponibilidadOperativa($_SESSION['usuario']['id_usuario']), 'mensaje'=>$mensajes[$resultado] ?? '']);
+            return;
+        }
+        // Envía los datos a la vista administrativa.
         Response::render('caja_sesion/', 'index', ['sesiones' => CajaSesionModel::listarSesiones(), 'mensaje' => $mensajes[$resultado] ?? '']);
     }
 
@@ -25,7 +30,8 @@ class SesioncajaController extends Controller
     {
         // Solo permite entrar a los roles autorizados.
         SessionController::onlyUsers(['VENDEDOR']);
-        $this->formularioAbrir();
+        $datos = ['id_caja' => is_string($_GET['caja'] ?? null) ? $_GET['caja'] : ''];
+        $this->formularioAbrir($datos);
     }
 
     // Registra por POST la apertura de una sesión de caja.
@@ -118,6 +124,12 @@ class SesioncajaController extends Controller
         Response::render('caja_sesion/', 'ver', ['sesion' => $sesion, 'totalesMedios' => CajaSesionModel::totalesPorMedio($id)]);
     }
 
+    // Dueño y administrador conservan la vista completa de sesiones.
+    private function esSupervisor()
+    {
+        return (bool) array_intersect(['ADMINISTRADOR', 'DUEÑO'], $_SESSION['usuario']['roles']);
+    }
+
     // Impide cerrar la caja si el usuario no tiene autorización.
     private function exigirPropietario($sesion)
     {
@@ -144,7 +156,10 @@ class SesioncajaController extends Controller
             exit;
         }
         // Pasa a CajaSesionModel para buscar la sesión de caja.
-        $sesion = CajaSesionModel::buscarSesion($id);
+        $alcance = $this->esSupervisor() ? null : $_SESSION['usuario']['id_usuario'];
+        $sesion = CajaSesionModel::buscarSesion($id, $alcance);
+        // Un vendedor no obtiene detalles de una sesión ajena.
+        if (!$sesion && $alcance !== null) { http_response_code(403); exit('No tenés acceso a esta sesión de caja.'); }
         // Si no encuentra la sesión, detiene la solicitud.
         if (!$sesion) {
             http_response_code(404);
@@ -180,7 +195,7 @@ class SesioncajaController extends Controller
     private function formularioAbrir($datos = [], $errores = [])
     {
         // Envía los datos a la vista abrir.
-        Response::render('caja_sesion/', 'abrir', ['cajas' => CajaSesionModel::cajasActivas(), 'datos' => $datos, 'errores' => $errores]);
+        Response::render('caja_sesion/', 'abrir', ['cajas' => CajaSesionModel::cajasDisponibles(), 'datos' => $datos, 'errores' => $errores]);
     }
 
     // Calcula el resumen y carga la vista para cerrar la sesión de caja.

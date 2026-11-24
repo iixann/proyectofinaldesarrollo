@@ -37,17 +37,24 @@
                                         <td><?= htmlspecialchars($usuario->nombre, ENT_QUOTES, 'UTF-8') ?></td>
                                         <td><?= htmlspecialchars($usuario->apellido, ENT_QUOTES, 'UTF-8') ?></td>
                                         <td><?= htmlspecialchars($usuario->email, ENT_QUOTES, 'UTF-8') ?></td>
-                                        <td><span class="badge rounded-pill <?= (int) $usuario->estado === 1 ? 'bg-success-subtle text-success-emphasis' : 'bg-secondary-subtle text-secondary-emphasis' ?>"><?= (int) $usuario->estado === 1 ? 'ACTIVO' : 'INACTIVO' ?></span></td>
+                                        <td><span class="badge rounded-pill text-nowrap <?= (int) $usuario->estado === 1 ? 'bg-success-subtle text-success-emphasis' : 'bg-secondary-subtle text-secondary-emphasis' ?>"><?= (int) $usuario->estado === 1 ? 'ACTIVO' : 'INACTIVO' ?></span></td>
                                         <td>
                                             <div class="d-flex flex-wrap gap-1">
                                                 <?php foreach ($usuario->roles as $rol): ?>
-                                                    <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis"><?= htmlspecialchars($rol->nombre_rol, ENT_QUOTES, 'UTF-8') ?></span>
+                                                    <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis text-nowrap"><?= htmlspecialchars($rol->nombre_rol, ENT_QUOTES, 'UTF-8') ?></span>
                                                 <?php endforeach; ?>
                                             </div>
                                         </td>
-                                        <td><div class="acciones-tabla d-flex flex-wrap gap-2"><form method="post" action="/proyectofinaldesarrollo/user/<?= (int) $usuario->estado === 1 ? 'baja' : 'reactivar' ?>/<?= (int) $usuario->id_usuario ?>">
+                                        <td><div class="acciones-tabla d-flex flex-wrap align-items-center gap-1">
+                                        <?php // Identifica al principal con etiquetas compactas; el modelo protege su baja. ?>
+                                        <?php if ((int) $usuario->es_principal === 1): ?>
+                                            <span class="badge text-bg-primary text-nowrap" title="Administrador principal">Principal</span>
+                                            <button class="btn btn-sm btn-outline-secondary" disabled title="El usuario principal no puede darse de baja">Baja protegida</button>
+                                        <?php else: ?>
+                                        <form method="post" <?= (int) $usuario->estado === 1 ? 'data-confirmar-baja="¿Desea dar de baja al usuario ' . htmlspecialchars($usuario->nombre . ' ' . $usuario->apellido, ENT_QUOTES, 'UTF-8') . '?"' : '' ?> action="/proyectofinaldesarrollo/user/<?= (int) $usuario->estado === 1 ? 'baja' : 'reactivar' ?>/<?= (int) $usuario->id_usuario ?>">
                                             <button class="btn btn-sm <?= (int) $usuario->estado === 1 ? 'btn-outline-danger' : 'btn-outline-success' ?>" type="submit"><?= (int) $usuario->estado === 1 ? 'Dar de baja' : 'Reactivar' ?></button>
                                         </form>
+                                        <?php endif; ?>
                                             <a class="btn btn-sm btn-outline-primary" href="/proyectofinaldesarrollo/user/restablecerPassword/<?= (int) $usuario->id_usuario ?>">Restablecer contraseña</a>
                                         </div></td>
                                     </tr>

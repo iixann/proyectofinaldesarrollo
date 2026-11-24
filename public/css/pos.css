@@ -11,10 +11,16 @@
 .pos-feedback { display: flex; align-items: center; gap: .5rem; margin: .35rem 0; }
 #mensajePos { flex: 1; padding: .3rem .75rem; margin: 0; font-size: .8rem; }
 #verUltimaVenta { flex-shrink: 0; font-size: .75rem; min-height: 1.9rem; }
-.pos-ticket > .card-body { display: flex; flex-direction: column; }
+/* Reserva una fila para el resumen; el carrito usa el resto sin quedar debajo. */
+.pos-ticket > .card-body { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
+.pos-ticket > .card-body > div:first-child { grid-row: 1; }
+#carritoVacio, #tablaCarrito { grid-row: 2; min-height: 0; }
+.pos-total-venta { grid-row: 3; }
 #carritoVacio { margin: auto; }
 /* Permite desplazar el carrito manteniendo visible su cabecera. */
 #tablaCarrito { overflow: auto; border: 0; border-radius: 0; }
+#tablaCarrito th { padding: .4rem .5rem; }
+#lineasCarrito tr:focus-visible { outline: 2px solid #6d1a36; outline-offset: -2px; }
 #tablaCarrito thead { position: sticky; top: 0; z-index: 1; }
 #lineasCarrito td { padding: .35rem .5rem; }
 #lineasCarrito td:first-child { width: 50%; font-weight: 600; }
@@ -30,13 +36,15 @@
 #lineasCarrito tr.pos-reciente > td { animation: pos-agregado 1.5s ease-out; }
 @keyframes pos-agregado { from { background-color: #d1e7dd; } }
 @media (prefers-reduced-motion: reduce) { #lineasCarrito tr.pos-reciente > td { animation: none; background-color: #d1e7dd; } }
-.pos-total-venta { display: flex; align-items: center; gap: 1.5rem; border-top: 2px solid #e5d1d8; padding-top: .65rem; margin-top: auto; flex-shrink: 0; }
+.pos-total-venta { display: flex; align-items: center; gap: .75rem; border-top: 1px solid #e5d1d8; padding-top: .4rem; margin-top: .25rem; flex-shrink: 0; }
 #cantidadArticulos { color: #64748b; font-size: .9rem; }
 .pos-subtotal { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
 .pos-subtotal > span { font-size: .75rem; letter-spacing: .06em; }
-#terminalPos #totalCarrito { font-size: clamp(1.8rem, 3vw, 2.7rem); line-height: 1.2; color: #6d1a36; font-variant-numeric: tabular-nums; }
-#abrirCobro { min-width: 11rem; font-weight: 750; }
+#terminalPos #totalCarrito { font-size: clamp(1.5rem, 2.2vw, 2rem); line-height: 1.2; color: #6d1a36; font-variant-numeric: tabular-nums; }
+#abrirCobro { min-width: 9rem; min-height: 2.5rem; padding: .35rem .75rem; font-size: 1rem; font-weight: 750; }
 #abrirCobro small { opacity: .75; font-size: .8rem; }
+/* Bootstrap muestra las tarjetas como flex; hidden debe retirarlas del layout. */
+#resultadosBusqueda[hidden] { display: none; }
 #resultadosBusqueda { margin: 0 0 .35rem; flex-shrink: 0; }
 #resultadosBusqueda .card-body { padding: .5rem .75rem !important; }
 #resultadosBusqueda h2 { font-size: .85rem; margin-bottom: .25rem; }
@@ -105,7 +113,7 @@
     .pos-ticket { margin-top: .5rem; }
     #tablaCarrito { max-height: 50dvh; }
     .pos-ticket > .card-body { min-height: 45dvh; }
-    .pos-total-venta { position: sticky; bottom: 0; background: #fff; flex-wrap: wrap; gap: .5rem; }
+    .pos-total-venta { position: static; background: #fff; flex-wrap: wrap; gap: .5rem; }
     .pos-subtotal { gap: .5rem; }
 }
 /* Apila búsquedas y pagos para pantallas pequeñas. */

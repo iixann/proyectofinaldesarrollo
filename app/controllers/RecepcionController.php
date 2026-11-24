@@ -68,6 +68,24 @@ class RecepcionController extends Controller
         $this->formularioDirecta();
     }
 
+    // Mantiene el alta de proveedores propia de Recepción Directa.
+    public function actionCrearProveedorRapido()
+    {
+        (new CompraController())->altaRapidaParaRecepcion('proveedor');
+    }
+
+    // Mantiene el alta de productos con stock cero, antes de recibirlos.
+    public function actionCrearProductoRapido()
+    {
+        (new CompraController())->altaRapidaParaRecepcion('producto');
+    }
+
+    // Consulta el EAN en Recepción sin crear compras ni asociaciones.
+    public function actionConsultarProductoRapido()
+    {
+        (new CompraController())->altaRapidaParaRecepcion('consulta');
+    }
+
     // Registra por POST una recepción sin compra previa.
     public function actionGuardarDirecta()
     {

@@ -5,6 +5,15 @@
     <?php require APP_PATH . 'views/inc/head.php'; ?>
 </head>
 <body class="d-flex flex-column min-vh-100">
+    <!-- El comprobante original conserva sus datos y señala que dejó de tener efecto. -->
+    <?php if ($venta->estado_rectificacion === 'RECTIFICADA'): ?>
+        <div class="alert alert-warning" role="status"><strong>VENTA RECTIFICADA — sin efecto en caja.</strong>
+        Motivo: <?= htmlspecialchars($venta->motivo_rectificacion ?? '', ENT_QUOTES, 'UTF-8') ?>.
+        Fecha: <?= htmlspecialchars($venta->fecha_rectificacion ?? '', ENT_QUOTES, 'UTF-8') ?> · Usuario que rectificó: #<?= (int) $venta->id_usuario_rectifica ?>.
+        <a href="/proyectofinaldesarrollo/venta/ver/<?= (int) $venta->id_venta_corregida ?>">Ver venta corregida #<?= (int) $venta->id_venta_corregida ?></a></div>
+    <?php endif; ?>
+    <?php if ($venta->id_venta_original !== null): ?><p>Rectifica la venta <a href="/proyectofinaldesarrollo/venta/ver/<?= (int) $venta->id_venta_original ?>">#<?= (int) $venta->id_venta_original ?></a>.</p><?php endif; ?>
+
     <?php $seccionActual = 'ventas'; require APP_PATH . 'views/inc/navbar.php'; ?>
     <!-- Muestra el detalle de ventas enviado por el controlador. -->
     <main class="container py-4 flex-grow-1" id="contenido">
@@ -42,6 +51,9 @@
             <p class="fw-semibold text-end mb-0">Total pagado: $ <?= htmlspecialchars($totalPagado, ENT_QUOTES, 'UTF-8') ?></p>
         </div></section>
     </main>
+    <?php // Solo una venta vigente de una caja abierta ofrece corregir. ?>
+    <?php if ((int) $venta->estado === 1 && $venta->estado_caja === 'ABIERTA'): ?><div class="container mb-3"><a class="btn btn-outline-primary" href="/proyectofinaldesarrollo/venta/rectificar/<?= (int) $venta->id_venta ?>">Corregir / Rectificar venta</a></div>
+    <?php else: ?><p class="container text-secondary">Solo se pueden rectificar ventas vigentes de una caja ABIERTA.</p><?php endif; ?>
     <?php require APP_PATH . 'views/inc/footer.php'; ?>
 </body>
 </html>

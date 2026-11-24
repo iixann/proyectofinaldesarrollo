@@ -55,8 +55,14 @@
         textarea.form-control { min-height: 5rem; }
         main .btn, .modal .btn { min-height: 2.5rem; display: inline-flex; align-items: center; justify-content: center; gap: .35rem; }
         main .btn-sm { min-height: 2.25rem; }
-        .badge { line-height: 1.35; white-space: normal; }
+        /* Los estados cortos se mantienen legibles; las listas de badges pueden envolver. */
+        .badge { line-height: 1.35; white-space: nowrap; }
         .table { margin-bottom: 0; }
+        /* Las tablas anchas conservan nombres legibles y desplazan dentro de su contenedor. */
+        .pantalla-tabla-ancha { max-width: 1920px; }
+        .table .col-producto { min-width: 12rem; }
+        .table .col-ean { white-space: nowrap; }
+        .table .col-acciones-producto { width: 1%; white-space: nowrap; }
         .table > :not(caption) > * > * { padding: .8rem .75rem; }
         .table thead th { background: #f8fafc; color: #475569; font-size: .85rem; white-space: nowrap; }
         .table td { max-width: 24rem; overflow-wrap: anywhere; }
@@ -73,7 +79,8 @@
         .tabla-recepcion td:first-child { min-width: 11rem; }
         .cantidad-esperada { background: #f8fafc !important; text-align: center; font-weight: 600; }
         .modal-content > form { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
-        .modal-body { overflow-y: auto; }
+        /* Los nombres largos de la consulta no generan scroll horizontal en el modal. */
+        .modal-body { overflow-y: auto; overflow-wrap: anywhere; min-width: 0; }
         .modal-footer { gap: .5rem; }
         .modal-footer > * { margin: 0; }
         .navbar .nav-link { border-radius: .4rem; }

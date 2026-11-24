@@ -7,6 +7,12 @@ $puedeGestionarOperaciones = \app\controllers\SessionController::sesionValida()
     && ($puedeAdministrarMaestros || in_array('RECEPCIONISTA', $_SESSION['usuario']['roles'], true));
 $puedeOperarCaja = \app\controllers\SessionController::sesionValida()
     && ($puedeAdministrarMaestros || in_array('VENDEDOR', $_SESSION['usuario']['roles'], true));
+// Vendedor y recepción pueden consultar el catálogo y las categorías.
+$puedeConsultarCatalogo = $puedeGestionarOperaciones || $puedeOperarCaja;
+// Una consulta COUNT liviana actualiza el badge al cargar cada página.
+$cantidadReposicion = $puedeGestionarOperaciones ? \app\models\ReposicionModel::contarParaReposicion() : 0;
+// Cuenta pendientes de control solo para quienes pueden entrar a Recepción.
+$cantidadRecepciones = $puedeGestionarOperaciones ? \app\models\RecepcionModel::contarPendientes() : 0;
 $inicioNavegacion = \app\controllers\SessionController::destinoInicio() ?? '/proyectofinaldesarrollo/session/login';
 ?>
     <a class="visually-hidden-focusable position-absolute bg-white p-3" href="#contenido">Ir al contenido</a>
@@ -28,10 +34,10 @@ $inicioNavegacion = \app\controllers\SessionController::destinoInicio() ?? '/pro
                         <?php if ($esAdministrador): ?>
                         <li class="nav-item"><a class="nav-link <?= $seccionActual === 'usuarios' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'usuarios' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/user/index">Usuarios</a></li>
                         <?php endif; ?>
-                        <?php if ($puedeAdministrarMaestros): ?>
+                        <?php if ($puedeConsultarCatalogo): ?>
                         <li class="nav-item"><a class="nav-link <?= $seccionActual === 'categorias' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'categorias' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/categoria/index">Categorías</a></li>
                         <?php endif; ?>
-                        <?php if ($puedeAdministrarMaestros): ?>
+                        <?php if ($puedeConsultarCatalogo): ?>
                         <li class="nav-item"><a class="nav-link <?= $seccionActual === 'productos' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'productos' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/producto/index">Productos</a></li>
                         <?php endif; ?>
                         <?php if ($puedeAdministrarMaestros): ?>
@@ -43,17 +49,14 @@ $inicioNavegacion = \app\controllers\SessionController::destinoInicio() ?? '/pro
                         <?php if ($puedeOperarCaja): ?>
                         <li class="nav-item"><a class="nav-link <?= $seccionActual === 'sesiones' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'sesiones' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/sesioncaja/index">Sesiones de caja</a></li>
                         <?php endif; ?>
-                        <?php if ($puedeGestionarOperaciones): ?>
+                        <?php if ($puedeAdministrarMaestros): ?>
                         <li class="nav-item"><a class="nav-link <?= $seccionActual === 'compras' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'compras' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/compra/index">Compras</a></li>
                         <?php endif; ?>
                         <?php if ($puedeGestionarOperaciones): ?>
-                        <li class="nav-item"><a class="nav-link <?= $seccionActual === 'recepciones' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'recepciones' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/recepcion/index">Recepción</a></li>
+                        <li class="nav-item"><a class="nav-link <?= $seccionActual === 'recepciones' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'recepciones' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/recepcion/index">Recepción<?php if ($cantidadRecepciones > 0): ?> <span class="badge rounded-pill text-bg-danger" aria-label="<?= $cantidadRecepciones ?> compras pendientes de recepción"><?= $cantidadRecepciones ?></span><?php endif; ?></a></li>
                         <?php endif; ?>
                         <?php if ($puedeGestionarOperaciones): ?>
-                        <li class="nav-item"><a class="nav-link <?= $seccionActual === 'stock' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'stock' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/stock/index">Stock</a></li>
-                        <?php endif; ?>
-                        <?php if ($puedeGestionarOperaciones): ?>
-                        <li class="nav-item"><a class="nav-link <?= $seccionActual === 'reposicion' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'reposicion' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/reposicion/index">Reposición</a></li>
+                        <li class="nav-item"><a class="nav-link <?= $seccionActual === 'reposicion' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'reposicion' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/reposicion/index">Reposición<?php if ($cantidadReposicion > 0): ?> <span class="badge rounded-pill text-bg-danger" aria-label="<?= $cantidadReposicion ?> productos para reponer"><?= $cantidadReposicion ?></span><?php endif; ?></a></li>
                         <?php endif; ?>
                         <?php if ($puedeOperarCaja): ?>
                         <li class="nav-item"><a class="nav-link <?= $seccionActual === 'consulta_pos' ? 'active text-primary fw-semibold' : '' ?>" <?= $seccionActual === 'consulta_pos' ? 'aria-current="page"' : '' ?> href="/proyectofinaldesarrollo/pos/index">Punto de Venta</a></li>

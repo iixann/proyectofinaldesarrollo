@@ -13,7 +13,7 @@
         <?php endif; ?>
         <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 my-4">
             <h1 class="h2 fw-bold mb-0">Gestión de categorías</h1>
-            <a class="btn btn-primary" href="/proyectofinaldesarrollo/categoria/crear">Nueva categoría</a>
+            <?php if ($puedeGestionar): ?><a class="btn btn-primary" href="/proyectofinaldesarrollo/categoria/crear">Nueva categoría</a><?php endif; ?>
         </div>
         <?php if ($mensaje !== ''): ?>
             <div class="alert alert-success" role="status"><?= htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8') ?></div>
@@ -26,23 +26,23 @@
         <section class="card border-0 shadow-sm rounded-4" aria-label="Listado de categorías">
             <div class="card-body p-3 p-md-4">
                 <?php if (!$categorias): ?>
-                    <p class="text-secondary text-center my-4">No se encontraron categorías. Probá otra búsqueda o creá una categoría.</p>
+                    <p class="text-secondary text-center my-4">No se encontraron categorías. Probá otra búsqueda.</p>
                 <?php else: ?>
                     <div class="table-responsive" tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p>
                         <!-- Listado generado con los registros recibidos del controlador. -->
                         <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light"><tr><th scope="col">ID</th><th scope="col">Nombre</th><th scope="col">Estado</th><th scope="col">Fecha de alta</th><th scope="col">Acciones</th></tr></thead>
+                            <thead class="table-light"><tr><th scope="col">ID</th><th scope="col">Nombre</th><th scope="col">Estado</th><th scope="col">Fecha de alta</th><?php if ($puedeGestionar): ?><th scope="col">Acciones</th><?php endif; ?></tr></thead>
                             <tbody>
                                 <?php foreach ($categorias as $categoria): ?>
                                     <tr>
                                         <td><?= htmlspecialchars((string) $categoria->id_categoria, ENT_QUOTES, 'UTF-8') ?></td>
                                         <td><?= htmlspecialchars($categoria->nombre_categoria, ENT_QUOTES, 'UTF-8') ?></td>
-                                        <td><span class="badge rounded-pill <?= (int) $categoria->estado === 1 ? 'bg-success-subtle text-success-emphasis' : 'bg-secondary-subtle text-secondary-emphasis' ?>"><?= (int) $categoria->estado === 1 ? 'ACTIVO' : 'INACTIVO' ?></span></td>
+                                        <td><span class="badge rounded-pill text-nowrap <?= (int) $categoria->estado === 1 ? 'bg-success-subtle text-success-emphasis' : 'bg-secondary-subtle text-secondary-emphasis' ?>"><?= (int) $categoria->estado === 1 ? 'ACTIVO' : 'INACTIVO' ?></span></td>
                                         <td><?= htmlspecialchars($categoria->fecha_alta, ENT_QUOTES, 'UTF-8') ?></td>
-                                        <td><div class="acciones-tabla d-flex flex-wrap gap-2">
+                                        <?php if ($puedeGestionar): ?><td><div class="acciones-tabla d-flex flex-wrap gap-2">
                                             <a class="btn btn-outline-primary btn-sm" href="/proyectofinaldesarrollo/categoria/editar/<?= htmlspecialchars((string) $categoria->id_categoria, ENT_QUOTES, 'UTF-8') ?>">Editar</a>
                                             <?php if ((int) $categoria->estado === 1): ?>
-                                                <form method="post" action="/proyectofinaldesarrollo/categoria/baja/<?= htmlspecialchars((string) $categoria->id_categoria, ENT_QUOTES, 'UTF-8') ?>">
+                                                <form data-confirmar-baja="¿Desea dar de baja al categoría <?= htmlspecialchars($categoria->nombre_categoria, ENT_QUOTES, 'UTF-8') ?>?" method="post" action="/proyectofinaldesarrollo/categoria/baja/<?= htmlspecialchars((string) $categoria->id_categoria, ENT_QUOTES, 'UTF-8') ?>">
                                                     <button class="btn btn-outline-danger btn-sm" type="submit">Dar de baja</button>
                                                 </form>
                                             <?php else: ?>
@@ -50,7 +50,7 @@
                                                     <button class="btn btn-outline-success btn-sm" type="submit">Reactivar</button>
                                                 </form>
                                             <?php endif; ?>
-                                        </div></td>
+                                        </div></td><?php endif; ?>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>

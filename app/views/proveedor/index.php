@@ -41,11 +41,11 @@
                                         <td><?= htmlspecialchars($proveedor->nombre_contacto ?? '', ENT_QUOTES, 'UTF-8') ?></td>
                                         <td><?= htmlspecialchars($proveedor->telefono ?? '', ENT_QUOTES, 'UTF-8') ?></td>
                                         <td><?= htmlspecialchars($proveedor->email ?? '', ENT_QUOTES, 'UTF-8') ?></td>
-                                        <td><span class="badge rounded-pill <?= (int) $proveedor->estado === 1 ? 'bg-success-subtle text-success-emphasis' : 'bg-secondary-subtle text-secondary-emphasis' ?>"><?= (int) $proveedor->estado === 1 ? 'ACTIVO' : 'INACTIVO' ?></span></td>
+                                        <td><span class="badge rounded-pill text-nowrap <?= (int) $proveedor->estado === 1 ? 'bg-success-subtle text-success-emphasis' : 'bg-secondary-subtle text-secondary-emphasis' ?>"><?= (int) $proveedor->estado === 1 ? 'ACTIVO' : 'INACTIVO' ?></span></td>
                                         <td><div class="acciones-tabla d-flex flex-wrap gap-2">
                                             <a class="btn btn-outline-primary btn-sm" href="/proyectofinaldesarrollo/proveedor/editar/<?= htmlspecialchars((string) $proveedor->id_proveedor, ENT_QUOTES, 'UTF-8') ?>">Editar</a>
                                             <?php if ((int) $proveedor->estado === 1): ?>
-                                                <form method="post" action="/proyectofinaldesarrollo/proveedor/baja/<?= htmlspecialchars((string) $proveedor->id_proveedor, ENT_QUOTES, 'UTF-8') ?>">
+                                                <form data-confirmar-baja="¿Desea dar de baja al proveedor <?= htmlspecialchars($proveedor->razon_social, ENT_QUOTES, 'UTF-8') ?>?" method="post" action="/proyectofinaldesarrollo/proveedor/baja/<?= htmlspecialchars((string) $proveedor->id_proveedor, ENT_QUOTES, 'UTF-8') ?>">
                                                     <button class="btn btn-outline-danger btn-sm" type="submit">Dar de baja</button>
                                                 </form>
                                             <?php else: ?>

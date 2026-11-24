@@ -15,20 +15,24 @@ class ProductoController extends Controller
     public function actionIndex($parametro = null)
     {
         // Solo permite entrar a los roles autorizados.
-        SessionController::onlyUsers(['DUEÑO']);
+        SessionController::onlyUsers(['DUEÑO', 'RECEPCIONISTA', 'VENDEDOR']);
         $mensajes = [
             'creado' => 'Producto creado correctamente.',
             'actualizado' => 'Producto actualizado correctamente.',
             'reactivada' => 'Producto reactivado correctamente.',
-            'baja' => 'Producto dado de baja.'
+            'baja' => 'Producto dado de baja.',
+            'registrado' => 'Movimiento registrado correctamente.'
         ];
-        $filtros = ['nombre' => $this->leerFiltro('nombre'),
+        $filtros = ['nombre' => $this->leerFiltro('nombre'), 'codigo_barras' => $this->leerFiltro('codigo_barras', 50),
             'id_categoria' => $this->leerFiltro('id_categoria', 10, true),
             'id_proveedor' => $this->leerFiltro('id_proveedor', 10, true)];
+        // El vendedor consulta; recepción también puede mantener el catálogo.
+        $puedeGestionar = SessionController::esAdministrador() || (bool) array_intersect(['DUEÑO', 'RECEPCIONISTA'], $_SESSION['usuario']['roles']);
+        $filtros['solo_activos'] = !$puedeGestionar;
         $resultado = is_string($_GET['resultado'] ?? null) ? $_GET['resultado'] : '';
         // Envía los datos a la vista index.
         Response::render($this->viewDir(__NAMESPACE__), 'index', [
-            'productos' => ProductoModel::listarProductos($filtros),
+            'productos' => ProductoModel::listarProductos($filtros), 'puedeGestionar' => $puedeGestionar,
             'filtros' => $filtros, 'categorias' => CategoriaModel::listarCategorias(),
             'proveedores' => ProveedorModel::listarProveedores(),
             'mensaje' => $mensajes[$resultado] ?? ''
@@ -39,7 +43,7 @@ class ProductoController extends Controller
     public function actionCrear()
     {
         // Solo permite entrar a los roles autorizados.
-        SessionController::onlyUsers(['DUEÑO']);
+        SessionController::onlyUsers(['DUEÑO', 'RECEPCIONISTA']);
         $this->mostrarFormulario('crear');
     }
 
@@ -47,7 +51,7 @@ class ProductoController extends Controller
     public function actionGuardar()
     {
         // Solo permite entrar a los roles autorizados.
-        SessionController::onlyUsers(['DUEÑO']);
+        SessionController::onlyUsers(['DUEÑO', 'RECEPCIONISTA']);
         $this->exigirPost();
         $this->guardar();
     }
@@ -56,7 +60,7 @@ class ProductoController extends Controller
     public function actionEditar($id = null)
     {
         // Solo permite entrar a los roles autorizados.
-        SessionController::onlyUsers(['DUEÑO']);
+        SessionController::onlyUsers(['DUEÑO', 'RECEPCIONISTA']);
         $producto = $this->buscarProducto($id);
         $datosProducto = (array) $producto;
         // Pasa a ProductoModel: devuelve las asociaciones activas del producto con datos de proveedor.
@@ -69,7 +73,7 @@ class ProductoController extends Controller
     public function actionActualizar($id = null)
     {
         // Solo permite entrar a los roles autorizados.
-        SessionController::onlyUsers(['DUEÑO']);
+        SessionController::onlyUsers(['DUEÑO', 'RECEPCIONISTA']);
         $this->exigirPost();
         $producto = $this->buscarProducto($id);
         $this->guardar($producto->id_producto);
@@ -79,11 +83,11 @@ class ProductoController extends Controller
     public function actionBaja($id = null)
     {
         // Solo permite entrar a los roles autorizados.
-        SessionController::onlyUsers(['DUEÑO']);
+        SessionController::onlyUsers(['DUEÑO', 'RECEPCIONISTA']);
         $this->exigirPost();
         $producto = $this->buscarProducto($id);
         // Pasa a ProductoModel: da de baja sin eliminar el producto en la base de datos.
-        ProductoModel::bajaProducto($producto->id_producto);
+        ProductoModel::bajaProducto($producto->id_producto, $_SESSION['usuario']['id_usuario']);
         $this->volverAlListado('baja');
     }
 
@@ -91,12 +95,21 @@ class ProductoController extends Controller
     public function actionReactivar($id = null)
     {
         // Solo permite entrar a los roles autorizados.
-        SessionController::onlyUsers(['DUEÑO']);
+        SessionController::onlyUsers(['DUEÑO', 'RECEPCIONISTA']);
         $this->exigirPost();
         $producto = $this->buscarProducto($id);
         // Pasa a ProductoModel: reactiva el producto en la base de datos.
-        ProductoModel::reactivar($producto->id_producto);
+        ProductoModel::reactivar($producto->id_producto, $_SESSION['usuario']['id_usuario']);
         $this->volverAlListado('reactivada');
+    }
+
+    // Muestra quién mantuvo el producto; movimientos conserva el historial físico.
+    public function actionHistorial($id = null)
+    {
+        SessionController::onlyUsers(['DUEÑO', 'RECEPCIONISTA']);
+        $producto = $this->buscarProducto($id);
+        Response::render('producto/', 'historial', ['producto'=>$producto,
+            'operaciones'=>\app\models\AuditoriaModel::listarProducto($producto->id_producto)]);
     }
 
     // Rechaza solicitudes que no usan POST.
@@ -182,10 +195,10 @@ class ProductoController extends Controller
             // Sin ID crea un registro; con ID actualiza el existente.
             if ($id === null) {
                 // Pasa a ProductoModel: inserta el producto en la base de datos.
-                ProductoModel::crearProducto($datosProducto, $proveedores);
+                ProductoModel::crearProducto($datosProducto, $proveedores, $_SESSION['usuario']['id_usuario']);
             } else {
                 // Pasa a ProductoModel: actualiza el producto en la base de datos.
-                ProductoModel::actualizarProducto($id, $datosProducto, $proveedores);
+                ProductoModel::actualizarProducto($id, $datosProducto, $proveedores, $_SESSION['usuario']['id_usuario']);
             }
         } catch (\Throwable $excepcion) {
             error_log($excepcion->getMessage());

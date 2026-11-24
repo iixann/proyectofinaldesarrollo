@@ -36,7 +36,7 @@ class DataBase
     public static function execute($sql, $parametros = [])
     {
         $esRecepcion = self::$probarRecepcion && preg_match('/^(INSERT INTO (recepciones|detalle_recepciones|movimientos_stock)\b|UPDATE productos SET stock_actual\b)/', $sql);
-        if (!$esRecepcion && !preg_match('/^(INSERT INTO (productos|productos_proveedores|compras|detalle_compras)\b|UPDATE compras\b)/', $sql)) {
+        if (!$esRecepcion && !preg_match('/^(INSERT INTO (productos|productos_proveedores|compras|detalle_compras|auditoria_operaciones)\b|UPDATE compras\b)/', $sql)) {
             throw new RuntimeException('Escritura inesperada: ' . $sql);
         }
         self::$escrituras[] = $sql;
@@ -52,11 +52,12 @@ class DataBase
     public static function cancelarTransaccion() { if (self::connection()->inTransaction()) self::connection()->rollBack(); }
 }
 
-foreach (['ProductoModel', 'ProveedorModel', 'CompraModel', 'UserModel', 'RecepcionModel'] as $modelo) require dirname(__DIR__) . '/app/models/' . $modelo . '.php';
+foreach (['AuditoriaModel', 'ProductoModel', 'ProveedorModel', 'CompraModel', 'UserModel', 'RecepcionModel'] as $modelo) require dirname(__DIR__) . '/app/models/' . $modelo . '.php';
 foreach (['SessionController', 'CompraController', 'PosController'] as $controlador) require dirname(__DIR__) . '/app/controllers/' . $controlador . '.php';
 
 DataBase::connection()->exec(<<<'SQL'
 PRAGMA foreign_keys = ON;
+CREATE TABLE auditoria_operaciones (id_auditoria INTEGER PRIMARY KEY, id_usuario INTEGER, accion TEXT, entidad TEXT, id_entidad INTEGER, detalle TEXT);
 CREATE TABLE categorias (id_categoria INTEGER PRIMARY KEY, nombre_categoria TEXT, estado INTEGER);
 CREATE TABLE proveedores (id_proveedor INTEGER PRIMARY KEY, razon_social TEXT, estado INTEGER);
 CREATE TABLE usuarios (id_usuario INTEGER PRIMARY KEY, nombre TEXT, apellido TEXT, email TEXT, password TEXT, estado INTEGER, debe_cambiar_password INTEGER);
@@ -73,7 +74,7 @@ INSERT INTO usuarios VALUES (1, 'Fixture', 'Local', 'fixture@local.test', 'hash-
 INSERT INTO productos VALUES (1, 'loco un poco', '0000000000001', 1, 'Original', '8500.00', 14, 2, 1, NULL), (2, 'Inactivo', '0000000000002', 1, '', '9000.00', 7, 1, 0, '2026-01-01');
 INSERT INTO productos_proveedores (id_producto,id_proveedor) VALUES (1,1), (2,1);
 SQL);
-$_SESSION = ['usuario' => ['id_usuario' => 1, 'roles' => ['RECEPCIONISTA'] ], 'csrf_compra' => 'fixture-token'];
+$_SESSION = ['usuario' => ['id_usuario' => 1, 'roles' => ['DUEÑO'] ], 'csrf_compra' => 'fixture-token'];
 $_SERVER['REQUEST_METHOD'] = 'POST';
 $casos = [];
 // Registra una comprobación o detiene la prueba si falla.
@@ -114,7 +115,7 @@ comprobar($datos['producto']['codigo_barras'] === '0000000000001' && !DataBase::
 comprobar($estado === 409 && $datos['existe'] && !DataBase::$escrituras, 'Alta de EAN existente ofrece asociación sin insertar producto');
 [$estado, $datos] = invocar('actionAsociarProductoRapido', $base + ['id_producto' => '1']);
 comprobar($estado === 200 && $datos['ok'] && !$datos['ya_asociado'] && $datos['producto']['id_producto'] === 1, 'Confirmar asocia producto existente al proveedor B');
-comprobar(count(DataBase::$escrituras) === 1 && str_starts_with(DataBase::$escrituras[0], 'INSERT INTO productos_proveedores'), 'Solo escribe la relación: no producto, stock, movimiento ni recepción');
+comprobar(count(DataBase::$escrituras) === 2 && str_starts_with(DataBase::$escrituras[0], 'INSERT INTO productos_proveedores') && str_starts_with(DataBase::$escrituras[1], 'INSERT INTO auditoria_operaciones'), 'Escribe relación y auditoría: no producto, stock, movimiento ni recepción');
 comprobar(DataBase::getRecord('SELECT COUNT(*) AS n FROM productos')->n === 2 && $productoAntes == DataBase::getRecord('SELECT * FROM productos WHERE id_producto = :id', ['id' => 1]), 'No duplica ni cambia nombre, EAN, categoría, precio o stock');
 $escrituras = count(DataBase::$escrituras);
 [$estado, $datos] = invocar('actionAsociarProductoRapido', $base + ['id_producto' => '1']);

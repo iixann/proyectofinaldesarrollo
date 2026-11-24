@@ -21,6 +21,15 @@
 </head>
 <!-- Comprobante imprimible con los productos y pagos de la venta. -->
 <body>
+    <!-- El comprobante original conserva sus datos y señala que dejó de tener efecto. -->
+    <?php if ($venta->estado_rectificacion === 'RECTIFICADA'): ?>
+        <div class="alert alert-warning" role="status"><strong>VENTA RECTIFICADA — sin efecto en caja.</strong>
+        Motivo: <?= htmlspecialchars($venta->motivo_rectificacion ?? '', ENT_QUOTES, 'UTF-8') ?>.
+        Fecha: <?= htmlspecialchars($venta->fecha_rectificacion ?? '', ENT_QUOTES, 'UTF-8') ?> · Usuario que rectificó: #<?= (int) $venta->id_usuario_rectifica ?>.
+        <a href="/proyectofinaldesarrollo/venta/ver/<?= (int) $venta->id_venta_corregida ?>">Ver venta corregida #<?= (int) $venta->id_venta_corregida ?></a></div>
+    <?php endif; ?>
+    <?php if ($venta->id_venta_original !== null): ?><p>Rectifica la venta <a href="/proyectofinaldesarrollo/venta/ver/<?= (int) $venta->id_venta_original ?>">#<?= (int) $venta->id_venta_original ?></a>.</p><?php endif; ?>
+
     <nav class="no-imprimir"><button type="button" onclick="window.print()">Imprimir ticket</button> <a href="/proyectofinaldesarrollo/venta/ver/<?= (int) $venta->id_venta ?>">Volver a la venta</a></nav>
     <header><h1>Identidad Singular</h1><p>Vinería</p><h2>Ticket de venta #<?= (int) $venta->id_venta ?></h2></header>
     <p>Fecha: <?= htmlspecialchars($venta->fecha_venta, ENT_QUOTES, 'UTF-8') ?></p>

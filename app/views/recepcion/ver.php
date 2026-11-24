@@ -12,7 +12,9 @@
             <p><strong>Fecha:</strong> <?= htmlspecialchars($recepcion->fecha_recepcion, ENT_QUOTES, 'UTF-8') ?></p>
             <p><strong>Proveedor:</strong> <?= htmlspecialchars($recepcion->razon_social, ENT_QUOTES, 'UTF-8') ?></p>
             <p><strong>Usuario receptor:</strong> <?= htmlspecialchars($recepcion->nombre . ' ' . $recepcion->apellido, ENT_QUOTES, 'UTF-8') ?></p>
-            <p><strong>Origen:</strong> <?php if ($recepcion->id_compra !== null): ?><a href="/proyectofinaldesarrollo/compra/ver/<?= (int) $recepcion->id_compra ?>">Compra #<?= (int) $recepcion->id_compra ?></a><?php else: ?>Directa<?php endif; ?></p>
+            <?php // El origen sigue visible; solo dueño/admin pueden abrir el módulo Compra. ?>
+            <?php $puedeVerCompra = \app\controllers\SessionController::esAdministrador() || in_array('DUEÑO', $_SESSION['usuario']['roles'], true); ?>
+            <p><strong>Origen:</strong> <?php if ($recepcion->id_compra !== null): ?><?php if ($puedeVerCompra): ?><a href="/proyectofinaldesarrollo/compra/ver/<?= (int) $recepcion->id_compra ?>">Compra #<?= (int) $recepcion->id_compra ?></a><?php else: ?>Compra #<?= (int) $recepcion->id_compra ?><?php endif; ?><?php else: ?>Directa<?php endif; ?></p>
             <p><strong>Observación:</strong> <?= htmlspecialchars($recepcion->observacion ?? '', ENT_QUOTES, 'UTF-8') ?></p>
             <?php if ($recepcion->estado === 'RECHAZADA'): ?><p class="alert alert-danger"><strong>Motivo de rechazo:</strong> <?= htmlspecialchars($recepcion->motivo_rechazo ?? '', ENT_QUOTES, 'UTF-8') ?></p><?php endif; ?>
             <!-- Listado generado con los registros recibidos del controlador. -->

@@ -123,8 +123,15 @@ class UserController extends Controller
             exit('El usuario no existe.');
         }
         // Elige entre reactivar el registro o darlo de baja.
-        if ($activo) UserModel::reactivar($id);
-        else UserModel::baja($id);
+        try {
+            if ($activo) UserModel::reactivar($id);
+            else UserModel::baja($id);
+        } catch (\DomainException $excepcion) {
+            // Devuelve el rechazo de negocio sin ejecutar la baja.
+            http_response_code(in_array($excepcion->getCode(), [403,409], true) ? $excepcion->getCode() : 422);
+            echo htmlspecialchars($excepcion->getMessage(), ENT_QUOTES, 'UTF-8');
+            return;
+        }
         // Redirige al navegador a user/index.
         header('Location: /proyectofinaldesarrollo/user/index?resultado=' . ($activo ? 'reactivado' : 'baja'), true, 303);
         exit;

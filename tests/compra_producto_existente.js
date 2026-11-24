@@ -64,7 +64,7 @@ async function probarCompraProductoExistente(codigoCompra) {
         const selector = fila.appendChild(new Elemento('select')); selector.name = 'renglones[0][id_producto]';
         for (const campo of ['cantidad', 'precio_unitario']) { const el = fila.appendChild(new Elemento('input')); el.name = 'renglones[0][' + campo + ']'; el.value = campo === 'cantidad' ? '4' : '100.00'; }
         const nuevo = fila.appendChild(new Elemento('button', {'data-nuevo-producto': ''}));
-        const producto = add('formularioProductoRapido', 'form'); producto.action = '/proyectofinaldesarrollo/compra/crearProductoRapido'; producto.elements = {};
+        const producto = add('formularioProductoRapido', 'form'); producto.action = '/proyectofinaldesarrollo/' + (recepcion ? 'recepcion' : 'compra') + '/crearProductoRapido'; producto.elements = {};
         const camposNuevos = new Elemento('fieldset', {'data-datos-nuevo-producto': ''}); producto.appendChild(camposNuevos);
         for (const name of ['id_proveedor', 'codigo_barras', 'nombre_producto', 'id_categoria', 'precio_venta', 'stock_minimo', 'descripcion']) {
             const el = new Elemento('input'); el.name = name; producto.elements[name] = el;

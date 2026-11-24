@@ -11,6 +11,13 @@ class ReposicionModel extends Model
     protected $tabla = 'productos';
     protected $clavePrimaria = 'id_producto';
 
+    // Cuenta los productos activos que alcanzaron el stock mínimo.
+    public static function contarParaReposicion()
+    {
+        $fila = DataBase::getRecord('SELECT COUNT(*) AS total FROM productos WHERE estado=1 AND stock_actual<=stock_minimo');
+        return (int) $fila->total;
+    }
+
     // Devuelve productos con stock menor o igual al mínimo y sus proveedores para reponer.
     public static function listarProductos($filtros = [])
     {

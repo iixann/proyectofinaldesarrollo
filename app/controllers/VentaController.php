@@ -6,6 +6,7 @@ use \Controller;
 use \Response;
 use app\models\VentaModel;
 use app\models\CajaSesionModel;
+use app\models\ProductoModel;
 
 // Controla las operaciones de ventas.
 class VentaController extends Controller
@@ -32,7 +33,7 @@ class VentaController extends Controller
         if ($error !== '') http_response_code(400);
         // Envía los datos a la vista index.
         Response::render('venta/', 'index', [
-            'ventas' => $error === '' ? VentaModel::listarVentas($filtros['desde'], $filtros['hasta'], $filtros['id_venta']) : [],
+            'ventas' => $error === '' ? VentaModel::listarVentas($filtros['desde'], $filtros['hasta'], $filtros['id_venta'], $this->filtroUsuario()) : [],
             'filtros' => $filtros, 'error' => $error
         ]);
     }
@@ -65,11 +66,11 @@ class VentaController extends Controller
             exit;
         }
         // Pasa a VentaModel para buscar la venta con su caja y vendedor.
-        $venta = VentaModel::buscarVenta($id);
+        $venta = VentaModel::buscarVenta($id, $this->filtroUsuario());
         // Si no encuentra la venta, detiene la solicitud.
         if (!$venta) {
-            http_response_code(404);
-            echo 'La venta no existe.';
+            http_response_code($this->filtroUsuario() === null ? 404 : 403);
+            echo 'La venta no existe o no tenés permiso para consultarla.';
             exit;
         }
         // Pasa a VentaModel para obtener los pagos de la venta.
@@ -78,6 +79,87 @@ class VentaController extends Controller
         foreach ($pagos as $pago) $totalPagado += CajaSesionModel::centavos((string) $pago->monto);
         return ['venta' => $venta, 'detalles' => VentaModel::detallesVenta($id), 'pagos' => $pagos,
             'totalPagado' => CajaSesionModel::decimal($totalPagado)];
+    }
+
+    // El ID de vendedor proviene de la sesión; nunca de filtros del navegador.
+    private function filtroUsuario()
+    {
+        return VentaModel::esSupervisor($_SESSION['usuario']['roles']) ? null : $_SESSION['usuario']['id_usuario'];
+    }
+
+    // Crea el token que protege la confirmación de una rectificación.
+    private function tokenRectificacion()
+    {
+        if (empty($_SESSION['csrf_rectificacion'])) $_SESSION['csrf_rectificacion'] = bin2hex(random_bytes(32));
+        return $_SESSION['csrf_rectificacion'];
+    }
+
+    // Muestra la venta original y permite preparar su reemplazo auditable.
+    public function actionRectificar($id = null)
+    {
+        SessionController::onlyUsers(['VENDEDOR']);
+        $datos = $this->datosVenta($id);
+        try {
+            VentaModel::exigirRectificable($datos['venta'], $datos['venta']->estado_caja, $_SESSION['usuario']['id_usuario'], $_SESSION['usuario']['roles']);
+        } catch (\DomainException $excepcion) {
+            http_response_code($excepcion->getCode());
+            echo htmlspecialchars($excepcion->getMessage(), ENT_QUOTES, 'UTF-8');
+            return;
+        }
+        $this->formularioRectificacion($datos);
+    }
+
+    // Carga los productos y medios actuales para la nueva versión de la venta.
+    private function formularioRectificacion($datos, $errores = [], $renglones = null, $pagos = null, $motivo = '')
+    {
+        $datos['productos'] = ProductoModel::listarProductos(['solo_activos'=>true]);
+        $datos['medios'] = VentaModel::mediosActivos();
+        $datos['errores'] = $errores;
+        $datos['renglones'] = $renglones ?? array_map(static fn($d) => ['id_producto'=>$d->id_producto,'cantidad'=>$d->cantidad], $datos['detalles']);
+        $datos['entradasPago'] = $pagos ?? array_map(static fn($p) => (array) $p, $datos['pagos']);
+        $datos['motivo'] = $motivo;
+        $datos['tokenRectificacion'] = $this->tokenRectificacion();
+        Response::render('venta/', 'rectificar', $datos);
+    }
+
+    // Valida POST, identidad y token antes de pasar toda la corrección al modelo.
+    public function actionGuardarRectificacion($id = null)
+    {
+        SessionController::onlyUsers(['VENDEDOR']);
+        if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') { header('Allow: POST'); http_response_code(405); return; }
+        $token = $_POST['csrf_rectificacion'] ?? '';
+        if (!is_string($token) || !hash_equals($this->tokenRectificacion(), $token)) { http_response_code(403); echo 'Formulario vencido.'; return; }
+        $datos = $this->datosVenta($id);
+        $renglones = $_POST['renglones'] ?? [];
+        $entradas = $_POST['pagos'] ?? [];
+        $motivo = $_POST['motivo'] ?? '';
+        $pagos = [];
+        if (is_array($entradas)) {
+            foreach ($entradas as $pago) {
+                // Los medios vacíos no forman parte del nuevo cobro.
+                if (!is_array($pago)) { $pagos = null; break; }
+                $monto = $pago['monto'] ?? '';
+                if (is_string($monto) && ($monto === '' || preg_match('/^0(?:\.0{1,2})?$/D', $monto))) continue;
+                $pagos[] = $pago;
+            }
+        } else $pagos = null;
+        try {
+            $nueva = VentaModel::rectificar($id, $renglones, $pagos, $_SESSION['usuario']['id_usuario'], $_SESSION['usuario']['roles'], $motivo);
+        } catch (\DomainException $excepcion) {
+            $estado = in_array($excepcion->getCode(), [403,404,409], true) ? $excepcion->getCode() : 422;
+            http_response_code($estado);
+            if ($estado !== 422) { echo htmlspecialchars($excepcion->getMessage(), ENT_QUOTES, 'UTF-8'); return; }
+            $this->formularioRectificacion($datos, [$excepcion->getMessage()], is_array($renglones) ? $renglones : [], is_array($entradas) ? $entradas : [], is_string($motivo) ? $motivo : '');
+            return;
+        } catch (\Throwable $excepcion) {
+            error_log($excepcion->getMessage());
+            http_response_code(500);
+            $this->formularioRectificacion($datos, ['No se pudo rectificar. No se guardó ningún cambio.']);
+            return;
+        }
+        // El detalle nuevo permite seguir el enlace a la venta original.
+        header('Location: /proyectofinaldesarrollo/venta/ver/' . $nueva['id_venta'], true, 303);
+        exit;
     }
 
     // Recibe la venta por POST y pasa su confirmación al modelo.

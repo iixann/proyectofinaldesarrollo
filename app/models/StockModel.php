@@ -64,6 +64,16 @@ class StockModel extends Model
         self::registrarAjuste($idProducto, $idUsuario, 'AJUSTE_SALIDA', $cantidad, $observacion);
     }
 
+    // Registra unidades perdidas con motivo y responsable, sin dar de baja el catálogo.
+    public static function registrarDecomiso($idProducto, $idUsuario, $cantidad, $motivo)
+    {
+        // Sin un motivo válido no se permite retirar unidades.
+        if (!is_string($motivo) || !mb_check_encoding($motivo, 'UTF-8') || trim($motivo) === '' || mb_strlen(trim($motivo), 'UTF-8') > 255) {
+            throw new \DomainException('Ingresá el motivo del decomiso, hasta 255 caracteres.');
+        }
+        self::registrarAjuste($idProducto, $idUsuario, 'DECOMISO', $cantidad, trim($motivo));
+    }
+
     // Actualiza el stock y guarda el movimiento dentro de una transacción.
     private static function registrarAjuste($idProducto, $idUsuario, $tipo, $cantidad, $observacion)
     {

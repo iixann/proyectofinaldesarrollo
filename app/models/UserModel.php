@@ -43,7 +43,7 @@ class UserModel extends Model
     // Devuelve los usuarios con sus roles para el listado.
     public static function listarUsuarios()
     {
-        $usuarios = DataBase::query("SELECT id_usuario, nombre, apellido, email, estado FROM usuarios ORDER BY id_usuario");
+        $usuarios = DataBase::query("SELECT id_usuario, nombre, apellido, email, estado, es_principal FROM usuarios ORDER BY id_usuario");
         foreach ($usuarios as $usuario) {
             $usuario->roles = self::obtenerRolesUsuario($usuario->id_usuario);
         }
@@ -53,8 +53,28 @@ class UserModel extends Model
     // Da de baja el usuario sin borrar su historial.
     public static function baja($id)
     {
-        // Actualiza los datos de usuarios.
-        return DataBase::execute('UPDATE usuarios SET estado = 0, fecha_baja = CURRENT_TIMESTAMP WHERE id_usuario = :id', ['id' => $id]);
+        DataBase::iniciarTransaccion();
+        try {
+            // Serializa las bajas para no desactivar simultáneamente a los últimos administradores.
+            DataBase::query('SELECT id_usuario FROM usuarios ORDER BY id_usuario FOR UPDATE');
+            $usuario = self::findId($id);
+            if (!$usuario) throw new \DomainException('El usuario no existe.');
+            // Evita dar de baja al principal aunque se invoque el endpoint manualmente.
+            if ((int) $usuario->es_principal === 1) throw new \DomainException('El usuario principal no puede darse de baja.', 403);
+            $roles = array_column(self::obtenerRolesUsuario($id), 'nombre_rol');
+            if ((int) $usuario->estado === 1 && in_array('ADMINISTRADOR', $roles, true)) {
+                $otros = DataBase::getRecord("SELECT COUNT(DISTINCT u.id_usuario) AS total FROM usuarios u
+                    JOIN usuarios_roles ur ON ur.id_usuario=u.id_usuario JOIN roles r ON r.id_rol=ur.id_rol
+                    WHERE u.estado=1 AND u.id_usuario<>:id AND ur.estado=1 AND r.estado=1 AND r.nombre_rol='ADMINISTRADOR'
+                    AND ur.fecha_desde<=CURRENT_TIMESTAMP AND (ur.fecha_hasta IS NULL OR ur.fecha_hasta>CURRENT_TIMESTAMP)", ['id'=>$id]);
+                if ((int) $otros->total === 0) throw new \DomainException('No se puede dar de baja al último administrador.', 409);
+            }
+            DataBase::execute('UPDATE usuarios SET estado=0, fecha_baja=CURRENT_TIMESTAMP WHERE id_usuario=:id', ['id'=>$id]);
+            DataBase::confirmarTransaccion();
+        } catch (\Throwable $excepcion) {
+            DataBase::cancelarTransaccion();
+            throw $excepcion;
+        }
     }
 
     // Reactiva el usuario en la base de datos.
