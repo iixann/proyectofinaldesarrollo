@@ -40,6 +40,86 @@ class UserModel extends Model
         return DataBase::query("SELECT id_rol, nombre_rol FROM roles WHERE estado = 1 ORDER BY nombre_rol");
     }
 
+    // Valida la selección activa y devuelve sus IDs sin duplicados.
+    public static function validarCombinacionRoles($seleccion)
+    {
+        if (!is_array($seleccion) || !$seleccion) throw new \DomainException('Seleccioná al menos un rol.');
+        $activos = [];
+        foreach (self::obtenerRolesActivos() as $rol) $activos[(string) $rol->id_rol] = $rol->nombre_rol;
+        $ids = [];
+        foreach ($seleccion as $id) {
+            // Rechaza IDs manipulados, desconocidos y roles inactivos.
+            if ((!is_string($id) && !is_int($id)) || !ctype_digit((string) $id)
+                || !isset($activos[(string) $id]) || !in_array($activos[(string) $id], ['ADMINISTRADOR','DUEÑO','VENDEDOR','RECEPCIONISTA'], true)) {
+                throw new \DomainException('Seleccioná solamente roles activos válidos.');
+            }
+            $ids[(int) $id] = $activos[(string) $id];
+        }
+        // Administrador y dueño siempre se asignan solos.
+        if (count($ids) > 1 && array_intersect(array_values($ids), ['ADMINISTRADOR','DUEÑO'])) {
+            throw new \DomainException('ADMINISTRADOR y DUEÑO son exclusivos. Solo VENDEDOR y RECEPCIONISTA pueden combinarse.');
+        }
+        return array_keys($ids);
+    }
+
+    // Recupera datos y roles vigentes para autorizar con información real.
+    public static function usuarioConRoles($id)
+    {
+        $usuario = self::findId($id);
+        if ($usuario) $usuario->roles = self::obtenerRolesUsuario($id);
+        return $usuario;
+    }
+
+    // El principal puede gestionar otros administradores; nadie cambia al principal.
+    public static function puedeCambiarRoles($actor, $objetivo)
+    {
+        return $actor && $objetivo && (int) $actor->estado === 1
+            && in_array('ADMINISTRADOR', array_column($actor->roles, 'nombre_rol'), true)
+            && (int) $objetivo->es_principal !== 1
+            && ((int) $actor->es_principal === 1 || !in_array('ADMINISTRADOR', array_column($objetivo->roles, 'nombre_rol'), true));
+    }
+
+    // Cambia asignaciones y auditoría juntas, conservando el historial anterior.
+    public static function cambiarRoles($idUsuario, $seleccion, $idActor)
+    {
+        DataBase::iniciarTransaccion();
+        try {
+            // Usa el mismo bloqueo que las bajas para proteger al último administrador.
+            DataBase::query('SELECT id_usuario FROM usuarios ORDER BY id_usuario FOR UPDATE');
+            $actor = self::usuarioConRoles($idActor);
+            $objetivo = self::usuarioConRoles($idUsuario);
+            if (!$actor || (int) $actor->estado !== 1 || !in_array('ADMINISTRADOR', array_column($actor->roles, 'nombre_rol'), true)) {
+                throw new \DomainException('Acceso denegado.', 403);
+            }
+            if (!$objetivo) throw new \DomainException('El usuario no existe.', 404);
+            // El formulario nunca altera la identidad protegida del principal.
+            if ((int) $objetivo->es_principal === 1) throw new \DomainException('Los roles del administrador principal están protegidos.', 403);
+            $roles = self::validarCombinacionRoles($seleccion);
+            $nombres = [];
+            foreach (self::obtenerRolesActivos() as $rol) if (in_array((int) $rol->id_rol, $roles, true)) $nombres[] = $rol->nombre_rol;
+            $anteriores = array_column($objetivo->roles, 'nombre_rol');
+            // Nunca deja al sistema sin un administrador activo, incluso en instalaciones antiguas.
+            if ((int) $objetivo->estado === 1 && in_array('ADMINISTRADOR', $anteriores, true) && !in_array('ADMINISTRADOR', $nombres, true)) {
+                $otros = DataBase::getRecord("SELECT COUNT(DISTINCT u.id_usuario) AS total FROM usuarios u
+                    JOIN usuarios_roles ur ON ur.id_usuario=u.id_usuario JOIN roles r ON r.id_rol=ur.id_rol
+                    WHERE u.estado=1 AND u.id_usuario<>:id AND ur.estado=1 AND r.estado=1 AND r.nombre_rol='ADMINISTRADOR'
+                    AND ur.fecha_desde<=CURRENT_TIMESTAMP AND (ur.fecha_hasta IS NULL OR ur.fecha_hasta>CURRENT_TIMESTAMP)", ['id'=>$idUsuario]);
+                if ((int) $otros->total === 0) throw new \DomainException('No se puede quitar el rol al último administrador activo.', 409);
+            }
+            if (!self::puedeCambiarRoles($actor, $objetivo)) throw new \DomainException('Solo el administrador principal puede cambiar roles de administradores.', 403);
+            // Cierra también asignaciones futuras; una cancelación nunca termina antes de comenzar.
+            DataBase::execute('UPDATE usuarios_roles SET estado=0, fecha_hasta=GREATEST(CURRENT_TIMESTAMP,fecha_desde)
+                WHERE id_usuario=:id AND estado=1', ['id'=>$idUsuario]);
+            self::asignarRoles($idUsuario, $roles);
+            // Si la auditoría falla, se revierten tanto el cierre como las nuevas asignaciones.
+            AuditoriaModel::registrarCambioRoles($idActor, $idUsuario, $anteriores, $nombres);
+            DataBase::confirmarTransaccion();
+        } catch (\Throwable $excepcion) {
+            DataBase::cancelarTransaccion();
+            throw $excepcion;
+        }
+    }
+
     // Devuelve los usuarios con sus roles para el listado.
     public static function listarUsuarios()
     {
@@ -80,6 +160,9 @@ class UserModel extends Model
     // Reactiva el usuario en la base de datos.
     public static function reactivar($id)
     {
+        // Rechaza la reactivación administrativa del principal antes de escribir.
+        $usuario = self::findId($id);
+        if ($usuario && (int) $usuario->es_principal === 1) throw new \DomainException('Administrador Principal protegido.', 403);
         // Actualiza los datos de usuarios.
         return DataBase::execute('UPDATE usuarios SET estado = 1, fecha_baja = NULL WHERE id_usuario = :id', ['id' => $id]);
     }
@@ -111,6 +194,8 @@ class UserModel extends Model
         if (!$usuario) {
             throw new \DomainException('El usuario no existe.');
         }
+        // El cambio personal de contraseña usa otro método; aquí solo hay administración.
+        if ((int) $usuario->es_principal === 1) throw new \DomainException('Administrador Principal protegido.', 403);
         // Impide reutilizar la contraseña que ya está guardada.
         if (password_verify($contrasena, $usuario->password)) {
             throw new \DomainException('La contraseña temporal debe ser distinta de la actual.');
@@ -179,6 +264,9 @@ class UserModel extends Model
     // Guarda las relaciones entre el usuario y los roles elegidos.
     public static function asignarRoles($idUsuario, $roles)
     {
+        $roles = self::validarCombinacionRoles($roles);
+        // También protege llamadas internas que intenten sumar roles a uno existente.
+        self::validarCombinacionRoles(array_merge(array_column(self::obtenerRolesUsuario($idUsuario), 'id_rol'), $roles));
         foreach ($roles as $idRol) {
             DataBase::execute(
                 "INSERT INTO usuarios_roles (id_usuario, id_rol, fecha_desde, fecha_hasta, estado)

@@ -1,6 +1,6 @@
 # Correcciones indicadas por el profesor
 
-Registro de la implementación en el repositorio original. **La prueba manual final fue aprobada por el propietario y se autorizó el cierre con commit/push tras la validación final.** Las menciones de etapas sin commit que siguen son históricas; el cierre se registra al final.
+Registro de la implementación en el repositorio original. **Revisión posterior de Usuarios/Roles del 25/11/2026: cambios pendientes de prueba manual, sin commit ni push.** Los cierres anteriores se conservan como registro histórico; esta revisión se documenta en el punto 14.
 
 Estado inicial: rama `main`, remoto `iixann/proyectofinaldesarrollo`, HEAD `b546999`.
 Solo estaba pendiente `public/css/ean-scanner.css`: se conservó la regla que oculta la cámara desde 768 px.
@@ -37,10 +37,10 @@ La entrega se genera desde el estado actual del repositorio original e incluye e
 
 | Archivo / método | Líneas finales | Qué hacen |
 |---|---:|---|
-| `app/models/UserModel.php` — `listarUsuarios()`              | 44–51 | Incluye la marca principal en los datos de la vista. |
-| `app/models/UserModel.php` — `baja()`              | 54–78 | Bloquea usuarios, rechaza principal y último administrador, y guarda o revierte la baja. |
-| `app/controllers/UserController.php` — `cambiarEstado()`              | 106–138 | Mantiene permisos y POST; devuelve el rechazo del modelo sin desactivar. |
-| `app/views/user/index.php`              | 40–52 | Estado y roles sin saltos de línea, acciones compactas, badge Principal y botón de baja deshabilitado. |
+| `app/models/UserModel.php` — `listarUsuarios()`              | 124–131 | Incluye la marca principal en los datos de la vista. |
+| `app/models/UserModel.php` — `baja()`              | 134–158 | Bloquea usuarios, rechaza principal y último administrador, y guarda o revierte la baja. |
+| `app/controllers/UserController.php` — `cambiarEstado()`              | 114–146 | Mantiene permisos y POST; devuelve el rechazo del modelo sin desactivar. |
+| `app/views/user/index.php`              | 41–65 | Estado/roles compactos, badge Principal y Principal protegido sin acciones administrativas. |
 | `database/schema.sql`              | 23–27 | Marca, índice único y CHECK; no dependen del ID del usuario. |
 | `database/schema.sql`              | 365–414 | Protecciones de eliminación, desactivación y pérdida del rol principal. |
 | `database/instalacion_profesor.sql`              | 428–428 | Selecciona al principal demo por correo después de asignar el rol. |
@@ -81,7 +81,7 @@ La entrega se genera desde el estado actual del repositorio original e incluye e
 | `app/views/inc/confirmar_baja.php`              | 1–9 | Modal compartido con pregunta, Cancelar y Confirmar. |
 | `public/js/confirmar-baja.js`              | 1–33 | Intercepta submit, exige confirmación y conserva el formulario y su ruta originales. |
 | `app/views/inc/footer.php`              | 12–13 | Incluye el componente una sola vez por página. |
-| `app/views/user/index.php`              | 54–54 | Identifica la baja y el nombre del registro; la reactivación no usa confirmación destructiva. |
+| `app/views/user/index.php`              | 61–63 | Identifica la baja y el nombre del registro; la reactivación no usa confirmación destructiva. |
 | `app/views/producto/index.php`              | 90–95 | Identifica la baja y el nombre del registro; la reactivación no usa confirmación destructiva. |
 | `app/views/proveedor/index.php`              | 48–48 | Identifica la baja y el nombre del registro; la reactivación no usa confirmación destructiva. |
 | `app/views/categoria/index.php`              | 45–45 | Identifica la baja y el nombre del registro; la reactivación no usa confirmación destructiva. |
@@ -99,7 +99,7 @@ La venta confirmada o Vaciar carrito eliminan el borrador. Cajas inválidas se d
 | Archivo / método | Líneas finales | Qué hacen |
 |---|---:|---|
 | `public/js/carrito-temporal.js`              | 1–59 | Crear, guardar, leer, vaciar y depurar borradores; limpieza de logout y caché de navegación. |
-| `app/controllers/SessionController.php`              | 237–237 | Genera un contexto diferente en cada autenticación. |
+| `app/controllers/SessionController.php`              | 245–245 | Genera un contexto diferente en cada autenticación. |
 | `app/controllers/PosController.php` — `actionIndex()`              | 15–55 | Envía sesiones propias disponibles y evita caché de una terminal anterior. |
 | `app/views/pos/index.php`              | 41–41 | Asocia terminal, usuario y contexto al borrador. |
 | `app/views/pos/index.php`              | 146–157 | Entrega sesiones autorizadas y depura borradores antes de iniciar el POS. |
@@ -301,7 +301,7 @@ Se agrega únicamente `auditoria_operaciones` para acciones administrativas; FK 
 | `app/controllers/StockController.php` — `actionGuardarDecomiso()`         | 107–134 | Valida POST/token, usa actor real, maneja errores y consume token exitoso. |
 | `app/controllers/StockController.php` — `formularioDecomiso()`         | 137–142 | Genera token y carga errores para corregir. |
 | `app/models/AuditoriaModel.php` — `registrarProducto()`         | 12–17 | Inserta responsable/acción/producto en la transacción del llamador. |
-| `app/models/AuditoriaModel.php` — `listarProducto()`         | 20–25 | Consulta últimas operaciones con responsable. |
+| `app/models/AuditoriaModel.php` — `listarProducto()`         | 28–33 | Consulta últimas operaciones con responsable. |
 | `app/views/stock/decomiso.php`         | 1–23 | Formulario de unidades/motivo; el backend valida todo. |
 | `app/views/producto/historial.php`         | 1–25 | Consulta de responsable, acción y fecha con acceso a movimientos. |
 | `database/migracion_roles_auditoria.sql`         | 1–14 | Migración aditiva para la instalación local existente. |
@@ -611,3 +611,65 @@ El propietario aprobó la prueba manual final y autorizó commit y push al termi
 - El ZIP validado no necesitó regeneración: su contenido ya coincide y se conservará sin tocar después del commit. Los tests e informes se ejecutan fuera de la entrega. La base local real y los backups anteriores permanecen intactos.
 
 Informes y capturas de este cierre permanecen fuera del repositorio: `/tmp/cierre-final-manifiesto.json`, `/tmp/cierre-final-instalacion.json`, `/tmp/cierre-final-pos`, `/tmp/cierre-final-dropdown` y resultado de regresión principal. El estado definitivo del commit/push se confirma mediante Git y en el informe al propietario; no se reescribe el proyecto después de ese cierre.
+
+
+## 14. Usuarios: roles exclusivos, cambio posterior y acciones compactas (25/11/2026)
+
+**Pedido:** ADMINISTRADOR y DUEÑO son exclusivos; VENDEDOR y RECEPCIONISTA pueden combinarse. Permitir cambios posteriores con protección de administradores y un único dropdown Acciones por fila. Esta revisión se realiza solamente en el original, pendiente de prueba manual: sin commit, push ni actualización de la entrega.
+
+**Estado previo y datos:** usuarios_roles ya es N:M, con estado y vigencia por fechas. La creación aceptaba combinaciones de jerarquía y no había formulario para cambiar roles. La consulta de solo lectura a la base local encontró 9 usuarios y ninguna combinación vigente inválida. No se modificaron datos locales ni SQL; no se necesita migración. No se cambian las capacidades funcionales de cada rol.
+
+| Archivo y líneas finales | Método/regla y explicación |
+|---|---|
+| app/models/UserModel.php:44–63 | validarCombinacionRoles: IDs activos válidos, selección obligatoria, ADMINISTRADOR/DUEÑO únicos y combinación operativa permitida. |
+| app/models/UserModel.php:66–80 | usuarioConRoles y puedeCambiarRoles: autoriza con datos actuales; un admin común no cambia a ningún administrador; el principal puede cambiar a otros, nunca al propio principal. |
+| app/models/UserModel.php:83–121 | cambiarRoles: bloqueo de usuarios, control de último administrador activo, cierre de asignaciones anteriores y nuevas asignaciones con auditoría en la misma transacción. También cancela asignaciones futuras para evitar reactivaciones inesperadas. |
+| app/models/UserModel.php:241–277 | crearUsuario/asignarRoles: la creación transaccional también usa la validación central; una llamada directa al modelo no elude las combinaciones válidas. |
+| app/models/AuditoriaModel.php:20–25 | registrarCambioRoles: guarda actor, CAMBIO_ROLES, entidad USUARIO, objetivo y nombres de roles anteriores/nuevos; la fecha la proporciona el esquema existente. |
+| app/controllers/UserController.php:13–29 | actionIndex: calcula por usuario si corresponde ofrecer Cambiar roles y muestra el resultado de la operación. |
+| app/controllers/UserController.php:149–210 | usuarioParaCambiarRoles, actionCambiarRoles, actionGuardarRoles y mostrarCambioRoles: protegen GET/POST, objetivo real, token CSRF y errores; POST correcto redirige al listado. |
+| app/controllers/UserController.php:264–270 | actionGuardar: valida los roles de creación mediante la misma regla del modelo. |
+| app/controllers/SessionController.php:102–109 | exigirSesion: refresca roles vigentes para que un cambio surta efecto también en sesiones ya abiertas; si no quedan roles, vuelve al login. Dependencia necesaria de seguridad; no cambia la matriz de permisos. |
+| app/views/user/_roles.php:1–17 | Selector compartido con explicación de exclusividad y alerta de selección vacía. |
+| app/views/user/crear.php:51–63 | Reutiliza el selector y carga usuarios.js para el alta. |
+| app/views/user/cambiar_roles.php:1–32 | Pantalla MVC con nombre/email, roles actuales, token, errores, guardar y cancelar. |
+| app/views/user/index.php:41–65 | Estado y roles compactos; Principal junto al rol y un único Acciones. Cambiar roles depende de autorización real; mantiene restablecimiento, baja/reactivación y principal sin dropdown. No existía Editar y no se inventa esa acción. |
+| app/views/user/index.php:76 | Carga el script específico de Usuarios, sin modificar Productos. |
+| public/js/usuarios.js:4–27 | actualizar y eventos: seleccionar jerarquía desmarca/bloquea otros roles, desmarcarla los habilita; las dos funciones operativas pueden combinarse; evita envío vacío. |
+| public/js/usuarios.js:28–43 | Bootstrap Dropdown/Popper con estrategia fixed y límite viewport, siguiendo Productos: menú completo aunque la tabla tenga scroll. |
+| public/css/usuarios.css:1–6 | Columna Acciones compacta y mínimos de celdas para mantener filas legibles en móvil mediante scroll interno de tabla. |
+
+**Protecciones:** no se ofrece ni acepta Cambiar roles sobre el principal. El admin común no modifica administradores, incluidos él mismo; se comprueba tanto en controlador como en modelo. El principal puede degradar a otros administradores. No puede quedar sin administrador activo ni perderse la identidad principal. Se conservan baja protegida, último administrador, confirmación existente y restablecimiento de contraseña. El formulario no acepta es_principal ni estado desde el navegador. Ante fallo de auditoría se revierten el cierre y la creación de asignaciones.
+
+**Pruebas nuevas:** tests/usuarios_roles.py y tests/usuarios_roles_visual.py, siempre en MariaDB temporal, con instalación desde cero y sesiones HTTP reales. Cobertura de cinco combinaciones válidas, cinco inválidas, selección vacía/desconocida, creación directa inválida sin fila parcial, cambios del admin común y principal, intentos GET/POST manipulados, CSRF y método, único admin en esquema heredado, auditoría y rollback inducido, restablecimiento y protección del principal. Una sesión existente recibe inmediatamente su nueva unión de permisos: operativo mixto tiene POS y Recepción, pero no Compras ni Usuarios. tests/compra_producto_existente.php adapta únicamente su fixture SQLite con roles reales para el refresco de sesión; no cambia aplicación de Compras.
+
+**Revisión visual:** principal y administrador común frente a siete objetivos (principal, admin secundario, vendedor, recepcionista, mixto, dueño e inactivo), en 1366×768, 1024×768 y 390×844: 42 combinaciones. Menús sin cortes, acciones correctas, baja roja, confirmación cancelable, sin overflow general y filas compactas. Formularios de creación/cambio prueban bloqueo exclusivo, combinación operativa y selección vacía. Una ejecución completa aprobó 488 comprobaciones; la repetición final centrada en formularios aprobó 262, incluida su regresión funcional de 233 comprobaciones. Son ejecuciones solapadas, no se suman como casos independientes. Capturas e informes fuera del repositorio: /tmp/usuarios-roles-1k8a0avo y /tmp/usuarios-roles-oypbu_4u.
+
+**Cómo probar manualmente:** como principal, crear usuarios con cada combinación permitida; intentar combinaciones inválidas mediante POST y comprobar rechazo. Como admin común, cambiar vendedor a recepción y después a ambos; comprobar que no ofrece ni acepta cambiar a otro admin. Como principal, cambiar un admin secundario a dueño; comprobar que su propia fila no ofrece Cambiar roles y que su POST forzado se rechaza. Abrir Acciones sobre filas superiores/inferiores y usuario inactivo en las tres resoluciones; cancelar baja sin alterar datos. Verificar restablecimiento por su flujo habitual. Con una sesión del usuario objetivo ya abierta, cambiar sus roles y comprobar que en la siguiente navegación usa solo sus roles vigentes. Consultar auditoria_operaciones para revisar actor/objetivo/antes/después. Los escenarios de último administrador y fallo inducido de auditoría deben ejecutarse exclusivamente en base temporal.
+
+Referencias obtenidas del código final con nl -ba. Se actualizaron también las referencias anteriores afectadas de UserModel, UserController, SessionController, AuditoriaModel y listado de Usuarios. LEEME y SQL no requieren cambios. No se tocó ZIP, base comercial, POS, Productos, Compras, Recepción, Ventas, Caja, EAN ni otras funciones.
+
+**Verificación final:** regresión existente de correcciones aprobada: 219 comprobaciones, incluido POS/atajos, EAN, ventas/rectificación y cierre de caja, en /tmp/correcciones-profesor-rt5dr3gt. Sintaxis de 91 PHP propios correcta; JavaScript nuevo compilado en Firefox; Python correcto; Compra PHP 32 y EAN/Reposición PHP 8 correctas; git diff --check sin errores. El primer intento de regresión no tenía sus recursos Bootstrap temporales y se descartó; al disponer de esos recursos la repetición completa pasó, sin cambios de aplicación por ese incidente.
+
+
+
+### Administrador Principal protegido contra acciones administrativas de otros administradores
+
+**Problema:** restablecer contraseña validaba el rol ADMINISTRADOR del actor y la existencia del objetivo, pero no es_principal. Así un administrador secundario podía abrir el formulario y cambiar el hash del principal. La reactivación tampoco tenía rechazo explícito del principal.
+
+**Solución final:** Gestión de Usuarios no administra al principal, incluso desde su propia sesión. Su cambio personal de contraseña conserva el método existente, separado del restablecimiento administrativo. No se cambia esquema ni datos reales. El principal sigue administrando normalmente a terceros y a otros administradores según las reglas anteriores.
+
+| Archivo y líneas finales | Protección |
+|---|---|
+| app/controllers/UserController.php:69–89 | usuarioParaRestablecer valida ID/existencia y rechaza es_principal con 403 antes de formulario o cambio de hash; también lo reutiliza el cambio de roles. |
+| app/controllers/UserController.php:32–65 | GET restablecer y POST guardar contraseña pasan por el objetivo protegido; se mantienen autenticación, POST y token existentes. |
+| app/models/UserModel.php:188–205 | restablecerContrasena rechaza al principal antes de password_hash, UPDATE y cambio obligatorio; defensa adicional en modelo. |
+| app/models/UserModel.php:161–168 | reactivar rechaza al principal antes del UPDATE. |
+| app/models/UserModel.php:83–121 y 134–158 | Se conservan cambio de roles y baja protegidos, bloqueo transaccional y último administrador. |
+| app/views/user/index.php:50–65 | Principal protegido sustituye todo el dropdown para el objetivo principal; terceros mantienen Cambiar roles autorizado, Restablecer contraseña y baja/reactivar. Bootstrap/Popper no cambia. |
+
+**Pruebas temporales:** tests/usuarios_roles.py fuerza GET y POST con token válido desde admin común y desde principal contra el objetivo principal: restablecimiento, baja y reactivación devuelven 403; las pruebas anteriores verifican también cambio de roles rechazado. Se compara la fila completa del principal (incluido hash, flags y estado), todas las asignaciones y toda la auditoría antes/después: idénticas, sin registros falsos. Admin común y principal pueden seguir dando de baja, reactivando y restableciendo a terceros. La prueba visual verifica que el principal no tenga botón ni acciones en los tres tamaños; los otros menús conservan sus comprobaciones de permisos y recorte.
+
+**Prueba manual:** entrar como administrador secundario, abrir Usuarios y comprobar Principal protegido sin menú. Obtener un formulario válido de restablecimiento de un tercero y forzar su POST al ID principal: debe responder 403 sin cambiar contraseña ni exigir cambio obligatorio. Verificar también GET de restablecimiento, cambio de roles, POST baja/reactivar. Repetir administración permitida de un usuario de prueba. No usar la base comercial para bajas/restablecimientos artificiales. Sin ZIP, commit o push.
+
+**Resultado de esta corrección:** 516 comprobaciones correctas en MariaDB y Firefox temporales, informe/capturas en /tmp/usuarios-roles-sdfkz89p. Principal y admin común, tres resoluciones (1366×768, 1024×768, 390×844), ausencia de menú principal, terceros administrables y POST forzado rechazado sin cambio de hash/datos/roles/auditoría. Sintaxis PHP de los tres archivos de aplicación afectados y git diff --check correctos. El método personal cambiarContrasenaObligatoria conserva su implementación. No se accedió al ZIP ni se hicieron commit/push.

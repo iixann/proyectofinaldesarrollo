@@ -48,20 +48,7 @@
                                     <input class="form-control" id="contrasena" type="password" name="contrasena" minlength="9" autocomplete="new-password" required>
                                 </div>
                             </div>
-                            <fieldset class="mb-4">
-                                <legend class="fs-6 fw-semibold">Roles (seleccioná al menos uno)</legend>
-                                <div class="row g-3">
-                                    <?php foreach ($roles as $rol): ?>
-                                        <div class="col-12 col-sm-6">
-                                            <label class="d-flex align-items-center gap-3 border rounded-3 p-3 h-100">
-                                                <input class="form-check-input mt-0 flex-shrink-0" type="checkbox" name="roles[]" value="<?= htmlspecialchars((string) $rol->id_rol, ENT_QUOTES, 'UTF-8') ?>" <?= in_array($rol->id_rol, $datosUsuario['roles'] ?? []) ? 'checked' : '' ?>>
-                                                <span class="small fw-semibold"><?= htmlspecialchars($rol->nombre_rol, ENT_QUOTES, 'UTF-8') ?></span>
-                                            </label>
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
-                                <?php if (!$roles): ?><p class="alert alert-warning mt-3 mb-0">No hay roles activos disponibles.</p><?php endif; ?>
-                            </fieldset>
+                            <?php $seleccionados = $datosUsuario['roles'] ?? []; require APP_PATH . 'views/user/_roles.php'; ?>
                             <div class="acciones-formulario d-flex flex-wrap gap-2 border-top pt-4">
                                 <button class="btn btn-primary" type="submit" <?= !$roles ? 'disabled' : '' ?>><i class="fa-solid fa-user-plus me-2" aria-hidden="true"></i>Guardar usuario</button>
                                 <a class="btn btn-outline-secondary" href="/proyectofinaldesarrollo/user/index">Cancelar</a>
@@ -73,5 +60,6 @@
         </div>
     </main>
     <?php require APP_PATH . 'views/inc/footer.php'; ?>
+    <script src="/proyectofinaldesarrollo/js/usuarios.js?v=<?= substr(hash_file('sha256','public/js/usuarios.js'),0,12) ?>" defer></script>
 </body>
 </html>

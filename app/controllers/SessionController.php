@@ -99,6 +99,14 @@ class SessionController extends Controller
             header('Location: /proyectofinaldesarrollo/session/login');
             exit;
         }
+        // Aplica los cambios de roles también a sesiones que ya estaban abiertas.
+        $rolesActuales = array_column(UserModel::obtenerRolesUsuario($usuario->id_usuario), 'nombre_rol');
+        if (!$rolesActuales) {
+            $_SESSION = [];
+            header('Location: /proyectofinaldesarrollo/session/login');
+            exit;
+        }
+        $_SESSION['usuario']['roles'] = $rolesActuales;
         $_SESSION['usuario']['firma_password'] = $firma;
         $_SESSION['usuario']['debe_cambiar_password'] = (int) $usuario->debe_cambiar_password;
         // Si debe cambiar la clave, lo dirige al formulario obligatorio.

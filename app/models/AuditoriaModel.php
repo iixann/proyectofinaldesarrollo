@@ -5,7 +5,7 @@ namespace app\models;
 use \Model;
 use \DataBase;
 
-// Conserva quién realizó los cambios de catálogo sin sustituir movimientos de stock.
+// Conserva quién realizó cambios de catálogo y roles, sin sustituir movimientos de stock.
 class AuditoriaModel extends Model
 {
     // Guarda la operación dentro de la transacción del producto.
@@ -14,6 +14,14 @@ class AuditoriaModel extends Model
         DataBase::insert("INSERT INTO auditoria_operaciones (id_usuario,accion,entidad,id_entidad,detalle)
             VALUES (:usuario,:accion,'PRODUCTO',:producto,:detalle)",
             ['usuario'=>$idUsuario, 'accion'=>$accion, 'producto'=>$idProducto, 'detalle'=>$detalle]);
+    }
+
+    // Registra el responsable y los roles anteriores/nuevos dentro de la misma transacción.
+    public static function registrarCambioRoles($idActor, $idUsuario, $anteriores, $nuevos)
+    {
+        DataBase::insert("INSERT INTO auditoria_operaciones (id_usuario,accion,entidad,id_entidad,detalle)
+            VALUES (:actor,'CAMBIO_ROLES','USUARIO',:usuario,:detalle)",
+            ['actor'=>$idActor, 'usuario'=>$idUsuario, 'detalle'=>'Antes: ' . implode(', ', $anteriores) . '; Después: ' . implode(', ', $nuevos)]);
     }
 
     // Devuelve las últimas operaciones del producto con su responsable.

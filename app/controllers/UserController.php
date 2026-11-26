@@ -16,7 +16,10 @@ class UserController extends Controller
         SessionController::onlyUsers(['ADMINISTRADOR']);
         // Pasa a UserModel para obtener los usuarios y sus roles.
         $usuarios = UserModel::listarUsuarios();
-        $mensajes = ['baja' => 'Usuario dado de baja.', 'reactivado' => 'Usuario reactivado correctamente.',
+        $actor = UserModel::usuarioConRoles($_SESSION['usuario']['id_usuario']);
+        // La vista recibe permisos calculados con los roles reales del administrador.
+        foreach ($usuarios as $usuario) $usuario->puede_cambiar_roles = UserModel::puedeCambiarRoles($actor, $usuario);
+        $mensajes = ['roles' => 'Roles actualizados correctamente.', 'baja' => 'Usuario dado de baja.', 'reactivado' => 'Usuario reactivado correctamente.',
             'password' => 'Contraseña restablecida correctamente. El usuario deberá cambiarla al próximo inicio de sesión.'];
         $resultado = is_string($_GET['resultado'] ?? null) ? $_GET['resultado'] : '';
         // Envía los datos a la vista index.
@@ -76,6 +79,11 @@ class UserController extends Controller
         if (!$usuario) {
             http_response_code(404);
             exit('El usuario no existe.');
+        }
+        // Ninguna acción administrativa modifica al principal, ni desde su propia sesión.
+        if ((int) $usuario->es_principal === 1) {
+            http_response_code(403);
+            exit('Administrador Principal protegido.');
         }
         return $usuario;
     }
@@ -137,6 +145,70 @@ class UserController extends Controller
         exit;
     }
 
+    // Autoriza el objetivo real antes de mostrar o aceptar un cambio de roles.
+    private function usuarioParaCambiarRoles($id)
+    {
+        $usuario = $this->usuarioParaRestablecer($id);
+        $usuario->roles = UserModel::obtenerRolesUsuario($usuario->id_usuario);
+        $actor = UserModel::usuarioConRoles($_SESSION['usuario']['id_usuario']);
+        if (!UserModel::puedeCambiarRoles($actor, $usuario)) {
+            http_response_code(403);
+            exit('No tenés permiso para cambiar los roles de este usuario.');
+        }
+        return $usuario;
+    }
+
+    // Muestra los roles actuales únicamente a un administrador autorizado.
+    public function actionCambiarRoles($id = null)
+    {
+        SessionController::onlyUsers(['ADMINISTRADOR']);
+        $this->mostrarCambioRoles($this->usuarioParaCambiarRoles($id));
+    }
+
+    // Verifica POST y CSRF antes de guardar roles y auditoría en el modelo.
+    public function actionGuardarRoles($id = null)
+    {
+        SessionController::onlyUsers(['ADMINISTRADOR']);
+        if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+            header('Allow: POST');
+            http_response_code(405);
+            exit('Método no permitido');
+        }
+        $token = $_POST['csrf_roles'] ?? '';
+        if (!is_string($token) || empty($_SESSION['csrf_roles']) || !hash_equals($_SESSION['csrf_roles'], $token)) {
+            http_response_code(403);
+            exit('El formulario venció. Recargá Cambiar roles.');
+        }
+        $usuario = $this->usuarioParaCambiarRoles($id);
+        try {
+            // El modelo vuelve a comprobar permisos y último administrador bajo bloqueo.
+            UserModel::cambiarRoles($usuario->id_usuario, $_POST['roles'] ?? [], $_SESSION['usuario']['id_usuario']);
+        } catch (\DomainException $excepcion) {
+            http_response_code(in_array($excepcion->getCode(), [403,404,409], true) ? $excepcion->getCode() : 422);
+            $this->mostrarCambioRoles($usuario, [$excepcion->getMessage()]);
+            return;
+        } catch (\Throwable $excepcion) {
+            error_log('No se pudo actualizar roles y auditoría.');
+            http_response_code(500);
+            $this->mostrarCambioRoles($usuario, ['No se pudo guardar el cambio completo. Intentá nuevamente.']);
+            return;
+        }
+        unset($_SESSION['csrf_roles']);
+        header('Location: /proyectofinaldesarrollo/user/index?resultado=roles', true, 303);
+        exit;
+    }
+
+    // Prepara el formulario compartido de roles y un token propio de esta operación.
+    private function mostrarCambioRoles($usuario, $errores = [])
+    {
+        header('Cache-Control: no-store');
+        if (empty($_SESSION['csrf_roles'])) $_SESSION['csrf_roles'] = bin2hex(random_bytes(32));
+        Response::render($this->viewDir(__NAMESPACE__), 'cambiar_roles', [
+            'usuario'=>$usuario, 'roles'=>UserModel::obtenerRolesActivos(), 'errores'=>$errores,
+            'seleccionados'=>array_column($usuario->roles, 'id_rol'), 'tokenRoles'=>$_SESSION['csrf_roles']
+        ]);
+    }
+
     // Muestra el formulario para crear el usuario.
     public function actionCrear()
     {
@@ -190,21 +262,12 @@ class UserController extends Controller
             $errores[] = $excepcion->getMessage();
         }
         $roles = [];
-        // Pasa a UserModel para obtener los roles habilitados.
-        $rolesActivos = array_column(UserModel::obtenerRolesActivos(), 'id_rol');
-        // Exige seleccionar al menos un rol habilitado.
-        if (!is_array($rolesSeleccionados) || !$rolesSeleccionados) {
-            $errores[] = 'Seleccioná al menos un rol.';
-        } else {
-            foreach ($rolesSeleccionados as $idRol) {
-                if (!is_string($idRol) || !ctype_digit($idRol) || !in_array($idRol, $rolesActivos)) {
-                    $errores[] = 'Seleccioná solamente roles activos válidos.';
-                    break;
-                }
-                $roles[] = (int) $idRol;
-            }
+        try {
+            // La misma regla protege creación y cambio de roles, incluso sin JavaScript.
+            $roles = UserModel::validarCombinacionRoles($rolesSeleccionados);
+        } catch (\DomainException $excepcion) {
+            $errores[] = $excepcion->getMessage();
         }
-        $roles = array_unique($roles);
         // Si el correo ya está registrado, impide crear otro usuario con él.
         if (filter_var($correo, FILTER_VALIDATE_EMAIL) && UserModel::buscarPorCorreo($correo)) {
             $errores[] = 'El correo electrónico ya está registrado.';
@@ -219,6 +282,10 @@ class UserController extends Controller
         try {
             // Pasa a UserModel: guarda el usuario y sus roles dentro de una transacción.
             UserModel::crearUsuario($nombre, $apellido, $correo, $contrasena, $roles);
+        } catch (\DomainException $excepcion) {
+            http_response_code(422);
+            $this->mostrarFormulario([$excepcion->getMessage()], $datosUsuario);
+            return;
         } catch (\Throwable $excepcion) {
             error_log($excepcion->getMessage());
             http_response_code(500);

@@ -60,6 +60,8 @@ PRAGMA foreign_keys = ON;
 CREATE TABLE auditoria_operaciones (id_auditoria INTEGER PRIMARY KEY, id_usuario INTEGER, accion TEXT, entidad TEXT, id_entidad INTEGER, detalle TEXT);
 CREATE TABLE categorias (id_categoria INTEGER PRIMARY KEY, nombre_categoria TEXT, estado INTEGER);
 CREATE TABLE proveedores (id_proveedor INTEGER PRIMARY KEY, razon_social TEXT, estado INTEGER);
+CREATE TABLE roles (id_rol INTEGER PRIMARY KEY,nombre_rol TEXT,estado INTEGER);
+CREATE TABLE usuarios_roles (id_usuario INTEGER,id_rol INTEGER,estado INTEGER,fecha_desde TEXT DEFAULT CURRENT_TIMESTAMP,fecha_hasta TEXT);
 CREATE TABLE usuarios (id_usuario INTEGER PRIMARY KEY, nombre TEXT, apellido TEXT, email TEXT, password TEXT, estado INTEGER, debe_cambiar_password INTEGER);
 CREATE TABLE productos (id_producto INTEGER PRIMARY KEY AUTOINCREMENT, nombre_producto TEXT, codigo_barras TEXT UNIQUE NOT NULL, id_categoria INTEGER REFERENCES categorias, descripcion TEXT, precio_venta TEXT, stock_actual INTEGER, stock_minimo INTEGER, estado INTEGER DEFAULT 1, fecha_baja TEXT, UNIQUE(nombre_producto, id_categoria));
 CREATE TABLE productos_proveedores (id_producto_proveedor INTEGER PRIMARY KEY AUTOINCREMENT, id_producto INTEGER REFERENCES productos, id_proveedor INTEGER REFERENCES proveedores, estado INTEGER DEFAULT 1, fecha_baja TEXT, UNIQUE(id_producto, id_proveedor));
@@ -68,6 +70,8 @@ CREATE TABLE detalle_compras (id_detalle_compra INTEGER PRIMARY KEY AUTOINCREMEN
 CREATE TABLE recepciones (id_recepcion INTEGER PRIMARY KEY AUTOINCREMENT, id_compra INTEGER UNIQUE REFERENCES compras, id_proveedor INTEGER REFERENCES proveedores, id_usuario INTEGER REFERENCES usuarios, estado TEXT, observacion TEXT, motivo_rechazo TEXT);
 CREATE TABLE detalle_recepciones (id_detalle_recepcion INTEGER PRIMARY KEY AUTOINCREMENT, id_recepcion INTEGER REFERENCES recepciones, id_producto INTEGER REFERENCES productos, cantidad_esperada INTEGER, cantidad_recibida INTEGER);
 CREATE TABLE movimientos_stock (id_movimiento INTEGER PRIMARY KEY AUTOINCREMENT, id_producto INTEGER REFERENCES productos, id_usuario INTEGER REFERENCES usuarios, tipo_movimiento TEXT, cantidad INTEGER, stock_anterior INTEGER, stock_nuevo INTEGER, observacion TEXT);
+INSERT INTO roles VALUES (1,'DUEÑO',1),(2,'VENDEDOR',1);
+INSERT INTO usuarios_roles(id_usuario,id_rol,estado) VALUES(1,1,1);
 INSERT INTO categorias VALUES (1, 'Vinos', 1);
 INSERT INTO proveedores VALUES (1, 'Proveedor A', 1), (2, 'Proveedor B', 1), (3, 'Inactivo', 0);
 INSERT INTO usuarios VALUES (1, 'Fixture', 'Local', 'fixture@local.test', 'hash-fixture', 1, 0);
@@ -101,7 +105,7 @@ if (isset($argv[1])) {
     register_shutdown_function(static function () { echo '|HTTP:' . http_response_code(); });
     $_POST = ['csrf_compra' => 'fixture-token', 'id_proveedor' => '2', 'id_producto' => '1', 'codigo_barras' => '0000000000001'];
     if ($argv[1] === 'sin-sesion') $_SESSION = [];
-    else $_SESSION['usuario']['roles'] = ['VENDEDOR'];
+    else { $_SESSION['usuario']['roles'] = ['VENDEDOR']; DataBase::connection()->exec('UPDATE usuarios_roles SET id_rol=2 WHERE id_usuario=1'); }
     (new \app\controllers\CompraController())->actionAsociarProductoRapido();
     exit;
 }

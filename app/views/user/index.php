@@ -3,6 +3,7 @@
 <head>
     <title>Gestión de usuarios | Sistema de Gestión de Vinería</title>
     <?php require APP_PATH . 'views/inc/head.php'; ?>
+    <link rel="stylesheet" href="/proyectofinaldesarrollo/css/usuarios.css?v=<?= substr(hash_file('sha256','public/css/usuarios.css'),0,12) ?>">
 </head>
 <body class="d-flex flex-column min-vh-100">
     <?php $seccionActual = 'usuarios'; require APP_PATH . 'views/inc/navbar.php'; ?>
@@ -27,9 +28,9 @@
                 <div class="card-body p-3 p-md-4">
                     <div class="table-responsive" tabindex="0" role="region" aria-label="Tabla con desplazamiento horizontal"><p class="ayuda-tabla">Deslizá horizontalmente para ver todas las columnas.</p>
                         <!-- Listado generado con los registros recibidos del controlador. -->
-                        <table class="table table-hover align-middle mb-0">
+                        <table class="table table-hover align-middle mb-0 tabla-usuarios">
                             <caption class="visually-hidden">Usuarios, estado y roles asignados</caption>
-                            <thead class="table-light"><tr><th scope="col">ID</th><th scope="col">Nombre</th><th scope="col">Apellido</th><th scope="col">Email</th><th scope="col">Estado</th><th scope="col">Roles</th><th scope="col">Acciones</th></tr></thead>
+                            <thead class="table-light"><tr><th scope="col">ID</th><th scope="col">Nombre</th><th scope="col">Apellido</th><th scope="col">Email</th><th scope="col">Estado</th><th scope="col">Roles</th><th scope="col" class="col-acciones-usuario">Acciones</th></tr></thead>
                             <tbody>
                                 <?php foreach ($usuarios as $usuario): ?>
                                     <tr>
@@ -43,20 +44,25 @@
                                                 <?php foreach ($usuario->roles as $rol): ?>
                                                     <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis text-nowrap"><?= htmlspecialchars($rol->nombre_rol, ENT_QUOTES, 'UTF-8') ?></span>
                                                 <?php endforeach; ?>
+                                                <?php if ((int) $usuario->es_principal === 1): ?><span class="badge text-bg-primary text-nowrap" title="Administrador principal">Principal</span><?php endif; ?>
                                             </div>
                                         </td>
-                                        <td><div class="acciones-tabla d-flex flex-wrap align-items-center gap-1">
-                                        <?php // Identifica al principal con etiquetas compactas; el modelo protege su baja. ?>
-                                        <?php if ((int) $usuario->es_principal === 1): ?>
-                                            <span class="badge text-bg-primary text-nowrap" title="Administrador principal">Principal</span>
-                                            <button class="btn btn-sm btn-outline-secondary" disabled title="El usuario principal no puede darse de baja">Baja protegida</button>
-                                        <?php else: ?>
-                                        <form method="post" <?= (int) $usuario->estado === 1 ? 'data-confirmar-baja="¿Desea dar de baja al usuario ' . htmlspecialchars($usuario->nombre . ' ' . $usuario->apellido, ENT_QUOTES, 'UTF-8') . '?"' : '' ?> action="/proyectofinaldesarrollo/user/<?= (int) $usuario->estado === 1 ? 'baja' : 'reactivar' ?>/<?= (int) $usuario->id_usuario ?>">
-                                            <button class="btn btn-sm <?= (int) $usuario->estado === 1 ? 'btn-outline-danger' : 'btn-outline-success' ?>" type="submit"><?= (int) $usuario->estado === 1 ? 'Dar de baja' : 'Reactivar' ?></button>
-                                        </form>
-                                        <?php endif; ?>
-                                            <a class="btn btn-sm btn-outline-primary" href="/proyectofinaldesarrollo/user/restablecerPassword/<?= (int) $usuario->id_usuario ?>">Restablecer contraseña</a>
-                                        </div></td>
+                                        <td class="col-acciones-usuario">
+                                            <?php if ((int) $usuario->es_principal === 1): ?>
+                                                <!-- El principal no ofrece acciones administrativas sensibles. -->
+                                                <span class="small text-secondary text-nowrap">Principal protegido</span>
+                                            <?php else: ?><div class="dropdown">
+                                            <!-- Solo ofrece acciones reales y mantiene las autorizaciones del servidor. -->
+                                            <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-usuario-acciones aria-expanded="false" aria-label="Acciones de <?= htmlspecialchars($usuario->nombre . ' ' . $usuario->apellido, ENT_QUOTES, 'UTF-8') ?>">Acciones</button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <?php if ($usuario->puede_cambiar_roles): ?><li><a class="dropdown-item" href="/proyectofinaldesarrollo/user/cambiarRoles/<?= (int) $usuario->id_usuario ?>">Cambiar roles</a></li><?php endif; ?>
+                                                <li><a class="dropdown-item" href="/proyectofinaldesarrollo/user/restablecerPassword/<?= (int) $usuario->id_usuario ?>">Restablecer contraseña</a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                    <li><form method="post" <?= (int) $usuario->estado === 1 ? 'data-confirmar-baja="¿Desea dar de baja al usuario ' . htmlspecialchars($usuario->nombre . ' ' . $usuario->apellido, ENT_QUOTES, 'UTF-8') . '?"' : '' ?> action="/proyectofinaldesarrollo/user/<?= (int) $usuario->estado === 1 ? 'baja' : 'reactivar' ?>/<?= (int) $usuario->id_usuario ?>">
+                                                        <button class="dropdown-item <?= (int) $usuario->estado === 1 ? 'text-danger' : '' ?>" type="submit"><?= (int) $usuario->estado === 1 ? 'Dar de baja' : 'Reactivar' ?></button>
+                                                    </form></li>
+                                            </ul>
+                                        </div><?php endif; ?></td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -67,5 +73,6 @@
         </section>
     </main>
     <?php require APP_PATH . 'views/inc/footer.php'; ?>
+    <script src="/proyectofinaldesarrollo/js/usuarios.js?v=<?= substr(hash_file('sha256','public/js/usuarios.js'),0,12) ?>" defer></script>
 </body>
 </html>

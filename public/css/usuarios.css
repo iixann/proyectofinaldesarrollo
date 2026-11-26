@@ -1,0 +1,6 @@
+/* La columna se limita al botón único; el menú conserva el ancho de sus textos. */
+.tabla-usuarios .col-acciones-usuario { width: 1%; white-space: nowrap; }
+/* Evita filas altas por nombres/correos comprimidos; el móvil desplaza la tabla. */
+.tabla-usuarios td:nth-child(2), .tabla-usuarios td:nth-child(3) { min-width: 7rem; }
+.tabla-usuarios td:nth-child(4) { min-width: 14rem; }
+.tabla-usuarios td:nth-child(6) { min-width: 12rem; }
