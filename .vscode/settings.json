@@ -1,0 +1,6 @@
+{
+  "files.exclude": {
+    ".documentacion": true,
+    "**/*.md": true
+  }
+}

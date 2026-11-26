@@ -70,12 +70,12 @@ find app/core app/controllers app/models app/views public -name '*.php' -print0 
 git diff --check
 ```
 
-- [Estado](docs/ESTADO_PROYECTO.md)
-- [Roadmap](docs/ROADMAP.md)
-- [Alcance POS](docs/POS_CAJA_VENTAS.md)
-- [Demostración y pruebas locales](docs/DEMOSTRACION.md)
-- [Guía de estudio](docs/GUIA_ESTUDIO.md)
-- [Repaso breve de defensa](docs/DEFENSA.md)
+- [Estado](../docs/ESTADO_PROYECTO.md)
+- [Roadmap](../docs/ROADMAP.md)
+- [Alcance POS](../docs/POS_CAJA_VENTAS.md)
+- [Demostración y pruebas locales](../docs/DEMOSTRACION.md)
+- [Guía de estudio](../docs/GUIA_ESTUDIO.md)
+- [Repaso breve de defensa](../docs/DEFENSA.md)
 
 La impresión académica no integra un controlador fiscal. No se implementaron cancelaciones, devoluciones, cuentas corrientes ni integraciones bancarias/fiscales. Los nombres de producto/caja/medio se consultan desde maestros y pueden reflejar renombrados; los precios, cantidades, importes, entregado y vuelto históricos permanecen guardados.
 
